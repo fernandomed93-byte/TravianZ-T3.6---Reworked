@@ -791,144 +791,144 @@ class MYSQLi_DB implements IDbConnection {
 
 	// no need to cache this method
 	public function hasBeginnerProtection($vid) {
-	list($vid) = $this->escape_input($vid);
-    	$q = "SELECT u.protect FROM ".TB_PREFIX."users u,".TB_PREFIX."vdata v WHERE u.id=v.owner AND v.wref=".(int) $vid." LIMIT 1";
-	$result = mysqli_query($this->dblink,$q);
-	$dbarray = mysqli_fetch_array($result);
-	if(!empty($dbarray)) {
-		if(time()<$dbarray[0]) {
-			return true;
-		} else {
-			return false;
-		}
-	} else {
-		return false;
-	}
-}
-
-function updateAutomationTime($time, $hasMovements) {
-    list($time) = $this->escape_input($time);
-    $time = (int)$time;
-
-    $q1 = "SELECT lastautomationtime, time_offset FROM ".TB_PREFIX."config";
-    $result1 = mysqli_query($this->dblink, $q1);
-
-    if($result1) {
-        $row = mysqli_fetch_assoc($result1);
-        $lastTime = (int)$row['lastautomationtime'];
-        $currentOffset = (int)$row['time_offset'];
-
-        // 1. Primeira execução no servidor
-        if($lastTime == 0) {
-            $q = "UPDATE " . TB_PREFIX . "config SET lastautomationtime = " . $time;
-            mysqli_query($this->dblink, $q);
-        } 
-        // 2. Execuções subsequentes
-        else {
-            $elapsed = $time - $lastTime;
-            $newOffset = $currentOffset;
-            $nextStarvation = 0; // Variável auxiliar
-
-            //Grande parada no servidor > 6h
-            if($elapsed > 21600) {
-                // Adicionamos todo o tempo perdido ao offset global
-                $newOffset += $elapsed;
-                $nextStarvation = time() + 3600;
-            } 
-            // Regra A: Se passou mais de 30min (falha no servidor/script travado), impede starvation por 1h
-            elseif($elapsed > 1800) {
-                $nextStarvation = time() + 3600;
-            } 
-            // Regra B: Se não há movimentos (prevenção para queda de energia/bot parado)
-            elseif(!$hasMovements) {
-                $nextStarvation = time() + 1800;
-            }
-
-            // Monta a query de atualização
-            if($nextStarvation > 0) {
-
-                // IMPORTANTE: Atualiza o ponto de partida de todas as aldeias para "agora"
-                // Isso evita que elas tentem "recuperar" a fome dos dias que o servidor ficou off
-                $qReset = "UPDATE " . TB_PREFIX . "vdata 
-                    SET starvupdate = " . $time . " 
-                    WHERE starvupdate > 0";   
-                mysqli_query($this->dblink, $qReset);
-
-
-                // Atualiza tanto o último tempo quanto o próximo ponto de starvation
-                $q = "UPDATE " . TB_PREFIX . "config SET 
-                      lastautomationtime = " . $time . ", 
-                      time_offset = " . (int)$newOffset . ",
-                      nextStarvationUpdate = " . (int)$nextStarvation;
-
-            if (!is_array($this->automationConfigCache)) {
-                $this->automationConfigCache = [];
-            }
-            $this->automationConfigCache['nextStarvationUpdate'] = (int)$nextStarvation;
-            $this->automationConfigCache['time_offset'] = (int)$newOffset;
-
+        list($vid) = $this->escape_input($vid);
+            $q = "SELECT u.protect FROM ".TB_PREFIX."users u,".TB_PREFIX."vdata v WHERE u.id=v.owner AND v.wref=".(int) $vid." LIMIT 1";
+        $result = mysqli_query($this->dblink,$q);
+        $dbarray = mysqli_fetch_array($result);
+        if(!empty($dbarray)) {
+            if(time()<$dbarray[0]) {
+                return true;
             } else {
-                // Apenas atualiza o tempo da última execução normal
-                $q = "UPDATE " . TB_PREFIX . "config SET lastautomationtime = " . $time;
+                return false;
             }
-
-            mysqli_query($this->dblink, $q);
-
+        } else {
+            return false;
         }
     }
-}
 
-public function needRunStarvation() {
-    $time = time();
+    function updateAutomationTime($time, $hasMovements) {
+        list($time) = $this->escape_input($time);
+        $time = (int)$time;
 
-    // Implementação de Cache Simples: se já buscamos neste ciclo, não busca de novo
-    if ($this->automationConfigCache === null) {
-        $q1 = "SELECT nextStarvationUpdate FROM ".TB_PREFIX."config";
+        $q1 = "SELECT lastautomationtime, time_offset FROM ".TB_PREFIX."config";
         $result1 = mysqli_query($this->dblink, $q1);
+
         if($result1) {
-            $this->automationConfigCache = mysqli_fetch_assoc($result1);
+            $row = mysqli_fetch_assoc($result1);
+            $lastTime = (int)$row['lastautomationtime'];
+            $currentOffset = (int)$row['time_offset'];
+
+            // 1. Primeira execução no servidor
+            if($lastTime == 0) {
+                $q = "UPDATE " . TB_PREFIX . "config SET lastautomationtime = " . $time;
+                mysqli_query($this->dblink, $q);
+            } 
+            // 2. Execuções subsequentes
+            else {
+                $elapsed = $time - $lastTime;
+                $newOffset = $currentOffset;
+                $nextStarvation = 0; // Variável auxiliar
+
+                //Grande parada no servidor > 6h
+                if($elapsed > 21600) {
+                    // Adicionamos todo o tempo perdido ao offset global
+                    $newOffset += $elapsed;
+                    $nextStarvation = time() + 3600;
+                } 
+                // Regra A: Se passou mais de 30min (falha no servidor/script travado), impede starvation por 1h
+                elseif($elapsed > 1800) {
+                    $nextStarvation = time() + 3600;
+                } 
+                // Regra B: Se não há movimentos (prevenção para queda de energia/bot parado)
+                elseif(!$hasMovements) {
+                    $nextStarvation = time() + 1800;
+                }
+
+                // Monta a query de atualização
+                if($nextStarvation > 0) {
+
+                    // IMPORTANTE: Atualiza o ponto de partida de todas as aldeias para "agora"
+                    // Isso evita que elas tentem "recuperar" a fome dos dias que o servidor ficou off
+                    $qReset = "UPDATE " . TB_PREFIX . "vdata 
+                        SET starvupdate = " . $time . " 
+                        WHERE starvupdate > 0";   
+                    mysqli_query($this->dblink, $qReset);
+
+
+                    // Atualiza tanto o último tempo quanto o próximo ponto de starvation
+                    $q = "UPDATE " . TB_PREFIX . "config SET 
+                        lastautomationtime = " . $time . ", 
+                        time_offset = " . (int)$newOffset . ",
+                        nextStarvationUpdate = " . (int)$nextStarvation;
+
+                if (!is_array($this->automationConfigCache)) {
+                    $this->automationConfigCache = [];
+                }
+                $this->automationConfigCache['nextStarvationUpdate'] = (int)$nextStarvation;
+                $this->automationConfigCache['time_offset'] = (int)$newOffset;
+
+                } else {
+                    // Apenas atualiza o tempo da última execução normal
+                    $q = "UPDATE " . TB_PREFIX . "config SET lastautomationtime = " . $time;
+                }
+
+                mysqli_query($this->dblink, $q);
+
+            }
         }
     }
 
-    $nextTime = (int)($this->automationConfigCache['nextStarvationUpdate'] ?? 0);
+    public function needRunStarvation() {
+        $time = time();
 
-    // 1. Se for 0 (desativado) ou se o tempo de proteção já passou
-    if($nextTime == 0 || $nextTime < $time) {
-        return true;
-    } 
-    
-    // 2. Proteção ativa: o tempo atual ainda não alcançou o próximo ponto de liberação
-    return false;
-}
+        // Implementação de Cache Simples: se já buscamos neste ciclo, não busca de novo
+        if ($this->automationConfigCache === null) {
+            $q1 = "SELECT nextStarvationUpdate FROM ".TB_PREFIX."config";
+            $result1 = mysqli_query($this->dblink, $q1);
+            if($result1) {
+                $this->automationConfigCache = mysqli_fetch_assoc($result1);
+            }
+        }
 
-public function getGameTime() {
-    // Tenta usar o cache que criamos no needRunStarvation para evitar query extra
-    if ($this->automationConfigCache === null) {
-        $q = "SELECT * FROM ".TB_PREFIX."config LIMIT 1";
+        $nextTime = (int)($this->automationConfigCache['nextStarvationUpdate'] ?? 0);
+
+        // 1. Se for 0 (desativado) ou se o tempo de proteção já passou
+        if($nextTime == 0 || $nextTime < $time) {
+            return true;
+        } 
+        
+        // 2. Proteção ativa: o tempo atual ainda não alcançou o próximo ponto de liberação
+        return false;
+    }
+
+    public function getGameTime() {
+        // Tenta usar o cache que criamos no needRunStarvation para evitar query extra
+        if ($this->automationConfigCache === null) {
+            $q = "SELECT * FROM ".TB_PREFIX."config LIMIT 1";
+            $result = mysqli_query($this->dblink, $q);
+            $this->automationConfigCache = mysqli_fetch_assoc($result);
+        }
+        
+        $offset = (int)($this->automationConfigCache['time_offset'] ?? 0);
+        return time() - $offset;
+    }
+
+    public function getConfigs() {
+        // Se o cache já estiver preenchido, retorna ele sem consultar o banco
+        if ($this->configCache !== null) {
+            return $this->configCache;
+        }
+
+        $q = "SELECT * FROM " . TB_PREFIX . "config";
         $result = mysqli_query($this->dblink, $q);
-        $this->automationConfigCache = mysqli_fetch_assoc($result);
-    }
-    
-    $offset = (int)($this->automationConfigCache['time_offset'] ?? 0);
-    return time() - $offset;
-}
+        
+        if ($result) {
+            $this->configCache = mysqli_fetch_assoc($result);
+            return $this->configCache;
+        }
 
-public function getConfigs() {
-    // Se o cache já estiver preenchido, retorna ele sem consultar o banco
-    if ($this->configCache !== null) {
-        return $this->configCache;
+        return []; // Retorna array vazio se falhar
     }
-
-    $q = "SELECT * FROM " . TB_PREFIX . "config";
-    $result = mysqli_query($this->dblink, $q);
-    
-    if ($result) {
-        $this->configCache = mysqli_fetch_assoc($result);
-        return $this->configCache;
-    }
-
-    return []; // Retorna array vazio se falhar
-}
 
 	function updateUserField($ref, $field, $value, $switch) {
         list($ref) = $this->escape_input($ref);
@@ -1031,41 +1031,6 @@ public function getConfigs() {
 
         return $result;
 
-        /*list($ref, $field, $mode) = $this->escape_input($ref, $field, $mode);
-
-        // first of all, check if we should be using cache and whether the field
-        // required is already cached
-        if ($use_cache && ($cachedValue = self::returnCachedContent(self::$fieldsCache, $ref.$mode)) && !is_null($cachedValue)) {
-            // check if we have the requested field type cached
-            if (isset($cachedValue[$field])) {
-                return $cachedValue[$field];
-            }
-        }
-
-        // update for Multihunter's username and ID
-        if (($mode && $ref == '') || (!$mode && $ref == 0)) {
-            $ref = 'Multihunter';
-            $mode = 1;
-        }
-
-        if(!$mode) {
-            $q = "SELECT $field FROM " . TB_PREFIX . "users where id = " . (int) $ref;
-        } else {
-            $q = "SELECT $field FROM " . TB_PREFIX . "users where username = '$ref'";
-        }
-
-        $result = mysqli_query($this->dblink,$q) or die(mysqli_error($this->dblink));
-
-        if ($result) {
-            $dbarray = mysqli_fetch_array($result);
-            self::$fieldsCache[$ref.$mode][$field] = $dbarray[$field];
-        } elseif($field=="username") {
-            self::$fieldsCache[$ref.$mode][$field] = "??";
-        } else {
-            self::$fieldsCache[$ref.$mode][$field] = 0;
-        }
-
-        return self::$fieldsCache[$ref.$mode][$field];*/
     }
 
     function getUserFields($ref, $fields, $mode, $use_cache = true) {
@@ -1077,59 +1042,6 @@ public function getConfigs() {
 
 	    // return all data, don't waste time by selecting fields one by one
 	    return $this->getUserArray($ref, ($mode ? 0 : 1), $use_cache);
-
-        /*list($ref, $fields, $mode) = $this->escape_input($ref, $fields, $mode);
-
-        // update for Multihunter's username and ID
-        if (($mode && $ref == '') || (!$mode && $ref == 0)) {
-            $ref = 'Multihunter';
-            $mode = 1;
-        }
-
-        // check fields one by one to see which ones we can return cached
-        if ($use_cache) {
-            $allFieldsFound = false;
-            $fieldsLeft = [];
-            $fieldValues = [];
-
-            // split fields
-            $fields = explode(',', str_replace(', ', ',', $fields));
-
-            // iterate over all the fields and see what we have cached
-            foreach ($fields as $fieldName) {
-                if (($cached = self::returnCachedContent(self::$fieldsCache, $ref.$mode)) && !is_null($cached) && isset($cached[$fieldName])) {
-                    $fieldValues[$fieldName] = $cached[$fieldName];
-                } else {
-                    $fieldsLeft[] = $fieldName;
-                }
-            }
-
-            // check if we should return here (if we have all the values) or continue with the rest below
-            if (!count($fieldsLeft)) {
-                return $fieldValues;
-            }
-        }
-
-        if(!$mode) {
-            $q = "SELECT ".implode(', ', $fieldsLeft)." FROM " . TB_PREFIX . "users where id = " . (int) $ref;
-        } else {
-            $q = "SELECT ".implode(', ', $fieldsLeft)." FROM " . TB_PREFIX . "users where username = '$ref'";
-        }
-
-        $result = mysqli_query($this->dblink,$q) or die(mysqli_error($this->dblink));
-        if($result) {
-            $ret = mysqli_fetch_array($result, MYSQLI_ASSOC);
-        } else {
-            $ret = [0];
-        }
-
-        // cache results and return everything that we have
-        foreach ($ret as $fieldName => $fieldValue) {
-            $fieldValues[$fieldName] = $fieldValue;
-            self::$fieldsCache[$ref.$mode][$fieldName] = $fieldValue;
-        }
-
-        return $fieldValues;*/
     }
 
     // no need to cache this method
@@ -2372,30 +2284,11 @@ public function getConfigs() {
         }else $result = 0;
 
         return $result;
-
-        /*list($ref, $field) = $this->escape_input((int) $ref, $field);
-
-        $q = "SELECT $field FROM " . TB_PREFIX . "vdata where wref = $ref";
-        $result = mysqli_query($this->dblink,$q);
-        if($result){
-            $dbarray = mysqli_fetch_array($result);
-            return $dbarray[$field];
-         }elseif($field=="name"){
-            return "??";
-        }else return 0;*/
     }
 
     function getVillageFields($ref, $fields, $use_cache = true) {
         // return all data, don't waste time by selecting fields one by one
         return $this->getVillage($ref, 0, $use_cache);
-
-        /*list($ref, $field) = $this->escape_input((int) $ref, $fields);
-
-        $q = "SELECT $field FROM " . TB_PREFIX . "vdata where wref = $ref";
-        $result = mysqli_query($this->dblink,$q);
-        if($result) {
-            return mysqli_fetch_array($result, MYSQLI_ASSOC);
-        } else return 0;*/
     }
 
 	function getOasisField($ref, $field, $use_cache = true) {
@@ -2407,11 +2300,6 @@ public function getConfigs() {
     function getOasisFields($ref, $use_cache = true) {
         // return all data, don't waste time by selecting fields one by one
         return $this->getOasisV($ref, $use_cache);
-
-        /*list($ref, $fields) = $this->escape_input((int) $ref, $fields);
-
-        $q = "SELECT $fields FROM " . TB_PREFIX . "odata where wref = $ref";
-        return mysqli_fetch_array(mysqli_query($this->dblink,$q), MYSQLI_ASSOC);*/
     }
 
 	function setVillageField($ref, $field, $value) {
@@ -2550,7 +2438,6 @@ public function getConfigs() {
 		return $this->mysqli_fetch_all($result);
 	}
 
-	//fix market log
 	function getMarketLog() {
         	$q = "SELECT id,wid,log from " . TB_PREFIX . "market_log where id != 0 ORDER BY id ASC";
         	$result = mysqli_query($this->dblink,$q);
@@ -2563,15 +2450,15 @@ public function getConfigs() {
 		$q = "SELECT wref,owner,name from " . TB_PREFIX . "vdata where wref =$village ";
         	$result = mysqli_query($this->dblink,$q);
         	return $this->mysqli_fetch_all($result);
-        }
+    }
+
 	function getMarketLogUsers($id_user) {
 	    list($id_user) = $this->escape_input((int) $id_user);
 
         	$q = "SELECT id,username from " . TB_PREFIX . "users where id = $id_user ";
         	$result = mysqli_query($this->dblink,$q);
         	return $this->mysqli_fetch_all($result);
-        }
-	//end fix
+    }
 
 	function getCoor($wref, $use_cache = true) {
 	    // retirieve form cache
@@ -3016,78 +2903,78 @@ public function getConfigs() {
         return mysqli_insert_id($this->dblink);
     }
 
-	/*************************
+    /*************************
 	        FORUM SUREY
 	*************************/
 
-  function createSurvey($topic, $title, $option1, $option2, $option3, $option4, $option5, $option6, $option7, $option8, $ends) {
+    function createSurvey($topic, $title, $option1, $option2, $option3, $option4, $option5, $option6, $option7, $option8, $ends) {
         list($topic, $title, $option1, $option2, $option3, $option4, $option5, $option6, $option7, $option8, $ends) = $this->escape_input($topic, $title, $option1, $option2, $option3, $option4, $option5, $option6, $option7, $option8, $ends);
 
         $q = "INSERT into " . TB_PREFIX . "forum_survey (topic,title,option1,option2,option3,option4,option5,option6,option7,option8,ends) values ('$topic','$title','$option1','$option2','$option3','$option4','$option5','$option6','$option7','$option8','$ends')";
         return mysqli_query($this->dblink,$q);
-  }
+    }
 
     // no need to cache this method
-  function getSurvey($topic) {
-      list($topic) = $this->escape_input((int) $topic);
+    function getSurvey($topic) {
+        list($topic) = $this->escape_input((int) $topic);
 
-    $q = "SELECT * FROM " . TB_PREFIX . "forum_survey where topic = $topic LIMIT 1";
-    $result = mysqli_query($this->dblink,$q);
-    return mysqli_fetch_array($result);
-  }
+        $q = "SELECT * FROM " . TB_PREFIX . "forum_survey where topic = $topic LIMIT 1";
+        $result = mysqli_query($this->dblink,$q);
+        return mysqli_fetch_array($result);
+    }
 
     // no need to cache this method
-  function checkSurvey($topic) {
-      list($topic) = $this->escape_input((int) $topic);
+    function checkSurvey($topic) {
+        list($topic) = $this->escape_input((int) $topic);
 
-      $q      = "SELECT Count(*) as Total FROM " . TB_PREFIX . "forum_survey where topic = $topic";
-      $result = mysqli_fetch_array( mysqli_query( $this->dblink, $q ), MYSQLI_ASSOC );
+        $q      = "SELECT Count(*) as Total FROM " . TB_PREFIX . "forum_survey where topic = $topic";
+        $result = mysqli_fetch_array( mysqli_query( $this->dblink, $q ), MYSQLI_ASSOC );
 
-      if ( $result['Total'] ) {
-          return true;
-      } else {
-          return false;
-      }
-  }
+        if ( $result['Total'] ) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-  function Vote($topic, $num, $text) {
-      list($topic, $num, $text) = $this->escape_input((int) $topic, (int) $num, $text);
+    function Vote($topic, $num, $text) {
+        list($topic, $num, $text) = $this->escape_input((int) $topic, (int) $num, $text);
 
-      $q = "UPDATE " . TB_PREFIX . "forum_survey set vote".$num." = vote".$num." + 1, voted = '$text' where topic = ".$topic."";
-      return mysqli_query($this->dblink,$q);
-  }
+        $q = "UPDATE " . TB_PREFIX . "forum_survey set vote".$num." = vote".$num." + 1, voted = '$text' where topic = ".$topic."";
+        return mysqli_query($this->dblink,$q);
+    }
 
   // no need to cache this method
-  function checkVote($topic, $uid) {
-      list( $topic, $uid ) = $this->escape_input( (int) $topic, $uid );
+    function checkVote($topic, $uid) {
+        list( $topic, $uid ) = $this->escape_input( (int) $topic, $uid );
 
-      $q      = "SELECT voted FROM " . TB_PREFIX . "forum_survey where topic = $topic LIMIT 1";
-      $result = mysqli_query( $this->dblink, $q );
-      $array  = mysqli_fetch_array( $result );
-      $text   = $array['voted'];
+        $q      = "SELECT voted FROM " . TB_PREFIX . "forum_survey where topic = $topic LIMIT 1";
+        $result = mysqli_query( $this->dblink, $q );
+        $array  = mysqli_fetch_array( $result );
+        $text   = $array['voted'];
 
-      if ( preg_match( '/,' . $uid . ',/', $text ) ) {
-          return true;
-      } else {
-          return false;
-      }
-  }
+        if ( preg_match( '/,' . $uid . ',/', $text ) ) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     // no need to cache this method
-  function getVoteSum($topic) {
-      list( $topic ) = $this->escape_input( (int) $topic );
+    function getVoteSum($topic) {
+        list( $topic ) = $this->escape_input( (int) $topic );
 
-      $q      = "SELECT * FROM " . TB_PREFIX . "forum_survey where topic = $topic LIMIT 1";
-      $result = mysqli_query( $this->dblink, $q );
-      $array  = mysqli_fetch_array( $result );
-      $sum    = 0;
+        $q      = "SELECT * FROM " . TB_PREFIX . "forum_survey where topic = $topic LIMIT 1";
+        $result = mysqli_query( $this->dblink, $q );
+        $array  = mysqli_fetch_array( $result );
+        $sum    = 0;
 
-      for ( $i = 1; $i <= 8; $i ++ ) {
-          $sum += $array[ 'vote' . $i ];
-      }
+        for ( $i = 1; $i <= 8; $i ++ ) {
+            $sum += $array[ 'vote' . $i ];
+        }
 
-      return $sum;
-  }
+        return $sum;
+    }
 
 
 	/*************************
@@ -6417,6 +6304,10 @@ References: User ID/Message ID, Mode
             case 3: $keys = array_merge(array_map(fn($i) => 'u'.$i, range(21, 30)), ['hero']); break;
             case 4: $keys = array_merge(array_map(fn($i) => 'u'.$i, range(31, 40)), ['hero']); break;
             case 5: $keys = array_merge(array_map(fn($i) => 'u'.$i, range(41, 50)), ['hero']); break;
+            case 6: $keys = array_merge(array_map(fn($i) => 'u'.$i, range(51, 60)), ['hero']); break;
+            case 7: $keys = array_merge(array_map(fn($i) => 'u'.$i, range(61, 70)), ['hero']); break;
+            case 8: $keys = array_merge(array_map(fn($i) => 'u'.$i, range(71, 80)), ['hero']); break;
+            case 9: $keys = array_merge(array_map(fn($i) => 'u'.$i, range(81, 90)), ['hero']); break;
             // Adicione outras tribos se necessário (4, 5...)
             default: $keys = []; // Ou talvez todas as u1-u50 + hero se preferir
         }
@@ -6447,6 +6338,18 @@ References: User ID/Message ID, Mode
             break;
         case 5: // Ex: Natar
             $startUnit = 41; $endUnit = 50;
+            break;
+        case 6: // Ex: Huns
+            $startUnit = 51; $endUnit = 60;
+            break;
+        case 7: // Ex: Egyptians
+            $startUnit = 61; $endUnit = 70;
+            break;
+        case 8: // Ex: Spartans
+            $startUnit = 71; $endUnit = 80;
+            break;
+        case 9: // Ex: Vikings
+            $startUnit = 81; $endUnit = 90;
             break;
         default:
             // Tribo inválida ou não suportada
@@ -7916,6 +7819,7 @@ References: User ID/Message ID, Mode
 		$maxslots = (($vilData['exp1'] == 0 ? 1 : 0) + ($vilData['exp2'] == 0 ? 1 : 0) + ($vilData['exp3'] == 0 ? 1 : 0));
 		$residence = $building->getTypeLevel(25);
 		$palace = $building->getTypeLevel(26);
+        $comCenter = $building->getTypeLevel(44); 
 
 		if($residence > 0) {
 			$maxslots -= (3 - floor($residence / 10));
@@ -7925,7 +7829,11 @@ References: User ID/Message ID, Mode
 			$maxslots -= (3 - floor(($palace - 5) / 5));
 		}
 
-		$q = "SELECT (u10+u20+u30) as R1, (u9+u19+u29) as R2 FROM " . TB_PREFIX . "units WHERE vref = ". (int) $village->wid;
+        if($comCenter > 0) {
+			$maxslots -= (3 - floor(($comCenter - 5) / 5));
+		}
+
+		$q = "SELECT (u10+u20+u30+u60+u70+u80+u90) as R1, (u9+u19+u29+u59+u69+u79+u89) as R2 FROM " . TB_PREFIX . "units WHERE vref = ". (int) $village->wid;
 		$result = mysqli_query($this->dblink,$q);
 		$row = mysqli_fetch_array($result, MYSQLI_ASSOC);
 		$settlers = $row['R1'];
@@ -9110,7 +9018,7 @@ References: User ID/Message ID, Mode
                 $dbarray = $result;
                 if(isset($dbarray['hero'])) {
                     $this->query("UPDATE ".TB_PREFIX."enforcement SET hero=0 WHERE `from` = ".$wid);
-                    for ($i=0;$i<50;$i++) {
+                    for ($i=0;$i<=90;$i++) {
                         if($dbarray['u'.$i]>0) {
                             $delDef=false;
                             break;
@@ -9134,7 +9042,7 @@ References: User ID/Message ID, Mode
             foreach($dbarray as $defoasis) {
                 if($defoasis['hero']>0) {
                     $this->query("UPDATE ".TB_PREFIX."enforcement SET hero=0 WHERE `from` = ".$defoasis['from']);
-                    for ($i=0;$i<50;$i++) {
+                    for ($i=0;$i<=90;$i++) {
                         if($dbarray['u'.$i]>0) {
                             $delDef=false;
                             break;
