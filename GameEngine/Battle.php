@@ -465,44 +465,64 @@ class Battle {
          // Formula for calculating the bonus defensive wall and Residence
 
         if($def_wall > 0) {
-            // Set the factor calculation for the "wall" as the type of the civilization
-            // Factor = 1030 Wall Roman
-            // Factor = 1020 Wall Teuton
-            // Factor = 1025 Wall Goul
-            $factor = ($def_tribe == 1)? 1.030 : (($def_tribe == 2)? 1.020 : (($def_tribe == 3)? 1.025 : (($def_tribe == 6)? 1.015 : (($def_tribe == 7)? 1.030 : (($def_tribe == 8)? 1.028 : 1.022)))));
+            switch ($def_tribe) {
+                case 1:
+                    $factor = 1.030;
+                    break;
+                case 2:
+                case 8:
+                    $factor = 1.020;
+                    break;
+                case 3:
+                case 7:
+                    $factor = 1.025;
+                    break;
+                case 6:
+                case 9:
+                default:
+                    $factor = 1.015;
+                    break;
+            }
+
+            switch ($def_tribe) {
+                case 1:
+                case 8:
+                    $wall_base_def = 10;
+                    break;
+                case 2:
+                case 6:
+                case 9:
+                    $wall_base_def = 6;
+                    break;
+                case 3:
+                case 7:
+                    $wall_base_def = 8;
+                    break;
+                default:
+                    $wall_base_def = 10;
+                    break;
+            }
+
             $wallMultiplier = round(pow($factor, $def_wall), 3);
+
+            $dp += $wall_base_def * $def_wall;
+            $cdp += $wall_base_def * $def_wall;
+
             // Defense infantry = Infantry * Wall (%)
             // Defense calvary calvary = * Wall (%)          
-            if ($dp > 0 || $cdp > 0){
-                if($type == 1) {
-                    $dp *=  $wallMultiplier;
-                    $dp += 10;
-                }else{                
-                    $dp *= $wallMultiplier;
-                    $cdp *= $wallMultiplier;
-
-                    // Calculation of the Basic defense bonus "Residence"
-                    $dp += (2 * (pow($residence, 2)) + 10) * $wallMultiplier;
-                    $cdp += (2 * (pow($residence, 2)) + 10) * $wallMultiplier;
-                }
-            }else{
-                $dp = 10 * $wallMultiplier * $def_wall;
-                // Defense calvary calvary = * Wall (%)
-                $cdp = 10 * $wallMultiplier * $def_wall;
-                if($type != 1){
-                    // Calculation of the Basic defense bonus "Residence"
-                    $dp += (2 * (pow($residence, 2)) + 10) * $wallMultiplier;
-                    $cdp += (2 * (pow($residence, 2)) + 10) * $wallMultiplier;
-                }else{
-                    $dp += 10;
-                    $cdp = 0;
-                }
+           if ($type == 1) {
+                $dp *= $wallMultiplier;
+            } else {
+                $dp *= $wallMultiplier;
+                $cdp *= $wallMultiplier;
             }
-        }elseif($type != 1) {
-            
-            // Calculation of the Basic defense bonus "Residence"
-            $dp += (2 * (pow($residence, 2)) + 10);
-            $cdp += (2 * (pow($residence, 2)) + 10);
+        }
+        
+        if ($type != 1) {
+            $dp += (2 * pow($residence, 2));
+            $cdp += (2 * pow($residence, 2));
+        } else {
+            $dp += (2 * pow($residence, 2));
         }
 
         // Formula for calculating Attacking Points (Infantry & Cavalry)
@@ -1312,7 +1332,47 @@ class Battle {
 
         // Bônus
         if ($wall_level > 0) {
-            $factor = ($context['defender']['info']['tribe'] == 1)? 1.030 : (($context['defender']['info']['tribe'] == 2)? 1.020 : (($context['defender']['info']['tribe'] == 3)? 1.025 : (($context['defender']['info']['tribe'] == 6)? 1.015 : (($context['defender']['info']['tribe'] == 7)? 1.030 : (($context['defender']['info']['tribe'] == 8)? 1.028 : 1.022)))));
+            switch ($context['defender']['info']['tribe']) {
+                case 1:
+                    $factor = 1.030;
+                    break;
+                case 2:
+                case 8:
+                    $factor = 1.020;
+                    break;
+                case 3:
+                case 7:
+                    $factor = 1.025;
+                    break;
+                case 6:
+                case 9:
+                default:
+                    $factor = 1.015;
+                    break;
+            }
+
+            switch ($context['defender']['info']['tribe']) {
+                case 1:
+                case 8:
+                    $wall_base_def = 10;
+                    break;
+                case 2:
+                case 6:
+                case 9:
+                    $wall_base_def = 6;
+                    break;
+                case 3:
+                case 7:
+                    $wall_base_def = 8;
+                    break;
+                default:
+                    $wall_base_def = 10;
+                    break;
+            }
+
+            $dp += $wall_base_def * $wall_level;
+            $cdp += $wall_base_def * $wall_level;
+
             $dp *= pow($factor, $wall_level); $cdp *= pow($factor, $wall_level);
         }
         $dp += (2 * pow($context['defender']['forces']['residenceLevel'], 2));

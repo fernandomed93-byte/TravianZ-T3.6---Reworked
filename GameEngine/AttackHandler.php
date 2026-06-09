@@ -588,7 +588,17 @@ class AttackHandler {
         $loyaltyReduction = 0;
         $time = time();
         for ($i = 0; $i < $chiefCount; $i++) {
-            $reduction = ($context['attacker']['info']['tribe'] == 1) ? rand(20, 30) : rand(20, 25);
+
+            $tribe = $context['attacker']['info']['tribe'];
+            $reduction = ($tribe == 1) ? rand(20, 30) : (
+                        ($tribe == 2) ? rand(20, 25) : (
+                        ($tribe == 3) ? rand(20, 25) : (
+                        ($tribe == 6) ? rand(15, 30) : (
+                        ($tribe == 7) ? rand(20, 25) : (
+                        ($tribe == 8) ? rand(20, 25) : (
+                        ($tribe == 9) ? rand(15, 30) : rand(15, 30)
+                        ))))));
+
             if ($context['attacker']['info']['celebration'] > $time && $context['attacker']['info']['type'] == 2) $reduction += 5;
             if ($context['defender']['info']['celebration'] > $time && $context['defender']['info']['type'] == 2) $reduction -= 5;
             if ($context['attacker']['info']['tribe'] == 2 && $this->automation->getTypeLevel(35, $context['attacker']['info']['wref']) > 0) $reduction /= 2;
