@@ -648,8 +648,32 @@ class Battle {
             //Rams blacksmith upgrades
             $upgrades = round(200 * pow(1.0205, $att_ab7)) / 200;
 
+            switch ($def_tribe) {
+                case 1:
+                case 6:
+                    $wall_base_durability = 1;
+                    break;
+                case 2:
+                    $wall_base_durability = 5;
+                    break;
+                case 3:
+                case 8:
+                    $wall_base_durability = 2;
+                    break;
+                case 7:
+                    $wall_base_durability = 4;
+                    break;
+                case 9:
+                    $wall_base_durability = 3;
+                    break;
+                default:
+                    $wall_base_durability = 1;
+                    break;
+            }
+
             //Building durability
             $durability = ($stonemason > 0 ? $bid34[$stonemason]['attri'] / 100 : 1);
+            $durability *= $wall_base_durability;
            
             // New level of the building (only for warsim.php)
             $ramsDamage = $this->calculateCatapultsDamage($ram, $upgrades, $durability, $rap / $rdp, $strongerbuildings, 1);
@@ -960,7 +984,34 @@ class Battle {
         if ($ram_count > 0 && $attackData['attack_type'] == 3 && $old_wall_level > 0) {
             $ram_upgrades = pow(1.0205, $att_ab['b7']);
             $stonemason = $this->getTypeLevel(34, $defender['info']['wref']);
+
+            $def_tribe = $defender['info']['tribe'];
+            switch ($def_tribe) {
+                case 1:
+                case 6:
+                    $wall_base_durability = 1;
+                    break;
+                case 2:
+                    $wall_base_durability = 5;
+                    break;
+                case 3:
+                case 8:
+                    $wall_base_durability = 2;
+                    break;
+                case 7:
+                    $wall_base_durability = 4;
+                    break;
+                case 9:
+                    $wall_base_durability = 3;
+                    break;
+                default:
+                    $wall_base_durability = 1;
+                    break;
+            }
+
             $durability = $stonemason > 0 ? $GLOBALS['bid34'][$stonemason]['attri'] / 100 : 1;
+            $durability *= $wall_base_durability;
+
             $ram_damage = $this->calculateCatapultsDamage($ram_count, $ram_upgrades, $durability, $rap / $rdp, 1, 1);
             $new_wall_level = $this->calculateNewBuildingLevel($old_wall_level, $ram_damage);
         }

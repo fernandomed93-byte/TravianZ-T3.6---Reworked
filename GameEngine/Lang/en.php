@@ -1115,6 +1115,8 @@ define('CHANGE_CAPITAL', 'change capital');
 define('SECURITY_CHANGE_CAPITAL', 'Are you sure, that you want to change your capital?<br><b>You can&#39;t undo this!</b><br>For security you must enter your password to confirm:<br>');
 define('PALACE_DESC', 'The palace building is unique. You can only build one in your whole realm and you can proclaim that village as your capital. It also protects the village against enemy conquests. Units that can found a new village or conquer existing villages can be trained here.<br>Additionally, the palace provides an expansion slot at levels 10, 15 and 20 each');
 
+define('COMMANDCENTER_TRAIN_DESC', 'In order to found a new village you need a level 10, 15 or 20 command center and 3 settlers. In order to conquer a new village you need a level 10, 15 or 20 command center and a senator, chief or chieftain.');
+
 define('TREASURY', 'Treasury');
 define('TREASURY_COMMENCE', 'Artefacts can be viewed when treasury is completed.');
 define('ARTEFACTS_AREA', 'Artefacts in your area');
@@ -1180,6 +1182,18 @@ define('EARTHWALL_DESC', 'Provides a defense bonus for your troops (((1.02 ^ lev
 define('PALISADE', 'Palisade');
 define('PALISADE_DESC', 'Provides a defense bonus for your troops (((1.025 ^ level) * 100)% + 8) defensive points per level to the basic defensive value for a village. A higher level Palisade will give your troops a higher defence bonus.<br>Tribe-specific: Gauls only');
 
+define('STONEWALL', 'Stone Wall');
+define('STONEWALL_DESC', 'Provides a defense bonus for your troops (((1.025 ^ level) * 100)% + 8) defensive points per level to the basic defensive value for a village. The higher level Wall will give your troops a higher defence bonus.<br>Tribe-specific: Egyptians only');
+
+define('MAKESHIFTWALL', 'Makeshift Wall');
+define('MAKESHIFTWALL_DESC', 'Provides a defense bonus for your troops (((1.015 ^ level) * 100)% + 6) defensive points per level to the basic defensive value for a village. The higher level Wall will give your troops a higher defence bonus.<br>Tribe-specific: Huns only');
+
+define('DEFENSIVEWALL', 'Defensive Wall');
+define('DEFENSIVEWALL_DESC', 'Provides a defense bonus for your troops (((1.020 ^ level) * 100)% + 10) defensive points per level to the basic defensive value for a village. The higher level Wall will give your troops a higher defence bonus.<br>Tribe-specific: Spartans only');
+
+define('BARRICADE', 'Barricade');
+define('BARRICADE_DESC', 'Provides a defense bonus for your troops (((1.015 ^ level) * 100)% + 6) defensive points per level to the basic defensive value for a village. The higher level Wall will give your troops a higher defence bonus.<br>Tribe-specific: Vikings only');
+
 define('STONEMASON', 'Stonemason&#39;s Lodge');
 define('CURRENT_STABILITY', 'Current stability bonus:');
 define('STABILITY_LEVEL', 'Stability bonus at level');
@@ -1243,22 +1257,14 @@ define('WORLD_WONDER_NAME_CHANGED', 'Name changed');
 define('HORSEDRINKING', 'Horse Drinking Trough');
 define('HORSEDRINKING_DESC', 'Decreases the training time and the upkeep of cavalry. It can also be built in Roman Wonder of the World villages.<br>Speeds up the training time of cavalry units by 1% per level and lowers the crop consumption of some units depending on its level.<br>Tribe-specific: Romans only');
 
-define('STONEWALL', 'Stone Wall');
-define('STONEWALL_DESC', 'Provides a defense bonus for your troops (((1.025 ^ level) * 100)% + 8) defensive points per level to the basic defensive value for a village. A higher level Palisade will give your troops a higher defence bonus.<br>Tribe-specific: Egyptians only');
-define('MAKESHIFTWALL', 'Makeshift Wall');
-define('MAKESHIFTWALL_DESC', 'Provides a defense bonus for your troops (((1.015 ^ level) * 100)% + 6) defensive points per level to the basic defensive value for a village. A higher level Palisade will give your troops a higher defence bonus.<br>Tribe-specific: Huns only');
 define('COMMANDCENTER', 'Command Center');
-define('COMMANDCENTER_DESC', 'Improves expansion abilities and protects villages from enemy conquests.<br>Tribe-specific: Huns only');
+define('COMMANDCENTER_DESC', 'The Command Center protects the village against enemy conquests. You can build one command center per village. Units that can found a new village or conquer existing villages can be trained here.<br>Additionally, the command center provides an expansion slot at levels 10, 15 and 20 each.<br>Tribe-specific: Huns only');
 define('WATERWORKS', 'Waterworks');
 define('WATERWORKS_DESC', 'Increases oasis production bonuses up to twice the amount.<br>Tribe-specific: Egyptians only');
 define('HOSPITAL', 'Hospital');
-define('HOSPITAL_DESC', 'The Hospital allows you to treat wounded troops so they can rejoin your army. This helps you recover faster after major battles. Healing troops is not cheaper than training new ones — the resource cost is the same — but healing takes half the time of normal training.');
-define('DEFENSIVEWALL', 'Defensive Wall');
-define('DEFENSIVEWALL_DESC', 'Provides a defense bonus for your troops (((1.020 ^ level) * 100)% + 10) defensive points per level to the basic defensive value for a village. A higher level Palisade will give your troops a higher defence bonus.<br>Tribe-specific: Spartans only');
+define('HOSPITAL_DESC', 'Reduces troop losses by healing wounded soldiers after battle.');
 define('BIGHOSPITAL', 'Big Hospital');
-define('BIGHOSPITAL_DESC', 'The Big Hospital allows you to treat wounded troops so they can rejoin your army. This helps you recover faster after major battles. Healing troops is not cheaper than training new ones — the resource cost is the same — but healing takes half the time of normal training.<br>Tribe-specific: Spartans and Vikings only');
-define('BARRICADE', 'Barricade');
-define('BARRICADE_DESC', 'Provides a defense bonus for your troops (((1.015 ^ level) * 100)% + 6) defensive points per level to the basic defensive value for a village. A higher level Palisade will give your troops a higher defence bonus.<br>Tribe-specific: Vikings only');
+define('BIGHOSPITAL_DESC', 'Reduces troop losses by healing wounded soldiers after battle. Enhanced version.<br>Tribe-specific: Spartans and Vikings only');
 define('GREATWORKSHOP', 'Great Workshop');
 define('TRAINING_COMMENCE_GREATWORKSHOP', 'Training can commence when great workshop is completed.');
 define('GREATWORKSHOP_DESC', 'The Great Workshop allows you to build a second Workshop in the same village, but catapults and rams cost 3 times the original amount.<br>Combined with the regular Workshop, you can train your troops twice as fast in one village');

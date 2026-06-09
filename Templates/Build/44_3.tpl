@@ -5,18 +5,9 @@
 		class="building g44"
 		src="gpack/travian_default/img/x.gif" alt="Command Center"
 		title="<?php echo COMMANDCENTER; ?>" /> </a>
-	<?php echo COMMANDCENTER_DESC; ?></p>
+		<?php echo COMMANDCENTER_DESC; ?></p>
 
-<?php
-include("44_menu.tpl");
 
-if($village->resarray['f'.$id] >= 10){
-	include ("44_train.tpl");	
-}
-else{
-	echo '<div class="c">'.COMMANDCENTER_TRAIN_DESC.'</div>';
-}
+<?php include("44_menu.tpl"); ?>
 
-include("upgrade.tpl");
-?>
-</div>
+<?php echo RESIDENCE_LOYALTY_DESC; ?> <b><?php echo floor($database->getVillageField($village->wid,'loyalty')); ?></b> <?php echo PERCENT; ?>.</div>

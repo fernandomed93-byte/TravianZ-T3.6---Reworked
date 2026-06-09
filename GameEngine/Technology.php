@@ -495,7 +495,7 @@ class Technology {
 	}
 
     private function trainUnit($unit, $amt, $great = false) {
-		global $session, $database, ${'u'.$unit}, $building, $village, $bid19, $bid20, $bid21, $bid25, $bid26, $bid29, $bid30, $bid36, $bid41, $bid49;
+		global $session, $database, ${'u'.$unit}, $building, $village, $bid19, $bid20, $bid21, $bid25, $bid26, $bid29, $bid30, $bid36, $bid41, $bid44, $bid49;
 
 		if($this->getTech($unit) || $unit % 10 <= 1 || $unit == 99) {
 			$footies = [1, 2, 3, 11, 12, 13, 14, 21, 22, 31, 32, 33, 34, 41, 42, 43, 44, 51, 52, 53, 61, 62, 63, 71, 72, 73, 74, 81, 82, 83, 84];
@@ -536,6 +536,8 @@ class Technology {
 			if(in_array($unit, $special)) {			    
 				if($building->getTypeLevel(25) > 0){
 					$each = round(($bid25[$building->getTypeLevel(25)]['attri'] / 100) * ${'u'.$unit}['time'] / SPEED);
+				} elseif($building->getTypeLevel(44) > 0) {
+					$each = round(($bid44[$building->getTypeLevel(44)]['attri'] / 100) * ${'u'.$unit}['time'] / SPEED);
 				} else {
 					$each = round(($bid26[$building->getTypeLevel(26)]['attri'] / 100) * ${'u'.$unit}['time'] / SPEED);
 				}
