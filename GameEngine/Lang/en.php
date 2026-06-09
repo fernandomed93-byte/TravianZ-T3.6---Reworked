@@ -1262,9 +1262,9 @@ define('COMMANDCENTER_DESC', 'The Command Center protects the village against en
 define('WATERWORKS', 'Waterworks');
 define('WATERWORKS_DESC', 'Increases oasis production bonuses up to twice the amount.<br>Tribe-specific: Egyptians only');
 define('HOSPITAL', 'Hospital');
-define('HOSPITAL_DESC', 'Reduces troop losses by healing wounded soldiers after battle.');
+define('HOSPITAL_DESC', 'The Hospital allows you to treat wounded troops so they can rejoin your army. This helps you recover faster after major battles. Healing troops is not cheaper than training new ones — the resource cost is the same — but healing takes half the time of normal training. Can heal up to 40% of the troops lost in battle.');
 define('BIGHOSPITAL', 'Big Hospital');
-define('BIGHOSPITAL_DESC', 'Reduces troop losses by healing wounded soldiers after battle. Enhanced version.<br>Tribe-specific: Spartans and Vikings only');
+define('BIGHOSPITAL_DESC', 'The Big Hospital allows you to treat wounded troops so they can rejoin your army. This helps you recover faster after major battles. Healing troops is not cheaper than training new ones — the resource cost is the same — but healing takes half the time of normal training. Can heal up to 60% of the troops lost in battle.<br>Tribe-specific: Spartans and Vikings only');
 define('GREATWORKSHOP', 'Great Workshop');
 define('TRAINING_COMMENCE_GREATWORKSHOP', 'Training can commence when great workshop is completed.');
 define('GREATWORKSHOP_DESC', 'The Great Workshop allows you to build a second Workshop in the same village, but catapults and rams cost 3 times the original amount.<br>Combined with the regular Workshop, you can train your troops twice as fast in one village');

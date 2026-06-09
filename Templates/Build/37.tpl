@@ -25,37 +25,7 @@
         
         <?php
         if ($hero_info) {
-            if ( $hero_info['unit'] == 1 ) {
-                $name = U1;
-            } else if ( $hero_info['unit'] == 2 ) {
-                $name = U2;
-            } else if ( $hero_info['unit'] == 3 ) {
-                $name = U3;
-            } else if ( $hero_info['unit'] == 5 ) {
-                $name = U5;
-            } else if ( $hero_info['unit'] == 6 ) {
-                $name = U6;
-            } else if ( $hero_info['unit'] == 11 ) {
-                $name = U11;
-            } else if ( $hero_info['unit'] == 12 ) {
-                $name = U12;
-            } else if ( $hero_info['unit'] == 13 ) {
-                $name = U13;
-            } else if ( $hero_info['unit'] == 15 ) {
-                $name = U15;
-            } else if ( $hero_info['unit'] == 16 ) {
-                $name = U16;
-            } else if ( $hero_info['unit'] == 21 ) {
-                $name = U21;
-            } else if ( $hero_info['unit'] == 22 ) {
-                $name = U22;
-            } else if ( $hero_info['unit'] == 24 ) {
-                $name = U24;
-            } else if ( $hero_info['unit'] == 25 ) {
-                $name = U25;
-            } else if ( $hero_info['unit'] == 26 ) {
-                $name = U26;
-            }
+            $name = defined('U'.$hero_info['unit']) ? constant('U'.$hero_info['unit']) : $technology->getUnitName($hero_info['unit']);
             $name1 = $hero_info['name'];
         } else {
             $name = 'Mr. Nobody';

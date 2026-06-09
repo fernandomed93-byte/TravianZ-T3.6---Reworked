@@ -244,6 +244,7 @@
 - [x] `Templates/a2b` - templates para tropas 6-9
 - [x] `Imagens das Muralhas Novas` - Inserir também em `Admin/Templates/editVillage.tpl, village.tpl`
 - [x] `winner.php:65,91,116` — `tribe <= 3` → `tribe <= 9`.
+- [x] `Templates/Build/22` - Templates de academia ajustados
 - [ ] `GameEngine/Ranking.php:227,229` — `tribe <= 5` → `tribe <= 9`.
 - [ ] `GameEngine/Ranking.php:369,413` — `tribe <= 3` → incluir tribos 6-9.
 - [ ] `Templates/Build` - novos edificios - precisa verificar
@@ -255,7 +256,7 @@
 
 
 ### Database
-- [x] `var/db/struct.sql` — Adicionar colunas `u51`..`u90` nas tabelas `units` e `enforcement`.
+- [x] `var/db/struct.sql` — Adicionar colunas `u51`..`u90` nas tabelas `units`, `enforcement` e `tdata`.
 - [x] Executar ALTER TABLE no servidor.
 
 ### Bot — imagens de edifícios

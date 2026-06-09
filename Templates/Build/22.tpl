@@ -6,7 +6,7 @@
 <p class="build_desc"><?php echo ACADEMY_DESC; ?></p>
 <?php
 	if ($building->getTypeLevel(22) > 0) {
-		include("22_".$session->tribe.".tpl");
+		include("22_0.tpl");
 	} else {
 		echo "<p><b>".RESEARCH_COMMENCE_ACADEMY."</b><br>\n";
 	}
