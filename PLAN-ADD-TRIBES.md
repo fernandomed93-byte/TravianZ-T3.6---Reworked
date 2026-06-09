@@ -249,7 +249,8 @@
 - [ ] `Templates/Build` - novos edificios - precisa verificar
 - [ ] `Templates/Build` - bid46 e bid48, criar ui de cura (vide description: https://support.travian.com/en/articles/77-hospital-and-asclepeion).
 - [ ] `Edificios Novos` - Aplicar efeitos de bonus.
-- [ ] `Manual - Tropas` - Criar templates das tropas novas.
+- [x] `Manual - Tropas` - Criar templates das tropas novas.
+- [ ] `Imagens Tropas U2` - Criar imagens grandes das tropas para manual.
 - [ ] `Manual - Edificios` - Criar templates dos edificios novos.
 
 

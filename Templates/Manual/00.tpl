@@ -1,3 +1,4 @@
+<style>body.manual{overflow-y:auto!important}</style>
 <h1><img class="point" src="gpack/travian_default/img/x.gif" alt="" title="" /> Overview</h1>
 <p>This ingame help offers you the chance to look up important information at any time.</p>
 <img class="troops" src="gpack/travian_default/img/x.gif" alt="Troops" title="Troops" />
