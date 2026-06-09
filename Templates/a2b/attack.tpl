@@ -2,9 +2,9 @@
 $ckey = $generator->generateRandStr(6);
 
  if (!isset($process['t1']) || $process['t1'] == ''){  $t1 = 0; }else{  $t1 = $process['t1']; }
- if (!isset($process['t2']) || $process['t2'] == ''){  $t2 = 0; }else{  $t2 = $process['t2']; }
- if (!isset($process['t3']) || $process['t3'] == ''){  $t3 = 0; }else{  $t3 = $process['t3']; if ($session->tribe == 3) $scout=1; }
- if (!isset($process['t4']) || $process['t4'] == ''){  $t4 = 0; }else{  $t4 = $process['t4']; if ($session->tribe == 1 || $session->tribe == 2 || $session->tribe == 4 || $session->tribe == 5) $scout=1; }
+ if (!isset($process['t2']) || $process['t2'] == ''){  $t2 = 0; }else{  $t2 = $process['t2']; if ($session->tribe == 8) $scout=1; }
+ if (!isset($process['t3']) || $process['t3'] == ''){  $t3 = 0; }else{  $t3 = $process['t3']; if ($session->tribe == 3 || $session->tribe == 6) $scout=1; }
+ if (!isset($process['t4']) || $process['t4'] == ''){  $t4 = 0; }else{  $t4 = $process['t4']; if ($session->tribe == 1 || $session->tribe == 2 || $session->tribe == 4 || $session->tribe == 5 || $session->tribe == 7 || $session->tribe == 9) $scout=1; }
  if (!isset($process['t5']) || $process['t5'] == ''){  $t5 = 0; }else{  $t5 = $process['t5']; }
  if (!isset($process['t6']) || $process['t6'] == ''){  $t6 = 0; }else{  $t6 = $process['t6']; }
  if (!isset($process['t7']) || $process['t7'] == ''){  $t7 = 0; }else{  $t7 = $process['t7']; }

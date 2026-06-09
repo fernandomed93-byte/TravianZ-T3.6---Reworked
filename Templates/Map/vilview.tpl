@@ -224,7 +224,17 @@ if($type >= 18 && $type <= 21){
         $uinfo = $database->getUserArray($oasis['owner'],1); ?>
 		<tbody><tr>
 			<th><?php echo TRIBE;?></th>
-			<td><?php switch($uinfo['tribe']) { case 1: echo TRIBE1; break; case 2: echo TRIBE2; break; case 3: echo TRIBE3; break; case 4: echo TRIBE4; break; case 5: echo TRIBE5; break;} ?></td>
+			<td><?php switch($uinfo['tribe']) { 
+				case 1: echo TRIBE1; break; 
+				case 2: echo TRIBE2; break; 
+				case 3: echo TRIBE3; break; 
+				case 4: echo TRIBE4; break; 
+				case 5: echo TRIBE5; break;
+				case 6: echo TRIBE6; break;
+				case 7: echo TRIBE7; break;
+				case 8: echo TRIBE8; break;
+				case 9: echo TRIBE9; break;
+				} ?></td>
 		</tr>
 		<tr>
 			<th><?php echo ALLIANCE;?></th>

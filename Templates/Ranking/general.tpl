@@ -13,8 +13,13 @@
    $tribe1 = mysqli_fetch_array(mysqli_query($database->dblink,"SELECT Count(*) as Total FROM ".TB_PREFIX."users WHERE tribe = 1"), MYSQLI_ASSOC);
    $tribe2 = mysqli_fetch_array(mysqli_query($database->dblink,"SELECT Count(*) as Total FROM ".TB_PREFIX."users WHERE tribe = 2"), MYSQLI_ASSOC);
    $tribe3 = mysqli_fetch_array(mysqli_query($database->dblink,"SELECT Count(*) as Total FROM ".TB_PREFIX."users WHERE tribe = 3"), MYSQLI_ASSOC);
-   $tribes = [$tribe1['Total'], $tribe2['Total'], $tribe3['Total']];
-   $users = mysqli_fetch_array(mysqli_query($database->dblink,"SELECT Count(*) as Total FROM " . TB_PREFIX . "users WHERE tribe > 0 AND tribe < 4"), MYSQLI_ASSOC);
+   $tribe6 = mysqli_fetch_array(mysqli_query($database->dblink,"SELECT Count(*) as Total FROM ".TB_PREFIX."users WHERE tribe = 6"), MYSQLI_ASSOC);
+   $tribe7 = mysqli_fetch_array(mysqli_query($database->dblink,"SELECT Count(*) as Total FROM ".TB_PREFIX."users WHERE tribe = 7"), MYSQLI_ASSOC);
+   $tribe8 = mysqli_fetch_array(mysqli_query($database->dblink,"SELECT Count(*) as Total FROM ".TB_PREFIX."users WHERE tribe = 8"), MYSQLI_ASSOC);
+   $tribe9 = mysqli_fetch_array(mysqli_query($database->dblink,"SELECT Count(*) as Total FROM ".TB_PREFIX."users WHERE tribe = 9"), MYSQLI_ASSOC);
+
+   $tribes = [$tribe1['Total'], $tribe2['Total'], $tribe3['Total'], $tribe6['Total'], $tribe7['Total'], $tribe8['Total'], $tribe9['Total']];
+   $users = mysqli_fetch_array(mysqli_query($database->dblink,"SELECT Count(*) as Total FROM " . TB_PREFIX . "users WHERE tribe > 0 AND (tribe <=3 OR tribe > 5)"), MYSQLI_ASSOC);
    $users = $users['Total'];
 ?>
 <table cellpadding="1" cellspacing="1" id="world_player" class="world">
@@ -103,20 +108,50 @@ echo $result2['sumofpop'];
         <tbody>
             <tr>
                 <td>Romans</td>
- 
                 <td><?php echo $tribes[0]; ?></td>
                 <td><?php echo ($users > 0) ? ($percents[0] = round(100 * ($tribes[0] / $users), 2))."%" : '---'; ?></td>
             </tr>
             <tr>
                 <td>Teutons</td>
- 
                 <td><?php echo $tribes[1]; ?></td>
                 <td><?php echo ($users > 0) ? ($percents[1] = round(100 * ($tribes[1] / $users), 2))."%" : "---"; ?></td>
             </tr>
             <tr>
                 <td>Gauls</td>
                 <td><?php echo $tribes[2]; ?></td>
-                <td><?php echo ($users > 0) ? (100-$percents[0]-$percents[1])."%" : '---'; ?></td>
+                <td><?php echo ($users > 0) ? ($percents[2] = round(100 * ($tribes[2] / $users), 2))."%" : "---"; ?></td>
+            </tr>
+            <tr>
+                <td>Huns</td>
+                <td><?php echo $tribes[3]; ?></td>
+                <td><?php echo ($users > 0) ? ($percents[3] = round(100 * ($tribes[3] / $users), 2))."%" : "---"; ?></td>
+            </tr>
+            <tr>
+                <td>Egyptians</td>
+                <td><?php echo $tribes[4]; ?></td>
+                <td><?php echo ($users > 0) ? ($percents[4] = round(100 * ($tribes[4] / $users), 2))."%" : "---"; ?></td>
+            </tr>
+            <tr>
+                <td>Spartans</td>
+                <td><?php echo $tribes[5]; ?></td>
+                <td><?php echo ($users > 0) ? ($percents[5] = round(100 * ($tribes[5] / $users), 2))."%" : "---"; ?></td>
+            </tr>
+            <tr>
+            <?php
+                $vikingPercent = 100
+                    - $percents[0]
+                    - $percents[1]
+                    - $percents[2]
+                    - $percents[3]
+                    - $percents[4]
+                    - $percents[5];
+
+                $vikingPercent = max(0, $vikingPercent);
+            ?>
+
+                <td>Vikings</td>
+                <td><?php echo $tribes[6]; ?></td>
+                <td><?php echo ($users > 0) ? $vikingPercent ."%" : '---'; ?></td>
             </tr>
         </tbody>
     </table>

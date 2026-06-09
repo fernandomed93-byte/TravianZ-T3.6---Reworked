@@ -48,10 +48,24 @@ $profiel = preg_replace("/\[#WW]/is",'<img src="'.$gpack.'img/t/g40_11-ltr.png" 
 if(NEW_FUNCTIONS_TRIBE_IMAGES){
     if($displayarray['tribe'] == "1"){
         $profiel = preg_replace("/\[#roman]/is",'<img src="'.$gpack.'../../img/rpage/Roman1.jpg" border="0" onmouseout="med_closeDescription()" onmousemove="med_mouseMoveHandler(arguments[0],\'<table><tr><td>The Romans : Because of its high level of social and technological development the Romans are masters at building and its coordination. Also, their troops are part of the elite in Travian. They are very balanced and useful in attacking and defending.</td></tr></table>\')">', $profiel, 1);
-    }elseif($displayarray['tribe'] == "2"){
+    }
+    elseif($displayarray['tribe'] == "2"){
         $profiel = preg_replace("/\[#teuton]/is",'<img src="'.$gpack.'../../img/rpage/Teuton1.jpg" border="0" onmouseout="med_closeDescription()" onmousemove="med_mouseMoveHandler(arguments[0],\'<table><tr><td>The Teutons : The Teutons are the most aggressive tribe. Their troops are notorious and feared for their rage and frenzy when they attack. They move around as a plundering horde, not even afraid of death. </td></tr></table>\')">', $profiel, 1);
-    }elseif($displayarray['tribe'] == "3"){
+    }
+    elseif($displayarray['tribe'] == "3"){
         $profiel = preg_replace("/\[#gaul]/is",'<img src="'.$gpack.'../../img/rpage/Gaul1.jpg" border="0" onmouseout="med_closeDescription()" onmousemove="med_mouseMoveHandler(arguments[0],\'<table><tr><td>The Gauls : The Gauls are the most peaceful of all three tribes in Travian. Their troops are trained for an excellent defence, but their ability to attack can still compete with the other two tribes. The Gauls are born riders and their horses are famous for their speed. This means that their riders can hit the enemy exactly where they can cause the most damage and swiftly take care of them.</td></tr></table>\')">', $profiel, 1);
+    }
+    elseif($displayarray['tribe'] == "6"){
+        $profiel = preg_replace("/\[#hun]/is",'<img src="'.$gpack.'../../img/rpage/Huns1.jpg" border="0" onmouseout="med_closeDescription()" onmousemove="med_mouseMoveHandler(arguments[0],\'<table><tr><td>The Huns : The Huns are a fierce and nomadic tribe known for their exceptional horsemanship and archery skills. They are highly mobile and can strike quickly before retreating to safety. Their warriors are feared for their brutality and relentless attacks.</td></tr></table>\')">', $profiel, 1);
+    }
+    elseif($displayarray['tribe'] == "7"){
+        $profiel = preg_replace("/\[#egyptian]/is",'<img src="'.$gpack.'../../img/rpage/Egyptians1.jpg" border="0" onmouseout="med_closeDescription()" onmousemove="med_mouseMoveHandler(arguments[0],\'<table><tr><td>The Egyptians : The Egyptians are a powerful and ancient civilization. Their troops are well-trained and equipped with advanced weapons and armor. The Egyptians are known for their strong defensive capabilities and their ability to withstand prolonged sieges.</td></tr></table>\')">', $profiel, 1);
+    }
+    elseif($displayarray['tribe'] == "8"){
+        $profiel = preg_replace("/\[#spartan]/is",'<img src="'.$gpack.'../../img/rpage/Spartans1.jpg" border="0" onmouseout="med_closeDescription()" onmousemove="med_mouseMoveHandler(arguments[0],\'<table><tr><td>The Spartans : The Spartans are a fierce and disciplined tribe known for their exceptional military training and combat skills. They are highly organized and can hold their ground against overwhelming odds. Their warriors are feared for their loyalty and unwavering determination in battle.</td></tr></table>\')">', $profiel, 1);
+    }
+    elseif($displayarray['tribe'] == "9"){
+        $profiel = preg_replace("/\[#viking]/is",'<img src="'.$gpack.'../../img/rpage/Vikings1.jpg" border="0" onmouseout="med_closeDescription()" onmousemove="med_mouseMoveHandler(arguments[0],\'<table><tr><td>The Vikings : The Vikings are a fierce and seafaring tribe known for their exceptional naval skills and raiding capabilities. They are highly mobile and can strike quickly before retreating to safety. Their warriors are feared for their brutality and relentless attacks.</td></tr></table>\')">', $profiel, 1);
     }
 }
 

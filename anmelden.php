@@ -103,10 +103,26 @@ if(REG_OPEN == true){ ?>
 			<td><label><input class="radio" type="radio" name="kid" value="1" <?php echo $form->getRadio('kid',1); ?> />&nbsp;<?php echo NW; ?> <b>(-|+)</b>&nbsp;</label></td>
 			<td><label><input class="radio" type="radio" name="kid" value="2" <?php echo $form->getRadio('kid',2); ?> />&nbsp;<?php echo NE; ?> <b>(+|+)</b></label></td>
 		</tr>
-		<tr class="btm">
+		<tr>
 			<td><label><input class="radio" type="radio" name="vid" value="3" <?php echo $form->getRadio('vid',3); ?> />&nbsp;<?php echo TRIBE3; /* Gauls */ ?></label></td>
 			<td><label><input class="radio" type="radio" name="kid" value="3" <?php echo $form->getRadio('kid',3); ?> />&nbsp;<?php echo SW; ?> <b>(-|-)</b></label></td>
 			<td><label><input class="radio" type="radio" name="kid" value="4" <?php echo $form->getRadio('kid',4); ?> />&nbsp;<?php echo SE; ?> <b>(+|-)</b></label></td>
+		</tr>
+		<tr>
+			<td><label><input class="radio" type="radio" name="vid" value="6" <?php echo $form->getRadio('vid',6); ?> />&nbsp;<?php echo TRIBE6; /* Huns */ ?></label></td>
+			<td colspan="2" style="text-align:center;color:#909090;font-style:italic;"> <?php echo ""; ?> </td>
+		</tr>
+		<tr>
+			<td><label><input class="radio" type="radio" name="vid" value="7" <?php echo $form->getRadio('vid',7); ?> />&nbsp;<?php echo TRIBE7; /* Egyptians */ ?></label></td>
+			<td colspan="2" style="text-align:center;color:#909090;font-style:italic;"> <?php echo ""; ?> </td>
+		</tr>
+		<tr>
+			<td><label><input class="radio" type="radio" name="vid" value="8" <?php echo $form->getRadio('vid',8); ?> />&nbsp;<?php echo TRIBE8; /* Spartans */ ?></label></td>
+			<td colspan="2" style="text-align:center;color:#909090;font-style:italic;"> <?php echo ""; ?> </td>
+		</tr>
+		<tr class="btm">
+			<td><label><input class="radio" type="radio" name="vid" value="9" <?php echo $form->getRadio('vid',9); ?> />&nbsp;<?php echo TRIBE9; /* Vikings */ ?></label></td>
+			<td colspan="2" style="text-align:center;color:#909090;font-style:italic;"> <?php echo ""; ?></td>
 		</tr>
 	</tbody>
 </table>

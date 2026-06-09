@@ -643,6 +643,18 @@ $output.="<tr>
 
                 case 3: $validationArray = [21, 22, 24, 25, 26];
                         break;
+                
+                case 6: $validationArray = [51, 52, 54, 55, 56];
+                        break;
+
+                case 7: $validationArray = [61, 62, 63, 65, 66];
+                    break;
+
+                case 8: $validationArray = [71, 73, 74, 75, 76];
+                    break;
+
+                case 9: $validationArray = [81, 82, 83, 85, 86];
+                    break;
             }
 
             // check for a valid unit value

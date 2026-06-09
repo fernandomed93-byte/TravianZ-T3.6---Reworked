@@ -57,7 +57,6 @@ for($t = 19; $t <= 39; $t++){
 		shape="poly" alt="" />
 </map>
 <?php
-if($session->tribe == 3) $session->tribe = '';
 
 if($building->walling()) $vmapc = "d2_1".$session->tribe;
 else $vmapc = ($village->resarray['f40'] == 0) ? "d2_0" : "d2_1".$session->tribe;

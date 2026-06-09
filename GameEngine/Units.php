@@ -287,7 +287,7 @@ class Units {
                     $u . "7",
                     $u . "8",
                     $u . "9",
-                    $u . $session->tribe . "0",
+                    $session->tribe . "0",
                     "hero"
                 ],
                 [

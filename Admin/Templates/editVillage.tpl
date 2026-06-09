@@ -148,7 +148,12 @@ if(isset($id))
 	        default: $wallType = "d2_11"; break;
 	        
 	        case 2: $wallType = "d2_12"; break;
-	        case 3: $wallType = "d2_1"; break;
+	        case 3: $wallType = "d2_13"; break;
+
+			case 6: $wallType = "d2_16"; break;
+			case 7: $wallType = "d2_17"; break;
+			case 8: $wallType = "d2_18"; break;
+			case 9: $wallType = "d2_19"; break;
 	    }
 	}
 	

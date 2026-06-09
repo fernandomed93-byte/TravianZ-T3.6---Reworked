@@ -790,13 +790,21 @@ class AttackHandler {
             $comCenter = $this->automation->getTypeLevel(44, $defenderWref);
 
             $wall = $this->automation->getTypeLevel(31, $defenderWref) 
-                   + $this->automation->getTypeLevel(32, $defenderWref) 
-                   + $this->automation->getTypeLevel(33, $defenderWref);
+                    + $this->automation->getTypeLevel(32, $defenderWref) 
+                    + $this->automation->getTypeLevel(33, $defenderWref)
+                    + $this->automation->getTypeLevel(42, $defenderWref) 
+                    + $this->automation->getTypeLevel(43, $defenderWref) 
+                    + $this->automation->getTypeLevel(47, $defenderWref) 
+                    + $this->automation->getTypeLevel(50, $defenderWref);
 
             if ($residence > 0) $info_spy_parts[] = "<img src=\"".GP_LOCATE."img/g/g25.gif\" height=\"20\" width=\"15\" alt=\"Residence\" title=\"Residence\" /> Residence level: <b>$residence</b>";
             if ($palace > 0) $info_spy_parts[] = "<img src=\"".GP_LOCATE."img/g/g26.gif\" height=\"20\" width=\"15\" alt=\"Palace\" title=\"Palace\" /> Palace level: <b>$palace</b>";
             if ($comCenter > 0) $info_spy_parts[] = "<img src=\"".GP_LOCATE."img/g/g44.gif\" height=\"20\" width=\"15\" alt=\"Command Center\" title=\"Command Center\" /> Command Center level: <b>$comCenter</b>";
-            if ($wall > 0) $info_spy_parts[] = "<img src=\"".GP_LOCATE."img/g/g3".$defender_tribe."Icon.gif\" height=\"20\" width=\"15\" alt=\"Wall\" title=\"Wall\" /> Wall level: <b>$wall</b>";
+            
+            $wallIcons = [1=>31, 2=>32, 3=>33, 6=>43, 7=>42, 8=>47, 9=>50];
+            $wallGid = isset($wallIcons[$defender_tribe]) ? $wallIcons[$defender_tribe] : 31;
+            if ($wall > 0) $info_spy_parts[] = "<img src=\"".GP_LOCATE."img/g/g".$wallGid."Icon.gif\" height=\"20\" width=\"15\" alt=\"Wall\" title=\"Wall\" /> Wall level: <b>$wall</b>";
+
 
             global $bid23;
             $base_cranny_capacity = 0;

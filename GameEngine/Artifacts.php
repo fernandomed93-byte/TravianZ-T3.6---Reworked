@@ -355,7 +355,7 @@ class Artifacts
         //Get all inactive artifacts that have to be activated --> (24 hours / Speed of the server)
         $time = time();
         $artifacts = $database->getInactiveArtifacts(round($time - (86400 / (SPEED == 2 ? 1.5 : (SPEED == 3 ? 2 : SPEED)))));
-        $maxNumberofArtefacts = 6;
+        $maxNumberofArtefacts = 3;
         
         if(!empty($artifacts)){
             
@@ -382,13 +382,13 @@ class Artifacts
                             $ownArtifacts['small']++;
                         }
                         
-                        elseif($artifact['size'] == 2 && $bigArts < $maxNumberofArtefacts){ //Account effect
+                        elseif($artifact['size'] == 2 && $bigArts < 2){ //Account effect
                             $database->activateArtifact($artifact['id']);
                             $ownArtifacts['totals']++;
                             $ownArtifacts['great']++;
                         }
                         
-                        elseif($artifact['size'] == 3 && $bigArts < $maxNumberofArtefacts){ //Unique effect
+                        elseif($artifact['size'] == 3 && $bigArts < 2){ //Unique effect
                             $database->activateArtifact($artifact['id']);
                             $ownArtifacts['totals']++;
                             $ownArtifacts['unique']++;

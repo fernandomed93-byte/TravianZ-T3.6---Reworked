@@ -238,15 +238,18 @@
 - [x] `procurar por loops de tribos no codigo` < 5 -> for($i = 1; $i <= 5; $i++)
 
 ### Rankings & Filtros
+- [x] `Templates/Ranking/player_top10.tpl:9,81,137,192` — `tribe<=3` → `tribe<=9`.
+- [x] `Templates/News/newsbox1.tpl:5` — `tribe<=3` → `tribe<=9`.
+- [x] `Templates/Simulator` - att e deff das tribos novas.
+- [x] `Templates/a2b` - templates para tropas 6-9
+- [x] `Imagens das Muralhas Novas` - Inserir também em `Admin/Templates/editVillage.tpl, village.tpl`
+- [x] `winner.php:65,91,116` — `tribe <= 3` → `tribe <= 9`.
 - [ ] `GameEngine/Ranking.php:227,229` — `tribe <= 5` → `tribe <= 9`.
 - [ ] `GameEngine/Ranking.php:369,413` — `tribe <= 3` → incluir tribos 6-9.
-- [ ] `Templates/Ranking/player_top10.tpl:9,81,137,192` — `tribe<=3` → `tribe<=9`.
-- [ ] `Templates/News/newsbox1.tpl:5` — `tribe<=3` → `tribe<=9`.
-- [x] `Templates/Simulator` - att e deff das tribos novas.
 - [ ] `Templates/Build` - novos edificios - precisa verificar
 - [ ] `Templates/Build` - bid46 e bid48, criar ui de cura (vide description: https://support.travian.com/en/articles/77-hospital-and-asclepeion).
 - [ ] `Edificios Novos` - Aplicar efeitos de bonus.
-- [x] `winner.php:65,91,116` — `tribe <= 3` → `tribe <= 9`.
+
 
 ### Database
 - [x] `var/db/struct.sql` — Adicionar colunas `u51`..`u90` nas tabelas `units` e `enforcement`.

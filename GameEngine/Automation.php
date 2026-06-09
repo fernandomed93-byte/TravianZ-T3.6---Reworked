@@ -915,7 +915,7 @@ class Automation {
             $merchant2 = ($this->getTypeLevel(17, $from) > 0)? $this->getTypeLevel(17, $from) : 0;
             $used2 = $database->totalMerchantUsed($from, false);
             $merchantAvail2 = $merchant2 - $used2;
-            $maxcarry2 = ($tribe == 1)? 500 : (($tribe == 2)? 1000 : (($tribe == 3)? 750 : (($tribe == 6)? 500 : (($tribe == 7)? 750 : (($tribe == 8)? 500 : 750)))));
+            $maxcarry2 = ($tribe == 1)? 500 : (($tribe == 2)? 1000 : (($tribe == 3)? 750 : (($tribe == 6)? 500 : (($tribe == 7)? 750 : (($tribe == 8)? 500 : (($tribe == 9)? 750 : 500))))));
             $maxcarry2 *= TRADER_CAPACITY;
             
             if($this->getTypeLevel(28, $from) != 0) {

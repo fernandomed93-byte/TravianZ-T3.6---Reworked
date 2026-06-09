@@ -28,6 +28,14 @@
             $start = 27;
 			}else if ($session->tribe == 5){
             $start = 47;
+            }else if ($session->tribe == 6){
+            $start = 57;
+            }else if ($session->tribe == 7){
+            $start = 67;
+            }else if ($session->tribe == 8){
+            $start = 77;
+            }else if ($session->tribe == 9){
+            $start = 87;
             }
 			if($session->tribe != 4){
             for($i=$start;$i<=($start+1);$i++) {

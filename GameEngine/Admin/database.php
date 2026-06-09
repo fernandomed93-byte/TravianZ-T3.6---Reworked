@@ -231,8 +231,21 @@ class adm_DB {
 				  $unit = 11;
 				}else if($user['tribe'] == 3) {
 				  $unit = 21;
-				}
-				  $this->DelUnits($villages[$i]['wref'],$unit);
+				}else if($user['tribe'] == 4) {
+				  $unit = 31;
+				}else if($user['tribe'] == 5) {
+				  $unit = 41;	
+				}else if($user['tribe'] == 6) {
+					$unit = 51;
+				}else if($user['tribe'] == 7) {
+					$unit = 61;
+				}else if($user['tribe'] == 8) {
+					 $unit = 71;
+				}else if($user['tribe'] == 9) {
+					$unit = 81;
+				}								
+
+				$this->DelUnits($villages[$i]['wref'],$unit);
 			}
 			if($post['clean_ware']){
 			    $logPunishment = "<b>emptying warehouses</b>";
@@ -724,12 +737,6 @@ class adm_DB {
         foreach($getenforce as $enforce) {
 
 			$to = $database->getVillage($enforce['from']);
-			$Gtribe = "";
-			if ($database->getUserField($to['owner'],'tribe',0) ==  '2'){ $Gtribe = "1"; }
-			else if ($database->getUserField($to['owner'],'tribe',0) == '3'){ $Gtribe =  "2"; }
-			else if ($database->getUserField($to['owner'],'tribe',0) ==  '4'){ $Gtribe = "3"; }
-			else if  ($database->getUserField($to['owner'],'tribe',0) == '5'){ $Gtribe =  "4"; }
-
 			$start = ($database->getUserField($to['owner'],'tribe',0)-1)*10+1;
 			$end = ($database->getUserField($to['owner'],'tribe',0)*10);
 

@@ -29,7 +29,7 @@ $dataarray = explode(",",$rep['data']);
 <tr>
 <td>&nbsp;</td>
 <?php
-$start = $dataarray[2] == 1? 1 : (($dataarray[2] == 2)? 11 : (($dataarray[2] == 3)? 21 : 31));
+$start = ($dataarray[2] - 1) * 10 + 1;
 for($i=$start;$i<=($start+9);$i++) {
 	echo "<td><img src=\"gpack/travian_default/img/x.gif\" class=\"unit u$i\"  /></td>";
 }
@@ -272,6 +272,162 @@ for($i=119;$i<=128;$i++) {
 }
 echo "<tr><th>Casualties</th>";
 for($i=129;$i<=138;$i++) {
+	if($dataarray[$i] == 0) {
+    	echo "<td class=\"none\">0</td>";
+    }
+    else {
+    	echo "<td>".$dataarray[$i]."</td>";
+    }
+}
+?>
+</tr></tbody></table>
+
+<?php } ?>
+<?php  if ($dataarray[147]=='1'){
+$start=51; ?>	
+	<table cellpadding="1" cellspacing="1" class="defender">
+	<thead>
+	<tr>
+	<td class="role">Defender</th>
+	<td colspan="10"><?php if($targettribe=='6'){ echo'<a href="spieler.php?uid='.$database->getUserField($dataarray[28],"id",0).'">'.$database->getUserField($dataarray[28],"username",0).'</a> from the village <a href="karte.php?d='.$dataarray[29].'&amp;c='.$generator->getMapCheck($dataarray[29]).'">'.stripslashes($dataarray[30]).'</a>'; } else { echo"Reinforcement"; } ?></td>
+	</tr></thead>
+	<tbody class="units">
+	<tr>
+	<td>&nbsp;</td>
+	
+	
+	<?php
+for($i=$start;$i<=($start+9);$i++) {
+	echo "<td><img src=\"gpack/travian_default/img/x.gif\" class=\"unit u$i\"  /></td>";
+}
+echo "</tr><tr><th>Troops</th>";
+for($i=148;$i<=157;$i++) {
+	if($dataarray[$i] == 0) {
+    	echo "<td class=\"none\">0</td>";
+    }
+    else {
+    	echo "<td>".$dataarray[$i]."</td>";
+    }
+}
+echo "<tr><th>Casualties</th>";
+for($i=158;$i<=167;$i++) {
+	if($dataarray[$i] == 0) {
+    	echo "<td class=\"none\">0</td>";
+    }
+    else {
+    	echo "<td>".$dataarray[$i]."</td>";
+    }
+}
+?>
+</tr></tbody></table>
+
+<?php } ?>
+<?php  if ($dataarray[168]=='1'){
+$start=61; ?>	
+	<table cellpadding="1" cellspacing="1" class="defender">
+	<thead>
+	<tr>
+	<td class="role">Defender</th>
+	<td colspan="10"><?php if($targettribe=='7'){ echo'<a href="spieler.php?uid='.$database->getUserField($dataarray[28],"id",0).'">'.$database->getUserField($dataarray[28],"username",0).'</a> from the village <a href="karte.php?d='.$dataarray[29].'&amp;c='.$generator->getMapCheck($dataarray[29]).'">'.stripslashes($dataarray[30]).'</a>'; } else { echo"Reinforcement"; } ?></td>
+	</tr></thead>
+	<tbody class="units">
+	<tr>
+	<td>&nbsp;</td>
+	
+	
+	<?php
+for($i=$start;$i<=($start+9);$i++) {
+	echo "<td><img src=\"gpack/travian_default/img/x.gif\" class=\"unit u$i\"  /></td>";
+}
+echo "</tr><tr><th>Troops</th>";
+for($i=169;$i<=178;$i++) {
+	if($dataarray[$i] == 0) {
+    	echo "<td class=\"none\">0</td>";
+    }
+    else {
+    	echo "<td>".$dataarray[$i]."</td>";
+    }
+}
+echo "<tr><th>Casualties</th>";
+for($i=179;$i<=188;$i++) {
+	if($dataarray[$i] == 0) {
+    	echo "<td class=\"none\">0</td>";
+    }
+    else {
+    	echo "<td>".$dataarray[$i]."</td>";
+    }
+}
+?>
+</tr></tbody></table>
+
+<?php } ?>
+<?php  if ($dataarray[189]=='1'){
+$start=71; ?>	
+	<table cellpadding="1" cellspacing="1" class="defender">
+	<thead>
+	<tr>
+	<td class="role">Defender</th>
+	<td colspan="10"><?php if($targettribe=='8'){ echo'<a href="spieler.php?uid='.$database->getUserField($dataarray[28],"id",0).'">'.$database->getUserField($dataarray[28],"username",0).'</a> from the village <a href="karte.php?d='.$dataarray[29].'&amp;c='.$generator->getMapCheck($dataarray[29]).'">'.stripslashes($dataarray[30]).'</a>'; } else { echo"Reinforcement"; } ?></td>
+	</tr></thead>
+	<tbody class="units">
+	<tr>
+	<td>&nbsp;</td>
+	
+	
+	<?php
+for($i=$start;$i<=($start+9);$i++) {
+	echo "<td><img src=\"gpack/travian_default/img/x.gif\" class=\"unit u$i\"  /></td>";
+}
+echo "</tr><tr><th>Troops</th>";
+for($i=190;$i<=199;$i++) {
+	if($dataarray[$i] == 0) {
+    	echo "<td class=\"none\">0</td>";
+    }
+    else {
+    	echo "<td>".$dataarray[$i]."</td>";
+    }
+}
+echo "<tr><th>Casualties</th>";
+for($i=200;$i<=209;$i++) {
+	if($dataarray[$i] == 0) {
+    	echo "<td class=\"none\">0</td>";
+    }
+    else {
+    	echo "<td>".$dataarray[$i]."</td>";
+    }
+}
+?>
+</tr></tbody></table>
+
+<?php } ?>
+<?php  if ($dataarray[210]=='1'){
+$start=81; ?>	
+	<table cellpadding="1" cellspacing="1" class="defender">
+	<thead>
+	<tr>
+	<td class="role">Defender</th>
+	<td colspan="10"><?php if($targettribe=='9'){ echo'<a href="spieler.php?uid='.$database->getUserField($dataarray[28],"id",0).'">'.$database->getUserField($dataarray[28],"username",0).'</a> from the village <a href="karte.php?d='.$dataarray[29].'&amp;c='.$generator->getMapCheck($dataarray[29]).'">'.stripslashes($dataarray[30]).'</a>'; } else { echo"Reinforcement"; } ?></td>
+	</tr></thead>
+	<tbody class="units">
+	<tr>
+	<td>&nbsp;</td>
+	
+	
+	<?php
+for($i=$start;$i<=($start+9);$i++) {
+	echo "<td><img src=\"gpack/travian_default/img/x.gif\" class=\"unit u$i\"  /></td>";
+}
+echo "</tr><tr><th>Troops</th>";
+for($i=211;$i<=220;$i++) {
+	if($dataarray[$i] == 0) {
+    	echo "<td class=\"none\">0</td>";
+    }
+    else {
+    	echo "<td>".$dataarray[$i]."</td>";
+    }
+}
+echo "<tr><th>Casualties</th>";
+for($i=221;$i<=230;$i++) {
 	if($dataarray[$i] == 0) {
     	echo "<td class=\"none\">0</td>";
     }

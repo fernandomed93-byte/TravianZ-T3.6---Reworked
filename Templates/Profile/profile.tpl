@@ -203,6 +203,18 @@ MEDAL CATEGORY:
 					}elseif($session->userinfo['tribe'] == 3){
 						echo"<tr><td>Tribe Gauls</td><td></td><td></td><td>[#gaul]</td></tr>";
 					}
+					elseif($session->userinfo['tribe'] == 6){
+						echo"<tr><td>Tribe Huns</td><td></td><td></td><td>[#hun]</td></tr>";
+					}
+					elseif($session->userinfo['tribe'] == 7){
+						echo"<tr><td>Tribe Egyptians</td><td></td><td></td><td>[#egyptian]</td></tr>";
+					}
+					elseif($session->userinfo['tribe'] == 8){
+						echo"<tr><td>Tribe Spartans</td><td></td><td></td><td>[#spartan]</td></tr>";
+					}
+					elseif($session->userinfo['tribe'] == 9){
+						echo"<tr><td>Tribe Vikings</td><td></td><td></td><td>[#viking]</td></tr>";
+					}
 				}
 				if(NEW_FUNCTIONS_MHS_IMAGES){
 					if($session->userinfo['access'] == 9){
@@ -215,12 +227,7 @@ MEDAL CATEGORY:
 						echo"<tr><td>Multihunter</td><td></td><td></td><td>[#TEAM]</td></tr>";
 					}
 				}
-				if($session->userinfo['username'] == "Shadow"){
-					echo"<tr><td>Shadow</td><td></td><td></td><td>[#SHADOW]</td></tr>";
-					echo"<tr><td>Shadow</td><td></td><td></td><td>[#MH]</td></tr>";
-					echo"<tr><td>Shadow</td><td></td><td></td><td>[#TEAM]</td></tr>";
-					echo"<tr><td>Shadow</td><td></td><td></td><td>[#EVENT]</td></tr>";
-				}?>
+				?>
 				 </table></p>
 
 

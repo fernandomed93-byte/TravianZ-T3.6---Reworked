@@ -25,6 +25,9 @@ if(isset($id))
 	if($tribe ==4){ $img = 30;}
 	if($tribe ==5){ $img = 40;}
 	if($tribe ==6){ $img = 50;}
+	if($tribe ==7){ $img = 60;}
+	if($tribe ==8){ $img = 70;}
+	if($tribe ==9){ $img = 80;}
 	include("search2.tpl");
 ?>				
 		

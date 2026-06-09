@@ -284,9 +284,9 @@ class Battle {
         global $bid34, $bid35, $database;
 
         // Define the array, with the units
-        $calvary = [4, 5, 6, 15, 16, 23, 24, 25, 26, 45, 46];
-        $catapult = [8, 18, 28, 48];
-        $rams = [7, 17, 27, 47];
+        $calvary = [4, 5, 6, 15, 16, 23, 24, 25, 26, 45, 46, 54, 55, 56, 64, 65, 66, 75, 76, 85, 86];
+        $catapult = [8, 18, 28, 48, 58, 68, 78, 88];
+        $rams = [7, 17, 27, 47, 57, 67, 77, 87]; 
         $catp = $ram = 0;
         
         // Array to return the result of the calculation back
@@ -1134,7 +1134,11 @@ class Battle {
         if(isset($attacker_units_sent[18])) { $catapult_count += ($attacker_units_sent[18] - $finalResult['casualties']['attacker'][18]); }
         if(isset($attacker_units_sent[28])) { $catapult_count += ($attacker_units_sent[28] - $finalResult['casualties']['attacker'][28]); }
         if(isset($attacker_units_sent[48])) { $catapult_count += ($attacker_units_sent[48] - $finalResult['casualties']['attacker'][48]); }
-        
+        if(isset($attacker_units_sent[58])) { $catapult_count += ($attacker_units_sent[58] - $finalResult['casualties']['attacker'][58]); }
+        if(isset($attacker_units_sent[68])) { $catapult_count += ($attacker_units_sent[68] - $finalResult['casualties']['attacker'][68]); }
+        if(isset($attacker_units_sent[78])) { $catapult_count += ($attacker_units_sent[78] - $finalResult['casualties']['attacker'][78]); }
+        if(isset($attacker_units_sent[88])) { $catapult_count += ($attacker_units_sent[88] - $finalResult['casualties']['attacker'][88]); }
+
         if ($catapult_count > 0 && $attackData['attack_type'] == 3) {
             $bdo = $database->getResourceLevel($defender['info']['wref'], false);
             $catapult_upgrades = pow(1.0205, $att_ab['b8']);

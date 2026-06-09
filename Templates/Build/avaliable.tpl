@@ -52,6 +52,8 @@ $bighospital = $building->getTypeLevel(48);
 $barricade = $building->getTypeLevel(50);
 
 $typesArray = [];
+
+//tipos de edificios
 for ($i = 1; $i <= 50; $i++) {
     $typesArray[] = $i;
 }

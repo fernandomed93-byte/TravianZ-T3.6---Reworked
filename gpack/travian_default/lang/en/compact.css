@@ -8783,14 +8783,26 @@ div.map img.w12 {
 div.village2 div.d2_0 {
     background-image: url("../../img/g/bg0.jpg");
 }
-div.village2 div.d2_1 {
-    background-image: url("../../img/g/bg1.jpg");
-}
 div.village2 div.d2_11 {
     background-image: url("../../img/g/bg11.jpg");
 }
 div.village2 div.d2_12 {
     background-image: url("../../img/g/bg12.jpg");
+}
+div.village2 div.d2_13 {
+    background-image: url("../../img/g/bg13.jpg");
+}
+div.village2 div.d2_16 {
+    background-image: url("../../img/g/bg16.jpg");
+}
+div.village2 div.d2_17 {
+    background-image: url("../../img/g/bg17.jpg");
+}
+div.village2 div.d2_18 {
+    background-image: url("../../img/g/bg18.jpg");
+}
+div.village2 div.d2_19 {
+    background-image: url("../../img/g/bg19.jpg");
 }
 div.village2 div#village_map img.iso {
     background-image: url("../../img/g/iso.gif");
