@@ -443,6 +443,21 @@ function Popup(i,j,sc) {
     if(!is_ie6&&!wc)return false;
     else return true;
 }
+function PopupOverview(i,j,sc) {
+    if(typeof sc=='undefined') {
+        sc='s';
+    }
+    pb=document.getElementById("ce");
+    if(pb!=null) {
+        var iframeHeight = 500, iframeWidth = 412;
+        var tc='<div class="popup3" style="height:560px;background-image:url(gpack/travian_default/img/a/anl_overview.gif);">'+'<a href="#" onClick="Close(); return false;"><img src="gpack/travian_default/img/x.gif" border="1" class="popup4" alt="Move"></a>'+'<iframe frameborder="0" id="Frame" style="top: auto" src="manual.php?'+sc+'='+i+'&typ='+j+'" width="412" height="500" border="0"></iframe>'+'</div>';
+        pb.innerHTML=tc;
+        uc();
+    }
+    vc();
+    if(!is_ie6&&!wc)return false;
+    else return true;
+}
 function PopupMap(i) {
     if(typeof sc=='undefined') {
         sc='s';

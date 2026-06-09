@@ -1,4 +1,4 @@
-<h1><img class="unit u31" src="gpack/travian_default/img/x.gif" alt="<?php echo U31; ?>" title="<?php echo U31; ?>" /> <?php echo U31; ?> <span class="tribe">(Nature)</span></h1>
+<h1><img class="unit u31" src="gpack/travian_default/img/x.gif" alt="Rat" title="Rat" /> Rat <span class="tribe">(Nature)</span></h1>
 
 <table id="troop_info" cellpadding="1" cellspacing="1">
 <thead><tr>
@@ -15,21 +15,21 @@
 	<td>25</td>
 	<td>20</td>
 
-	<td>85</td>
-	<td>75</td>
-	<td>120</td>
-	<td>25</td>
+	<td>0</td>
+	<td>0</td>
+	<td>0</td>
+	<td>0</td>
 </tr></tbody>
 </table>
 
 <table id="troop_details" cellpadding="1" cellspacing="1">
 <tbody><tr>
 	<th>Velocity</th>
-	<td><b>7</b> fields/hour</td>
+	<td><b>20</b> fields/hour</td>
 </tr>
 <tr>
 	<th>Can carry</th>
-	<td><b>45</b> resources</td>
+	<td><b>0</b> resources</td>
 </tr>
 <tr>
 	<th>Upkeep</th>
@@ -37,17 +37,15 @@
 </tr>
 <tr>
 	<th>Duration of training</th>
-	<td><img class="clock" src="gpack/travian_default/img/x.gif" alt="duration" title="duration" /> 0:16:20</td>
+	<td><img class="clock" src="gpack/travian_default/img/x.gif" alt="duration" title="duration" /> 0</td>
 </tr></tbody>
 </table>
 
-<img id="big_unit" class="big_u31" src="gpack/travian_default/img/x.gif" alt="<?php echo U31; ?>" title="<?php echo U31; ?>" /><div id="t_desc"><?php echo U31; ?>'s are cheap and breed real fast but cant carry much.
-<br /><br />
-This is proberly the cheaps of the nature units and most ugly.</div>
-<div id="prereqs"><b>Prerequisites</b><br /><a href="manual.php?typ=4&amp;gid=26">Baracks</a> Level 1 </div>
+<img id="big_unit" class="big_u31" src="gpack/travian_default/img/x.gif" alt="Rat" title="Rat" /><div id="t_desc">The experience a hero gains by killing an animal is determined by the upkeep the animal needed. This means a Rat will give just 1 experience point.</div>
+<div id="prereqs"><p><b>Prerequisites</b><br>Description is intended for reference only. The Nature are a pure NPC tribe and thus cannot be played by oneself.</p></div>
 <map id="nav" name="nav">
-    <area href="manual.php?typ=1&amp;s=29" title="back" coords="0,0,45,18" shape="rect" alt="" />
+    <area href="manual.php?typ=2&amp;s=4" title="back" coords="0,0,45,18" shape="rect" alt="" />
     <area href="manual.php?s=1" title="Overview" coords="46,0,70,18" shape="rect" alt="" />
-    <area href="manual.php?s=1" title="forward" coords="71,0,116,18" shape="rect" alt="" />
+    <area href="manual.php?typ=1&amp;s=52" title="forward" coords="71,0,116,18" shape="rect" alt="" />
 </map>
 <img usemap="#nav" src="gpack/travian_default/img/x.gif" class="navi" alt="" />

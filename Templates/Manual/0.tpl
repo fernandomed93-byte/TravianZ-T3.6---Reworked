@@ -9,6 +9,10 @@
 	<li><a href="manual.php?typ=2&amp;s=1">Romans</a></li>
 	<li><a href="manual.php?typ=2&amp;s=2">Teutons</a></li>
 	<li><a href="manual.php?typ=2&amp;s=3">Gauls</a></li>
+	<li><a href="manual.php?typ=2&amp;s=6">Huns</a></li>
+	<li><a href="manual.php?typ=2&amp;s=7">Egyptians</a></li>
+	<li><a href="manual.php?typ=2&amp;s=8">Spartans</a></li>
+	<li><a href="manual.php?typ=2&amp;s=9">Vikings</a></li>
 	<?php if(NEW_FUNCTIONS_MANUAL_NATURENATARS){ ?>
 	<li><a href="manual.php?typ=2&amp;s=4">Nature</a></li>
 	<li><a href="manual.php?typ=2&amp;s=5">Natars</a></li>
@@ -37,4 +41,4 @@
     <area href="manual.php?s=1" title="Overview" coords="46,0,70,18" shape="rect" alt="" />
     <area href="manual.php?typ=2&amp;s=1" title="forward" coords="71,0,116,18" shape="rect" alt="" />
 </map>
-<img usemap="#nav" src="gpack/travian_default/img/x.gif" class="navi" alt="" />
+<img usemap="#nav" src="gpack/travian_default/img/x.gif" style="position:static;display:block;margin:10px auto 0;" class="navi" alt="" />

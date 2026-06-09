@@ -1,4 +1,4 @@
-<h1><img class="unit u44" src="gpack/travian_default/img/x.gif" alt="Birds Of Prey" title="Birds Of Prey" /> Birds Of Prey <span class="tribe">(Natars)</span></h1>
+<h1><img class="unit u34" src="gpack/travian_default/img/x.gif" alt="Bat" title="Bat" /> Bat <span class="tribe">(Nature)</span></h1>
 
 <table id="troop_info" cellpadding="1" cellspacing="1">
 <thead><tr>
@@ -11,9 +11,9 @@
     <th><img class="r4" src="gpack/travian_default/img/x.gif" alt="Crop" title="Crop" /></th>
 </tr></thead>
 <tbody><tr>
-	<td>—</td>
-	<td>10</td>
-	<td>—</td>
+	<td>80</td>
+	<td>66</td>
+	<td>50</td>
 
 	<td>0</td>
 	<td>0</td>
@@ -25,7 +25,7 @@
 <table id="troop_details" cellpadding="1" cellspacing="1">
 <tbody><tr>
 	<th>Velocity</th>
-	<td><b>25</b> fields/hour</td>
+	<td><b>20</b> fields/hour</td>
 </tr>
 <tr>
 	<th>Can carry</th>
@@ -41,11 +41,11 @@
 </tr></tbody>
 </table>
 
-<img id="big_unit" class="big_u44" src="gpack/travian_default/img/x.gif" alt="Birds Of Prey" title="Birds Of Prey" /><div id="t_desc">The Natars use flocks of birds to gather intelligence about their enemies. Thanks to the advantage of scouting from the air, it is almost impossible to stop the Natarian scouting squads; on the other hand, even a simple-minded villager can easily notice the screeching and feathered flocks.</div>
-<div id="prereqs"><p><b>Prerequisites</b><br>Description is intended for reference only. The Natars are a pure NPC tribe and thus cannot be played by oneself.</p></div>
+<img id="big_unit" class="big_u34" src="gpack/travian_default/img/x.gif" alt="Bat" title="Bat" /><div id="t_desc">The experience a hero gains by killing an animal is determined by the upkeep the animal needed. This means a Bat will give just 1 experience point.</div>
+<div id="prereqs"><p><b>Prerequisites</b><br>Description is intended for reference only. The Nature are a pure NPC tribe and thus cannot be played by oneself.</p></div>
 <map id="nav" name="nav">
-    <area href="manual.php?typ=1&amp;s=43" title="back" coords="0,0,45,18" shape="rect" alt="" />
+    <area href="manual.php?typ=1&amp;s=53" title="back" coords="0,0,45,18" shape="rect" alt="" />
     <area href="manual.php?s=1" title="Overview" coords="46,0,70,18" shape="rect" alt="" />
-    <area href="manual.php?typ=1&amp;s=45" title="forward" coords="71,0,116,18" shape="rect" alt="" />
+    <area href="manual.php?typ=1&amp;s=55" title="forward" coords="71,0,116,18" shape="rect" alt="" />
 </map>
 <img usemap="#nav" src="gpack/travian_default/img/x.gif" class="navi" alt="" />

@@ -99,7 +99,7 @@ class Building {
                 ) &&
             //Check that we're not trying to build in the walls id
             (
-                ($tid == 40 && in_array($id, [31, 32, 33])) ||
+                ($tid == 40 && in_array($id, [31, 32, 33, 42, 43, 47, 50])) ||
                 $tid != 40
                 )
             ) {
@@ -246,9 +246,11 @@ class Building {
 
 	public function walling() {
 		global $session;
-		$wall = array(31,32,33);
+		$wallIcons = [1=>31, 2=>32, 3=>33, 6=>43, 7=>42, 8=>47, 9=>50];
 		foreach($this->buildArray as $job) {
-		    if(in_array($job['type'],$wall)) return "3".$session->tribe;
+		    if(in_array($job['type'], $wallIcons)) {
+				return $wallIcons[$session->tribe];
+			}
 		}
 		return false;
 	}
@@ -715,7 +717,7 @@ class Building {
                 $wwvillage = $database->getResourceLevel($jobs['wid']);
                 if ($wwvillage['f99t'] != 40 || $bypass) { // Não é Vila de WW
                     $level = $jobs['level'];
-                    if ($jobs['type'] != 25 && $jobs['type'] != 26 && $jobs['type'] != 40) { //Também não é Residencia, Palácio ou WW
+                    if ($jobs['type'] != 25 && $jobs['type'] != 26 && $jobs['type'] != 44 && $jobs['type'] != 40) { //Também não é Residencia, Palácio ou WW
                         $resource = $this->resourceRequired($jobs['field'],$jobs['type']);
                         
                         if ($jobs['master'] != 0) { // master builder involved

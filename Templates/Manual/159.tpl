@@ -1,31 +1,28 @@
-<h1><img class="unit u39" src="gpack/travian_default/img/x.gif" alt="Tiger" title="Tiger" /> Tiger <span class="tribe">(Nature)</span></h1>
-
+<h1><img class="unit u59" src="gpack/travian_default/img/x.gif" alt="Logades" title="Logades" /> Logades <span class="tribe">(Huns)</span></h1>
 <table id="troop_info" cellpadding="1" cellspacing="1">
 <thead><tr>
 	<th><img class="att_all" src="gpack/travian_default/img/x.gif" alt="attack value" title="attack value" /></th>
 	<th><img class="def_i" src="gpack/travian_default/img/x.gif" alt="defence against infantry" title="defence against infantry" /></th>
 	<th><img class="def_c" src="gpack/travian_default/img/x.gif" alt="defence against cavalry" title="defence against cavalry" /></th>
-    <th><img class="r1" src="gpack/travian_default/img/x.gif" alt="Lumber" title="Lumber" /></th>
-    <th><img class="r2" src="gpack/travian_default/img/x.gif" alt="Clay" title="Clay" /></th>
-    <th><img class="r3" src="gpack/travian_default/img/x.gif" alt="Iron" title="Iron" /></th>
-    <th><img class="r4" src="gpack/travian_default/img/x.gif" alt="Crop" title="Crop" /></th>
+	<th><img class="r1" src="gpack/travian_default/img/x.gif" alt="Lumber" title="Lumber" /></th>
+	<th><img class="r2" src="gpack/travian_default/img/x.gif" alt="Clay" title="Clay" /></th>
+	<th><img class="r3" src="gpack/travian_default/img/x.gif" alt="Iron" title="Iron" /></th>
+	<th><img class="r4" src="gpack/travian_default/img/x.gif" alt="Crop" title="Crop" /></th>
 </tr></thead>
 <tbody><tr>
-	<td>200</td>
-	<td>170</td>
-	<td>250</td>
-
-	<td>0</td>
-	<td>0</td>
-	<td>0</td>
-	<td>0</td>
+	<td>50</td>
+	<td>40</td>
+	<td>30</td>
+	<td>37200</td>
+	<td>27600</td>
+	<td>25200</td>
+	<td>27600</td>
 </tr></tbody>
 </table>
-
 <table id="troop_details" cellpadding="1" cellspacing="1">
 <tbody><tr>
 	<th>Velocity</th>
-	<td><b>20</b> fields/hour</td>
+	<td><b>5</b> fields/hour</td>
 </tr>
 <tr>
 	<th>Can carry</th>
@@ -33,19 +30,19 @@
 </tr>
 <tr>
 	<th>Upkeep</th>
-	<td><img class="r5" src="gpack/travian_default/img/x.gif" alt="Crop consumption" title="Crop consumption" /> 3</td>
+	<td><img class="r5" src="gpack/travian_default/img/x.gif" alt="Crop consumption" title="Crop consumption" /> 4</td>
 </tr>
 <tr>
 	<th>Duration of training</th>
-	<td><img class="clock" src="gpack/travian_default/img/x.gif" alt="duration" title="duration" /> 0</td>
+	<td><img class="clock" src="gpack/travian_default/img/x.gif" alt="duration" title="duration" /> 25:11:40</td>
 </tr></tbody>
 </table>
-
-<img id="big_unit" class="big_u39" src="gpack/travian_default/img/x.gif" alt="Tiger" title="Tiger" /><div id="t_desc">The experience a hero gains by killing an animal is determined by the upkeep the animal needed. This means a Tiger will give just 3 experience point.</div>
-<div id="prereqs"><p><b>Prerequisites</b><br>Description is intended for reference only. The Nature are a pure NPC tribe and thus cannot be played by oneself.</p></div>
+<img id="big_unit" class="big_u59" src="gpack/travian_default/img/x.gif" alt="Logades" title="Logades" /><div id="t_desc">The Logades is the Hun chieftain and diplomat. Sent to enemy villages to undermine loyalty, he can convince the populace to switch allegiance through a combination of threats and promises. He is the key to conquering enemy villages without destroying them.</div>
+<div id="prereqs"><b>Prerequisites</b><br /><a href="manual.php?typ=4&amp;gid=25">Residence</a> or <a href="manual.php?typ=4&amp;gid=26">Palace</a> Level 10<br /><a href="manual.php?typ=4&amp;gid=22">Academy</a> Level 20 &amp; <a href="manual.php?typ=4&amp;gid=16">Rally Point</a> Level 10</div>
 <map id="nav" name="nav">
     <area href="manual.php?typ=1&amp;s=58" title="back" coords="0,0,45,18" shape="rect" alt="" />
-    <area href="manual.php?s=1" title="Overview" coords="46,0,70,18" shape="rect" alt="" />
+    <area href="manual.php?typ=2&amp;s=6" title="Overview" coords="46,0,70,18" shape="rect" alt="" />
     <area href="manual.php?typ=1&amp;s=60" title="forward" coords="71,0,116,18" shape="rect" alt="" />
 </map>
 <img usemap="#nav" src="gpack/travian_default/img/x.gif" class="navi" alt="" />
+
