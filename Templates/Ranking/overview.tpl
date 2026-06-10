@@ -1,20 +1,24 @@
 <?php
 $rankSize = $ranking->getRankCount();
-$search = 0;
-
-if(!is_numeric($_SESSION['search'])) {
+$search = $ranking->highlightRank;
 ?>
-	<center><font color=orange size=2><p class=\"error\">The user <b>"<?php echo $_SESSION['search']; ?>"</b> does not exist.</p></font></center>
-<?php
-} else {
-    $search = (int)$_SESSION['search'];
-}
-?>
+<div class="ranking-filters">
+<div id="submenu2">
+<a title="Romans" href="statistiken.php?id=11"><img class="btn_v1" src="gpack/travian_default/img/x.gif" alt="Romans"></a>
+<a title="Teutons" href="statistiken.php?id=12"><img class="btn_v2" src="gpack/travian_default/img/x.gif" alt="Teutons"></a>
+<a title="Gauls" href="statistiken.php?id=13"><img class="btn_v3" src="gpack/travian_default/img/x.gif" alt="Gauls"></a>
+<a title="Huns" href="statistiken.php?id=16"><img class="btn_v6" src="gpack/travian_default/img/x.gif" alt="Huns"></a>
+<a title="Egyptians" href="statistiken.php?id=17"><img class="btn_v7" src="gpack/travian_default/img/x.gif" alt="Egyptians"></a>
+<a title="Spartans" href="statistiken.php?id=18"><img class="btn_v8" src="gpack/travian_default/img/x.gif" alt="Spartans"></a>
+<a title="Vikings" href="statistiken.php?id=19"><img class="btn_v9" src="gpack/travian_default/img/x.gif" alt="Vikings"></a>
+</div>
+<div id="submenu"><a title="Top 10" href="statistiken.php?id=7"><img class="btn_top10" src="gpack/travian_default/img/x.gif" alt="Top 10" /></a><a title="defender" href="statistiken.php?id=32"><img class="btn_def" src="gpack/travian_default/img/x.gif" alt="defender" /></a><a title="attacker" href="statistiken.php?id=31"><img class="btn_off" src="gpack/travian_default/img/x.gif" alt="attacker" /></a></div>
+</div>
 <table cellpadding="1" cellspacing="1" id="player">
 	<thead>
 				<tr>
 					<th colspan="5">
-                        The largest players                    <div id="submenu"><a title="Top 10" href="statistiken.php?id=7"><img class="btn_top10" src="gpack/travian_default/img/x.gif" alt="Top 10" /></a><a title="defender" href="statistiken.php?id=32"><img class="btn_def" src="gpack/travian_default/img/x.gif" alt="defender" /></a><a title="attacker" href="statistiken.php?id=31"><img class="btn_off" src="gpack/travian_default/img/x.gif" alt="attacker" /></a></div><br><div id="submenu2"><a title="Romans" href="statistiken.php?id=11"><img class="btn_v1" src="gpack/travian_default/img/x.gif" alt="attacker"></a><a title="Teutons" href="statistiken.php?id=12"><img class="btn_v2" src="gpack/travian_default/img/x.gif" alt="attacker"></a><a title="Gauls" href="statistiken.php?id=13"><img class="btn_v3" src="gpack/travian_default/img/x.gif" alt="attacker"></a></div>            
+                        The largest players                    
                     </th>
 				</tr>
 		<tr><td></td><td>Player</td><td>Alliance</td><td>Population</td><td>Villages</td></tr>

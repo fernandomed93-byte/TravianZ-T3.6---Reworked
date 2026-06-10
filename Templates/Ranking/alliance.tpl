@@ -1,11 +1,5 @@
 <?php
-if(!is_numeric($_SESSION['search'])) {
-?>
-	<center><font color=orange size=2><p class=\"error\">The alliance <b>"<?php echo $_SESSION['search']; ?>"</b> does not exist.</p></font></center>
-<?php
-    $search = 0;
-}
-else $search = $_SESSION['search'];
+$search = $ranking->highlightRank;
 ?>
 <table cellpadding="1" cellspacing="1" id="alliance" class="row_table_data">
 			<thead>

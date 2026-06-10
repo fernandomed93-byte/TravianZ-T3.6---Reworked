@@ -16,6 +16,7 @@
 			public $rankarray = [];
 			private $rlastupdate;
 			private $rankCount = 0;
+			public $highlightRank = 0;
 
 			// Staleness thresholds in seconds
 			const USER_STATS_TTL = 300;    // 5 minutes
@@ -94,16 +95,54 @@
 				return 0;
 			}
 
+			public function searchHeroRank($uid) {
+				$uid = (int)$uid;
+				foreach ($this->rankarray as $i => $row) {
+					if ($row != "pad" && isset($row['uid']) && (int)$row['uid'] === $uid) {
+						return $i;
+					}
+				}
+				return 0;
+			}
+
+			public function getRaceRank($uid, $tribe) {
+				global $database;
+				$uid = (int)$uid;
+				$tribe = (int)$tribe;
+
+				$access_level = INCLUDE_ADMIN ? "10" : "8";
+
+				$q = "SELECT COUNT(*) + 1 as rnk
+					FROM " . TB_PREFIX . "user_stats us
+					JOIN " . TB_PREFIX . "users u ON u.id = us.uid
+					WHERE u.tribe = $tribe
+					  AND u.access < $access_level
+					  AND u.id > 5
+					  AND (us.totalpop > (SELECT totalpop FROM " . TB_PREFIX . "user_stats WHERE uid = $uid)
+					       OR (us.totalpop = (SELECT totalpop FROM " . TB_PREFIX . "user_stats WHERE uid = $uid)
+					           AND us.totalvils > (SELECT totalvils FROM " . TB_PREFIX . "user_stats WHERE uid = $uid))
+					       OR (us.totalpop = (SELECT totalpop FROM " . TB_PREFIX . "user_stats WHERE uid = $uid)
+					           AND us.totalvils = (SELECT totalvils FROM " . TB_PREFIX . "user_stats WHERE uid = $uid)
+					           AND us.uid > $uid))
+					ORDER BY NULL";
+
+				$result = mysqli_query($database->dblink, $q);
+				if ($result && ($row = mysqli_fetch_assoc($result))) return (int)$row['rnk'];
+				return 0;
+			}
+
 			// ========== DISPATCH ==========
 
 			public function procRankReq($get) {
 				global $village, $session;
+				$this->highlightRank = 0;
 				if(isset($get['id'])) {
 					switch($get['id']) {
 						case 1:
 							$this->ensureUserStatsFresh();
 							$rank = $this->searchRank($session->uid, "userid");
 							$this->getStart($rank > 0 ? $rank : 1);
+							$this->highlightRank = $rank;
 							$this->procRankArray();
 							break;
 						case 8:
@@ -111,49 +150,88 @@
 							if($get['hero'] == 0) {
 								$this->getStart(1);
 							} else {
-								$this->getStart($this->searchRank($session->uid, "uid"));
+								$rank = $this->searchHeroRank($session->uid);
+								$this->getStart($rank > 0 ? $rank : 1);
+								$this->highlightRank = $rank;
 							}
 							break;
 						case 11:
 							$this->ensureUserStatsFresh();
-							$rank = $this->searchRank($session->uid, "userid");
+							$rank = ($session->tribe == 1) ? $this->getRaceRank($session->uid, 1) : 0;
 							$this->getStart($rank > 0 ? $rank : 1);
+							$this->highlightRank = $rank;
 							$this->procRankRaceArray(1);
 							break;
 						case 12:
 							$this->ensureUserStatsFresh();
-							$rank = $this->searchRank($session->uid, "userid");
+							$rank = ($session->tribe == 2) ? $this->getRaceRank($session->uid, 2) : 0;
 							$this->getStart($rank > 0 ? $rank : 1);
+							$this->highlightRank = $rank;
 							$this->procRankRaceArray(2);
 							break;
 						case 13:
 							$this->ensureUserStatsFresh();
-							$rank = $this->searchRank($session->uid, "userid");
+							$rank = ($session->tribe == 3) ? $this->getRaceRank($session->uid, 3) : 0;
 							$this->getStart($rank > 0 ? $rank : 1);
+							$this->highlightRank = $rank;
 							$this->procRankRaceArray(3);
 							break;
-					case 31:
-						$this->ensureUserStatsFresh();
-						$rank = $this->getAttackRank($session->uid);
-						$this->getStart($rank > 0 ? $rank : 1);
-						$this->procAttRankArray();
-						break;
-					case 32:
-						$this->ensureUserStatsFresh();
-						$rank = $this->getDefenseRank($session->uid);
-						$this->getStart($rank > 0 ? $rank : 1);
-						$this->procDefRankArray();
-						break;
+						case 16:
+							$this->ensureUserStatsFresh();
+							$rank = ($session->tribe == 6) ? $this->getRaceRank($session->uid, 6) : 0;
+							$this->getStart($rank > 0 ? $rank : 1);
+							$this->highlightRank = $rank;
+							$this->procRankRaceArray(6);
+							break;
+						case 17:
+							$this->ensureUserStatsFresh();
+							$rank = ($session->tribe == 7) ? $this->getRaceRank($session->uid, 7) : 0;
+							$this->getStart($rank > 0 ? $rank : 1);
+							$this->highlightRank = $rank;
+							$this->procRankRaceArray(7);
+							break;
+						case 18:
+							$this->ensureUserStatsFresh();
+							$rank = ($session->tribe == 8) ? $this->getRaceRank($session->uid, 8) : 0;
+							$this->getStart($rank > 0 ? $rank : 1);
+							$this->highlightRank = $rank;
+							$this->procRankRaceArray(8);
+							break;
+						case 19:
+							$this->ensureUserStatsFresh();
+							$rank = ($session->tribe == 9) ? $this->getRaceRank($session->uid, 9) : 0;
+							$this->getStart($rank > 0 ? $rank : 1);
+							$this->highlightRank = $rank;
+							$this->procRankRaceArray(9);
+							break;
+						case 31:
+							$this->ensureUserStatsFresh();
+							$rank = $this->getAttackRank($session->uid);
+							$this->getStart($rank > 0 ? $rank : 1);
+							$this->highlightRank = $rank;
+							$this->procAttRankArray();
+							break;
+						case 32:
+							$this->ensureUserStatsFresh();
+							$rank = $this->getDefenseRank($session->uid);
+							$this->getStart($rank > 0 ? $rank : 1);
+							$this->highlightRank = $rank;
+							$this->procDefRankArray();
+							break;
 						case 2:
 							$this->getVRankPart();
-							$this->getStart($this->searchRank($village->wid, "wref"));
+							$rank = $this->searchRank($village->wid, "wref");
+							$this->getStart($rank);
+							$this->highlightRank = $rank;
 							break;
 						case 4:
 							$this->procARankArray();
 							if($get['aid'] == 0) {
 								$this->getStart(1);
 							} else {
-								$this->getStart($this->searchRank($get['aid'], "id"));
+								$rank = $this->searchRank($get['aid'], "id");
+								$this->getStart($rank);
+								$this->highlightRank = $rank;
 							}
 							break;
 						case 41:
@@ -161,7 +239,9 @@
 							if($get['aid'] == 0) {
 								$this->getStart(1);
 							} else {
-								$this->getStart($this->searchRank($get['aid'], "id"));
+								$rank = $this->searchRank($get['aid'], "id");
+								$this->getStart($rank);
+								$this->highlightRank = $rank;
 							}
 							break;
 						case 42:
@@ -169,7 +249,9 @@
 							if($get['aid'] == 0) {
 								$this->getStart(1);
 							} else {
-								$this->getStart($this->searchRank($get['aid'], "id"));
+								$rank = $this->searchRank($get['aid'], "id");
+								$this->getStart($rank);
+								$this->highlightRank = $rank;
 							}
 							break;
 					}
@@ -177,6 +259,7 @@
 					$this->ensureUserStatsFresh();
 					$rank = $this->searchRank($session->uid, "userid");
 					$this->getStart($rank > 0 ? $rank : 1);
+					$this->highlightRank = $rank;
 					$this->procRankArray();
 				}
 			}

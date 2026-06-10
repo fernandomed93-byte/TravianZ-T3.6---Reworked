@@ -2577,9 +2577,27 @@ div.statistics div#submenu img {
     margin-left: 5px;
 }
 div.statistics div#submenu2 {
-    left: 29px;
     position: absolute;
+    left: 29px;
     top: 107px;
+}
+div.statistics div.ranking-filters {
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+div.statistics div.ranking-filters div#submenu {
+    position: static;
+    float: right;
+    right: auto;
+    top: auto;
+}
+div.statistics div.ranking-filters div#submenu2 {
+    position: static;
+    float: left;
+    padding-left: 0;
+    margin-bottom: 0;
+    left: auto;
+    top: auto;
 }
 div.statistics div#submenu2 img {
     float: left;
@@ -7925,6 +7943,18 @@ div.statistics div#submenu2 img.btn_v2 {
 }
 div.statistics div#submenu2 img.btn_v3 {
     background-image: url("../../img/s/v3.gif");
+}
+div.statistics div#submenu2 img.btn_v6 {
+    background-image: url("../../img/s/v6.gif");
+}
+div.statistics div#submenu2 img.btn_v7 {
+    background-image: url("../../img/s/v7.gif");
+}
+div.statistics div#submenu2 img.btn_v8 {
+    background-image: url("../../img/s/v8.gif");
+}
+div.statistics div#submenu2 img.btn_v9 {
+    background-image: url("../../img/s/v9.gif");
 }
 div.forum img.switch_admin {
     background-image: url("../../img/f/switch_admin.gif");
