@@ -312,6 +312,7 @@ trait DBTroops {
 
             $residence = [9, 10, 19, 20, 29, 30, 49, 50, 59, 60, 69, 70, 79, 80, 89, 90];
             $trapper = [99];
+            $healing = range(2001, 2090);
 
 			if(in_array($unit, $barracks)) $queued = $technology->getTrainingList(1);	
 		    elseif(in_array($unit, $stables)) $queued = $technology->getTrainingList(2);				
@@ -321,6 +322,7 @@ trait DBTroops {
             elseif(in_array($unit, $greatstables)) $queued = $technology->getTrainingList(6);	
 			elseif(in_array($unit, $greatworkshop)) $queued = $technology->getTrainingList(7);
 			elseif(in_array($unit, $trapper)) $queued = $technology->getTrainingList(8);
+			elseif(in_array($unit, $healing)) $queued = $technology->getTrainingList(9);
 		
 			$now = time();
             $uid = $this->getVillageField($vid, "owner");
@@ -345,6 +347,28 @@ trait DBTroops {
 
 		$q = "UPDATE " . TB_PREFIX . "training set amt = amt - $trained, timestamp2 = timestamp2 + $each where id = $id";
 		return mysqli_query($this->dblink,$q);
+	}
+
+	function updateWounded($vref, $wounds, $mode) {
+		if (empty($wounds)) return;
+		$vref = (int)$vref;
+		$sets = [];
+		foreach ($wounds as $pos => $count) {
+			$count = (int)$count;
+			if ($count <= 0 || $pos < 1 || $pos > 6) continue;
+			$col = 'w'.$pos;
+			$sets[] = ($mode == 0)
+				? "$col = $col + $count"
+				: "$col = GREATEST(0, $col - $count)";
+		}
+		if (empty($sets)) return;
+		if ($mode == 0) {
+			$q = "INSERT INTO ".TB_PREFIX."wounded (vref) VALUES ($vref)
+				  ON DUPLICATE KEY UPDATE ".implode(', ', $sets);
+		} else {
+			$q = "UPDATE ".TB_PREFIX."wounded SET ".implode(', ', $sets)." WHERE vref = $vref";
+		}
+		return mysqli_query($this->dblink, $q);
 	}
 
 	function modifyUnit($vref, $array_unit, $array_amt, $array_mode) {
@@ -835,6 +859,52 @@ trait DBTroops {
 		$q = "SELECT * FROM " . TB_PREFIX . "training where vref IS NOT NULL";
 		$result = mysqli_query($this->dblink,$q);
 		return $this->mysqli_fetch_all($result);
+	}
+
+	public function getWoundedData($vref) {
+		$vref = (int)$vref;
+
+		$result = mysqli_fetch_assoc(mysqli_query($this->dblink,
+			"SELECT * FROM ".TB_PREFIX."wounded WHERE vref = $vref"));
+
+		$qRow = mysqli_fetch_assoc(mysqli_query($this->dblink,
+			"SELECT
+				SUM(CASE WHEN unit % 10 = 1 THEN amt ELSE 0 END) as h1,
+				SUM(CASE WHEN unit % 10 = 2 THEN amt ELSE 0 END) as h2,
+				SUM(CASE WHEN unit % 10 = 3 THEN amt ELSE 0 END) as h3,
+				SUM(CASE WHEN unit % 10 = 4 THEN amt ELSE 0 END) as h4,
+				SUM(CASE WHEN unit % 10 = 5 THEN amt ELSE 0 END) as h5,
+				SUM(CASE WHEN unit % 10 = 6 THEN amt ELSE 0 END) as h6
+			FROM ".TB_PREFIX."training
+			WHERE vref = $vref AND unit > 2000"));
+
+		$data = ['wounded' => [], 'inQueue' => []];
+		for ($pos = 1; $pos <= 6; $pos++) {
+			$data['wounded'][$pos] = (int)($result['w'.$pos] ?? 0);
+			$data['inQueue'][$pos] = (int)($qRow['h'.$pos] ?? 0);
+		}
+		return $data;
+	}
+
+	public function woundedDecay() {
+		$db = $this->dblink;
+
+		$row = mysqli_fetch_assoc(mysqli_query($db, "SELECT lastWoundedDecay FROM ".TB_PREFIX."config"));
+		$last = (int)$row['lastWoundedDecay'];
+
+		if ($last > 0 && (time() - $last) < 86400) return false;
+
+		mysqli_query($db, "UPDATE ".TB_PREFIX."wounded SET
+			w1 = CEIL(w1 * 0.9),
+			w2 = CEIL(w2 * 0.9),
+			w3 = CEIL(w3 * 0.9),
+			w4 = CEIL(w4 * 0.9),
+			w5 = CEIL(w5 * 0.9),
+			w6 = CEIL(w6 * 0.9)
+			WHERE w1+w2+w3+w4+w5+w6 > 0");
+
+		mysqli_query($db, "UPDATE ".TB_PREFIX."config SET lastWoundedDecay = ".time());
+		return true;
 	}
 
     // no need to cache, not used in any loops or more than once for each page load

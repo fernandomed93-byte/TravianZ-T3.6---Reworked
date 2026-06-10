@@ -1,0 +1,8 @@
+<h1><img class="unit ugeb" src="gpack/travian_default/img/x.gif"> Big Hospital</h1><img class="building g48" src="gpack/travian_default/img/x.gif" alt="Big Hospital" title="Big Hospital" />The Big Hospital allows you to treat wounded troops so they can rejoin your army. Can heal up to 60% of the troops lost in battle. Healing troops takes half the time of normal training, but costs the same resources.<br>Tribe-specific: Spartans and Vikings only.<p><b>Costs</b> and <b>construction time</b> for level 1:<br /><img class="r1" src="gpack/travian_default/img/x.gif" alt="Lumber" title="Lumber" />320 | <img class="r2" src="gpack/travian_default/img/x.gif" alt="Clay" title="Clay" />280 | <img class="r3" src="gpack/travian_default/img/x.gif" alt="Iron" title="Iron" />420 | <img class="r4" src="gpack/travian_default/img/x.gif" alt="Crop" title="Crop" />360 | <img class="r5" src="gpack/travian_default/img/x.gif" alt="Crop consumption" title="Crop consumption" />4 | <span class="dur"><img class="clock" alt="duration" title="duration" src="gpack/travian_default/img/x.gif" />0:50:00</span></p>
+	<p><b>Prerequisites</b><br /><a href="manual.php?typ=4&gid=16">Rally Point</a> Level 10, <a href="manual.php?typ=4&gid=20">Stable</a> Level 20, <a href="manual.php?typ=4&gid=46"><strike>Hospital</strike></a></p>
+<map id="nav" name="nav">
+    <area href="manual.php?typ=4&amp;gid=46" title="back" coords="0,0,45,18" shape="rect" alt="" />
+    <area href="manual.php?s=1" title="Overview" coords="46,0,70,18" shape="rect" alt="" />
+    <area href="manual.php?typ=4&amp;gid=40" title="forward" coords="71,0,116,18" shape="rect" alt="" />
+</map>
+<img usemap="#nav" src="gpack/travian_default/img/x.gif" class="navi" alt="" />

@@ -1260,11 +1260,17 @@ define('HORSEDRINKING_DESC', 'Decreases the training time and the upkeep of cava
 define('COMMANDCENTER', 'Command Center');
 define('COMMANDCENTER_DESC', 'The Command Center protects the village against enemy conquests. You can build one command center per village. Units that can found a new village or conquer existing villages can be trained here.<br>Additionally, the command center provides an expansion slot at levels 10, 15 and 20 each.<br>Tribe-specific: Huns only');
 define('WATERWORKS', 'Waterworks');
-define('WATERWORKS_DESC', 'Increases oasis production bonuses up to twice the amount.<br>Tribe-specific: Egyptians only');
+define('WATERWORKS_DESC', 'The Waterworks allows you to regulate the water flow to your oases. This not only helps to grow trees and crops, but it is also useful for quarries and mines as it supplies workers with water and resource transportation. This building increases the bonus of all annexed oases. Its maximum effect at level 20 doubles the effect of oases.<br>Tribe-specific: Egyptians only');
 define('HOSPITAL', 'Hospital');
 define('HOSPITAL_DESC', 'The Hospital allows you to treat wounded troops so they can rejoin your army. This helps you recover faster after major battles. Healing troops is not cheaper than training new ones — the resource cost is the same — but healing takes half the time of normal training. Can heal up to 40% of the troops lost in battle.');
 define('BIGHOSPITAL', 'Big Hospital');
 define('BIGHOSPITAL_DESC', 'The Big Hospital allows you to treat wounded troops so they can rejoin your army. This helps you recover faster after major battles. Healing troops is not cheaper than training new ones — the resource cost is the same — but healing takes half the time of normal training. Can heal up to 60% of the troops lost in battle.<br>Tribe-specific: Spartans and Vikings only');
+
+define('HEAL', 'Heal');
+define('WOUNDED', 'Wounded');
+define('NO_WOUNDED', 'There are no wounded troops in this village.');
+define('HEALING_IN_PROGRESS', 'Healing in progress');
+
 define('GREATWORKSHOP', 'Great Workshop');
 define('TRAINING_COMMENCE_GREATWORKSHOP', 'Training can commence when great workshop is completed.');
 define('GREATWORKSHOP_DESC', 'The Great Workshop allows you to build a second Workshop in the same village, but catapults and rams cost 3 times the original amount.<br>Combined with the regular Workshop, you can train your troops twice as fast in one village');

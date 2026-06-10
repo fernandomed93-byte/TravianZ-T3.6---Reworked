@@ -232,7 +232,7 @@
 ## 🚧 PENDENTE
 
 ### Registro & Interface
-- [ ] `anmelden.php:97-110` — Radio buttons para Huns (6), Egípcios (7), Spartans (8), Vikings (9).
+- [x] `anmelden.php:97-110` — Radio buttons para Huns (6), Egípcios (7), Spartans (8), Vikings (9).
 - [x] `warsim.php:193-196` — Adicionar as 4 novas tribos ao simulador.
 - [x] `procurar por loops de tropas no codigo` < 50 -> for($i = 1; $i <= 50; $i++)
 - [x] `procurar por loops de tribos no codigo` < 5 -> for($i = 1; $i <= 5; $i++)
@@ -245,14 +245,17 @@
 - [x] `Imagens das Muralhas Novas` - Inserir também em `Admin/Templates/editVillage.tpl, village.tpl`
 - [x] `winner.php:65,91,116` — `tribe <= 3` → `tribe <= 9`.
 - [x] `Templates/Build/22` - Templates de academia ajustados
-- [ ] `GameEngine/Ranking.php:227,229` — `tribe <= 5` → `tribe <= 9`.
-- [ ] `GameEngine/Ranking.php:369,413` — `tribe <= 3` → incluir tribos 6-9.
-- [ ] `Templates/Build` - novos edificios - precisa verificar
-- [ ] `Templates/Build` - bid46 e bid48, criar ui de cura (vide description: https://support.travian.com/en/articles/77-hospital-and-asclepeion).
-- [ ] `Edificios Novos` - Aplicar efeitos de bonus.
+- [x] `GameEngine/Ranking.php:227,229` — `tribe <= 5` → `tribe <= 9`.
+- [x] `GameEngine/Ranking.php:369,413` — `tribe <= 3` → incluir tribos 6-9.
 - [x] `Manual - Tropas` - Criar templates das tropas novas.
-- [ ] `Imagens Tropas U2` - Criar imagens grandes das tropas para manual.
-- [ ] `Manual - Edificios` - Criar templates dos edificios novos.
+- [x] `Imagens Tropas U2` - Criar imagens grandes das tropas para manual.
+- [x] `Manual - Edificios` - Criar templates dos edificios novos.
+
+### Edificios novos
+- [x] `gid44 - Command Center` - Criar UI e permitir treinos.
+- [x] `gid46 - Hospital` - Criar UI e permitir heals, implementar funcionalidade (feridos, cura).
+- [ ] `gid48 - Big Hospital` - Criar UI (precisa verificar).
+- [ ] `gid45 - Waterworks` - Criar UI e Aplicar efeitos de bonus. (ref: https://travian.fandom.com/wiki/Waterworks)
 
 
 ### Database

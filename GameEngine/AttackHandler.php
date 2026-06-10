@@ -1073,6 +1073,19 @@ class AttackHandler {
         $final_info_data = [$aftermath['trap_info'], '', $info_troop,  $aftermath['hero_info']];
         
         
+        // --- 4.5 Verificar se houve feridos ---
+        $woundFlag = 0;
+        if (!empty($battleResult['wounded']['defender']['own'])) {
+            foreach ($battleResult['wounded']['defender']['own'] as $count) {
+                if ($count > 0) { $woundFlag = 1; break; }
+            }
+        }
+        if (!$woundFlag && !empty($battleResult['wounded']['attacker'])) {
+            foreach ($battleResult['wounded']['attacker'] as $count) {
+                if ($count > 0) { $woundFlag = 1; break; }
+            }
+        }
+
         // --- 5. Montagem Final ---
         $all_data_main = array_merge(
             // Dados do Atacante
@@ -1089,7 +1102,9 @@ class AttackHandler {
             [$aftermath['trap_info']],
             [''], // Placeholder 3 (entre info de armadilha e de tropa)
             [$info_troop],
-            [$aftermath['hero_info']]
+            [$aftermath['hero_info']],
+            // Feridos
+            [$woundFlag]
         );
         $mainReport = implode(',', $all_data_main);
         
@@ -1113,7 +1128,9 @@ class AttackHandler {
             [$aftermath['trap_info']],
             [''], // Placeholder 3
             [$info_troop],
-            [$aftermath['hero_info']]
+            [$aftermath['hero_info']],
+            // Feridos (escondido do atacante em relatório de falha)
+            [0]
         );
         $failReport = implode(',', $all_data_fail);
         
@@ -1362,9 +1379,12 @@ class AttackHandler {
         $survivors = [];
         $tribe_offset = ($context['attacker']['info']['tribe'] - 1) * 10;
 
+        $attackerWref = $context['attacker']['info']['wref'];
+
        for ($i = 1; $i <= 10; $i++) {
             $unit_id = $tribe_offset + $i;
-            $survivors['t' . $i] = $attackData['t' . $i] - ($battleResult['casualties']['attacker'][$unit_id] ?? 0) - ($trappedData['traped_units'][$i] ?? 0);
+            $woundedAdd = isset($battleResult['wounded']['attacker'][$unit_id]) ? (int)$battleResult['wounded']['attacker'][$unit_id] : 0;
+            $survivors['t' . $i] = $attackData['t' . $i] - ($battleResult['casualties']['attacker'][$unit_id] ?? 0) - ($trappedData['traped_units'][$i] ?? 0) - $woundedAdd;
         }
         $survivors['t11'] = $attackData['t11'] - ($battleResult['casualties']['attacker']['hero'] ?? 0) - ($trappedData['traped_units'][11] ?? 0);
 
@@ -1381,8 +1401,28 @@ class AttackHandler {
             $this->database->modifyAttack3($attackData['ref'], $units_sql_string);
         }
 
+        // Passo 3b: Salvar feridos do atacante na tabela wounded
+        if (!empty($battleResult['wounded']['attacker'])) {
+            $wSets = [];
+            foreach ($battleResult['wounded']['attacker'] as $uid => $count) {
+                if ($count <= 0) continue;
+                $pos = (($uid - 1) % 10) + 1;
+                if ($pos >= 1 && $pos <= 6) $wSets[$pos] = $count;
+            }
+            $this->database->updateWounded($attackerWref, $wSets, 0);
+        }
+
+        $hasRealSurvivors = false;
+        foreach ($survivors as $count) {
+            if ($count > 0) { $hasRealSurvivors = true; break; }
+        }
+        if (!$hasRealSurvivors) {
+            $this->database->setMovementProc($attackData['moveid']);
+            return; // todas foram pro hospital, sem tropas para retornar
+        }
+
         // Passo 4: CRIAR o movimento de retorno, que agora usará os dados atualizados
-        $attackerWref = $context['attacker']['info']['wref'];
+        $defenderWref = $context['defender']['info']['wref'];
         $defenderWref = $context['defender']['info']['wref'];
         $attackerOwner = $context['attacker']['info']['owner'];
         $attackerTribe = $context['attacker']['info']['tribe'];
@@ -1432,15 +1472,26 @@ class AttackHandler {
             $counts_to_subtract = [];
             foreach($own_casualties as $unit_id => $count) {
                 if ($count > 0) {
-                    // A chave 'hero' é especial, as outras são 'uX'
+                    $woundedAdd = isset($battleResult['wounded']['defender']['own'][$unit_id]) ? (int)$battleResult['wounded']['defender']['own'][$unit_id] : 0;
                     $unit_ids_to_update[] = ($unit_id == 'hero') ? 'hero' : 'u' . $unit_id;
-                    $counts_to_subtract[] = $count;
+                    $counts_to_subtract[] = $count + $woundedAdd;
                 }
             }
             if (!empty($unit_ids_to_update)) {
                 $modes_to_apply = array_fill(0, count($unit_ids_to_update), 0);
                 $this->database->modifyUnit($defenderWref, $unit_ids_to_update, $counts_to_subtract, $modes_to_apply); // Modo 0 = subtrair
             }
+        }
+
+        // 2b. Salvar feridos (wounded) do defensor na tabela wounded
+        if (!empty($battleResult['wounded']['defender']['own'])) {
+            $wSets = [];
+            foreach ($battleResult['wounded']['defender']['own'] as $uid => $count) {
+                if ($count <= 0) continue;
+                $pos = ((($uid - 1) % 10) + 1);
+                if ($pos >= 1 && $pos <= 6) $wSets[$pos] = $count;
+            }
+            $this->database->updateWounded($defenderWref, $wSets, 0);
         }
 
         // 3. Aplicar baixas de tropas de REFORÇOS
@@ -1491,6 +1542,16 @@ class AttackHandler {
                 }
 
                 if ($deleteReinforcement) $this->database->deleteReinf($reinf_id);
+
+                if (!empty($battleResult['wounded']['defender']['reinforcements'][$reinf_id])) {
+                    $wSets2 = [];
+                    foreach ($battleResult['wounded']['defender']['reinforcements'][$reinf_id] as $uid => $count) {
+                        if ($count <= 0) continue;
+                        $pos = (($uid - 1) % 10) + 1;
+                        if ($pos >= 1 && $pos <= 6) $wSets2[$pos] = $count;
+                    }
+                    $this->database->updateWounded($originalReinf['from'], $wSets2, 0);
+                }
             }
         }
 

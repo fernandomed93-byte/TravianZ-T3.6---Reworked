@@ -83,8 +83,30 @@ class Technology {
 				case "t3":
 				$this->procTrain($post,true);
 				break;
+				case "t4":
+				$this->procHeal($post);
+				break;
 			}
 		}
+	}
+
+	private function procHeal($post) {
+		global $database, $session, $village;
+		$gid = (int)$post['id'];
+		$gidType = $database->getResourceLevel($village->wid)['f'.$gid.'t'];
+
+		if ($gidType != 46 && $gidType != 48) return;
+
+		for ($pos = 1; $pos <= 6; $pos++) {
+			if (isset($post['t'.$pos]) && $post['t'.$pos] > 0) {
+				$amt = (int)$post['t'.$pos];
+				if ($amt <= 0) continue;
+				$globalId = ($session->tribe - 1) * 10 + $pos;
+				$this->trainUnit($globalId, $amt, false, true);
+			}
+		}
+		header("Location: build.php?id=".$post['id']);
+		exit;
 	}
 
 	public function procTechno($get) {
@@ -119,6 +141,7 @@ class Technology {
 
 		$residence = [9, 10, 19, 20, 29, 30, 49, 50, 59, 60, 69, 70, 79, 80, 89, 90];
 		$trapper = [99];
+		$healing = range(2001, 2090);
 		
 		if(count($trainingarray) > 0) {
 			foreach($trainingarray as $train) {
@@ -155,6 +178,11 @@ class Technology {
 				}
 				if($type == 8 && in_array($train['unit'],$trapper)) {
 					$train['name'] = $this->unarray[$train['unit']];
+					array_push($listarray,$train);
+				}
+				if($type == 9 && in_array($train['unit'],$healing)) {
+					$train['name'] = $this->unarray[$train['unit'] - 2000];
+					$train['unit'] -= 2000;
 					array_push($listarray,$train);
 				}
 			}
@@ -494,10 +522,10 @@ class Technology {
         return ceil($database->getArtifactsValueInfluence($who, $vid, 4, $upkeep, false));
 	}
 
-    private function trainUnit($unit, $amt, $great = false) {
-		global $session, $database, ${'u'.$unit}, $building, $village, $bid19, $bid20, $bid21, $bid25, $bid26, $bid29, $bid30, $bid36, $bid41, $bid44, $bid49;
+    private function trainUnit($unit, $amt, $great = false, $heal = false) {
+		global $session, $database, ${'u'.$unit}, $building, $village, $bid19, $bid20, $bid21, $bid25, $bid26, $bid29, $bid30, $bid36, $bid41, $bid44, $bid46, $bid48, $bid49;
 
-		if($this->getTech($unit) || $unit % 10 <= 1 || $unit == 99) {
+		if($heal || $this->getTech($unit) || $unit % 10 <= 1 || $unit == 99) {
 			$footies = [1, 2, 3, 11, 12, 13, 14, 21, 22, 31, 32, 33, 34, 41, 42, 43, 44, 51, 52, 53, 61, 62, 63, 71, 72, 73, 74, 81, 82, 83, 84];
 			$calvary = [4, 5, 6, 15, 16, 23, 24, 25, 26, 35, 36, 45, 46, 54, 55, 56, 64, 65, 66, 75, 76, 85, 86];
 			$workshop = [7, 8, 17, 18, 27, 28, 37, 38, 47, 48, 57, 58, 67, 68, 77, 78, 87, 88];
@@ -505,35 +533,43 @@ class Technology {
 			$trapper = [99];
 			
 			//Check if the player is trying to train troops without the needed buildings
-			if((in_array($unit, $footies) && ($building->getTypeLevel(19) == 0 && $building->getTypeLevel(29) == 0)) ||
-			    (in_array($unit, $calvary) && ($building->getTypeLevel(20) == 0 && $building->getTypeLevel(30) == 0)) ||
-			    (in_array($unit, $workshop) && ($building->getTypeLevel(21) == 0 && $building->getTypeLevel(49) == 0)) ||
-			    (in_array($unit, $special) && ($building->getTypeLevel(25) < 10 && $building->getTypeLevel(26) < 10 && $building->getTypeLevel(44) < 10)) ||
-			    (in_array($unit, $trapper) && $building->getTypeLevel(36) == 0)) return;
+			if($heal) {
+				if($building->getTypeLevel(46) == 0 && $building->getTypeLevel(48) == 0) return;
+			} else {
+				if((in_array($unit, $footies) && ($building->getTypeLevel(19) == 0 && $building->getTypeLevel(29) == 0)) ||
+				    (in_array($unit, $calvary) && ($building->getTypeLevel(20) == 0 && $building->getTypeLevel(30) == 0)) ||
+				    (in_array($unit, $workshop) && ($building->getTypeLevel(21) == 0 && $building->getTypeLevel(49) == 0)) ||
+				    (in_array($unit, $special) && ($building->getTypeLevel(25) < 10 && $building->getTypeLevel(26) < 10 && $building->getTypeLevel(44) < 10)) ||
+				    (in_array($unit, $trapper) && $building->getTypeLevel(36) == 0)) return;
+			}
 			
 			
-			if(in_array($unit, $footies)) {		    
+			if($heal) {
+				$gid = $building->getTypeLevel(48) > 0 ? 48 : 46;
+				$bid = ($gid == 48) ? $bid48 : $bid46;
+				$each = round(($bid[$building->getTypeLevel($gid)]['attri'] / 100) * ${'u'.$unit}['time'] / 2 / SPEED);
+			} elseif(in_array($unit, $footies)) {		    
 				if($great) {
 					$each = round(($bid29[$building->getTypeLevel(29)]['attri'] / 100) * ${'u'.$unit}['time'] / SPEED);
 				} else {
 					$each = round(($bid19[$building->getTypeLevel(19)]['attri'] / 100) * ${'u'.$unit}['time'] / SPEED);
 				}
 			}
-			if(in_array($unit, $calvary)) {		    
+			elseif(in_array($unit, $calvary)) {		    
 				if($great) {
 					$each = round(($bid30[$building->getTypeLevel(30)]['attri'] * ($building->getTypeLevel(41)>=1?(1/$bid41[$building->getTypeLevel(41)]['attri']):1) / 100) * ${'u'.$unit}['time'] / SPEED);
 				} else {
 					$each = round(($bid20[$building->getTypeLevel(20)]['attri'] * ($building->getTypeLevel(41)>=1?(1/$bid41[$building->getTypeLevel(41)]['attri']):1) / 100) * ${'u'.$unit}['time'] / SPEED);
 				}
 			}
-			if(in_array($unit, $workshop)) {	    
+			elseif(in_array($unit, $workshop)) {	    
 				if($great) {
 					$each = round(($bid49[$building->getTypeLevel(49)]['attri'] / 100) * ${'u'.$unit}['time'] / SPEED);
 				} else {
 					$each = round(($bid21[$building->getTypeLevel(21)]['attri'] / 100) * ${'u'.$unit}['time'] / SPEED);
 				}
 			}
-			if(in_array($unit, $special)) {			    
+			elseif(in_array($unit, $special)) {			    
 				if($building->getTypeLevel(25) > 0){
 					$each = round(($bid25[$building->getTypeLevel(25)]['attri'] / 100) * ${'u'.$unit}['time'] / SPEED);
 				} elseif($building->getTypeLevel(44) > 0) {
@@ -542,10 +578,11 @@ class Technology {
 					$each = round(($bid26[$building->getTypeLevel(26)]['attri'] / 100) * ${'u'.$unit}['time'] / SPEED);
 				}
 			}
-			if(in_array($unit, $trapper)) {
+			elseif(in_array($unit, $trapper)) {
 			    
 					$each = round(($bid19[$building->getTypeLevel(36)]['attri'] / 100) * ${'u'.$unit}['time'] / SPEED);
 			}	
+			
 			if($unit % 10 == 0 || $unit % 10 == 9 && $unit != 99) {
 				if($this->maxUnit($unit, $great) < $amt) $amt = 0;
 				else
@@ -578,7 +615,14 @@ class Technology {
 			$crop = ${'u'.$unit}['crop'] * $amt * ($great ? 3 : 1);
 
 			if($database->modifyResource($village->wid, $wood , $clay, $iron, $crop, 0) && $amt > 0) {
-				$database->trainUnit($village->wid, $unit + ($great ? 1000 : 0), $amt, ${'u'.$unit}['pop'], $each, 0);
+				if($heal) {
+					$pos = (($unit - 1) % 10) + 1;
+					if ($pos >= 1 && $pos <= 6) {
+						$database->updateWounded($village->wid, [$pos => $amt], 1);
+					}
+				}
+				$dbUnit = $heal ? (2000 + $unit) : ($great ? (1000 + $unit) : $unit);
+				$database->trainUnit($village->wid, $dbUnit, $amt, ${'u'.$unit}['pop'], $each, 0);
 			}
 		}
 	}

@@ -1,32 +1,11 @@
-<div id="build" class="gid48"><a href="#" onClick="return Popup(48,4);" class="build_logo">
-	<img class="building g48" src="gpack/travian_default/img/x.gif" alt="Big Hospital" title="<?php echo BIGHOSPITAL; ?>" />
-</a>
-<h1><?php echo BIGHOSPITAL; ?> <span class="level"><?php echo LEVEL; ?> <?php echo $village->resarray['f'.$id]; ?></span></h1>
-<p class="build_desc"><?php echo BIGHOSPITAL_DESC; ?></p>
-	<table cellpadding="1" cellspacing="1" id="build_value">
-		<tr>
-			<th><?php echo CURRENT_BONUS; ?></th>
-			<td><b><?php echo $village->resarray['f'.$id] > 0 ? $bid48[$village->resarray['f'.$id]]['attri'] * 100 : 0; ?></b> <?php echo PERCENT; ?></td>
-		</tr>
-		<tr>
-		<?php 
-        if(!$building->isMax($village->resarray['f'.$id.'t'],$id)) {
-			$next = $village->resarray['f'.$id] + 1 + $loopsame + $doublebuild + $master;
-		if($next <= 20){
-        ?>
-			<th><?php echo BONUS_LEVEL; ?> <?php echo $next; ?>:</th>
-			<td><b><?php echo $bid48[$next]['attri'] * 100; ?></b> <?php echo PERCENT; ?></td>
-            <?php
-            }else{
-        ?>
-			<th><?php echo BONUS_LEVEL; ?> 20:</th>
-			<td><b><?php echo $bid48[20]['attri'] * 100; ?></b> <?php echo PERCENT; ?></td>
-            <?php
-			}}
-            ?>
-		</tr>
-	</table>
-<?php 
+<div id="build" class="gid48"><h1><?php echo BIGHOSPITAL; ?> <span class="level"><?php echo LEVEL; ?> <?php echo $village->resarray['f'.$id]; ?></span></h1>
+<p class="build_desc">
+	<a href="#" onClick="return Popup(48,4, 'gid');" class="build_logo">
+		<img class="building g48" src="gpack/travian_default/img/x.gif" alt="Big Hospital" title="<?php echo BIGHOSPITAL; ?>" />
+	</a>
+	<?php echo BIGHOSPITAL_DESC; ?></p>
+<?php
+include("48_train.tpl");
 include("upgrade.tpl");
 ?>
-</p></div>
+</div>

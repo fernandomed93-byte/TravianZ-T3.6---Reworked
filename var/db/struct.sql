@@ -419,7 +419,8 @@ CREATE TABLE IF NOT EXISTS `%PREFIX%config` (
   `lastautomationtime` int DEFAULT '0',
   `nextStarvationUpdate` int DEFAULT '0',
   `time_offset` int DEFAULT '0',
-  `enableWWstatistics` int DEFAULT NULL
+  `enableWWstatistics` int DEFAULT NULL,
+  `lastWoundedDecay` int DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 INSERT INTO `%PREFIX%config` (`lastgavemedal`, `enableWWstatistics`) VALUES (0, 0);
@@ -1501,6 +1502,23 @@ CREATE TABLE IF NOT EXISTS `%PREFIX%units` (
   `hero` int DEFAULT '0',
   PRIMARY KEY (`vref`),
   KEY `idx_units_vref` (`vref`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+
+--
+-- Table structure for table `%PREFIX%wounded`
+--
+
+CREATE TABLE IF NOT EXISTS `%PREFIX%wounded` (
+  `vref` int NOT NULL,
+  `w1` int DEFAULT '0',
+  `w2` int DEFAULT '0',
+  `w3` int DEFAULT '0',
+  `w4` int DEFAULT '0',
+  `w5` int DEFAULT '0',
+  `w6` int DEFAULT '0',
+  PRIMARY KEY (`vref`),
+  KEY `idx_wounded_vref` (`vref`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 

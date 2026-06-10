@@ -14,6 +14,9 @@
     <li><a href="manual.php?typ=4&amp;gid=38">Great Warehouse</a></li>
     <li><a href="manual.php?typ=4&amp;gid=39">Great Granary</a></li>
     <li><a href="manual.php?typ=4&amp;gid=41">Horse Drinking Trough</a></li>
+    <li><a href="manual.php?typ=4&amp;gid=44">Command Center</a></li>
+    <li><a href="manual.php?typ=4&amp;gid=46">Hospital</a></li>
+    <li><a href="manual.php?typ=4&amp;gid=48">Big Hospital</a></li>
     <li><a href="manual.php?typ=4&amp;gid=40">Wonder Of The World</a></li>
 </ul>
 <map id="nav" name="nav">

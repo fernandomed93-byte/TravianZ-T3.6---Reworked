@@ -242,6 +242,7 @@ class Battle {
 
 		$keyholder = [];
 		$resourcearray = $database->getResourceLevel($vid);
+        if(!is_array($resourcearray)) return 0; //OASIS
 
 		foreach(array_keys($resourcearray, $tid) as $key) {
 			if(strpos($key,'t')) {
@@ -942,7 +943,7 @@ class Battle {
                     $ab_level = $att_ab['b' . (($unit_id - 1) % 10 + 1)];           
                 }
                 $unit_attack = $unit_data['atk'] + ($ab_level > 0 ? ($unit_data['atk'] + 300 * $unit_data['pop'] / 7) * (pow(1.007, $ab_level) - 1) : 0);
-                (in_array($unit_id, [4, 5, 6, 15, 16, 23, 24, 25, 26, 45, 46])) ? $cap += $count * $unit_attack : $ap += $count * $unit_attack;
+                (in_array($unit_id, [4, 5, 6, 15, 16, 23, 24, 25, 26, 45, 46, 54, 55, 56, 64, 65, 66, 75, 76, 85, 86])) ? $cap += $count * $unit_attack : $ap += $count * $unit_attack;
             }
         }
         if (!$isScout && isset($attacker['forces']['units']['uhero']) && $attacker['forces']['units']['uhero'] > 0) {
@@ -1138,6 +1139,69 @@ class Battle {
                     $finalResult['casualties']['defender']['reinforcements'][$rid][$uid] = round($c * $defender_loss_percentage);
                 }
                 
+            }
+        }
+
+        // --- 5.5 CÁLCULO DE FERIDOS (HOSPITAL) ---
+        $calcWounded = function($casualties, $healPct) {
+            $wounded = [];
+            foreach ($casualties as $uid => $count) {
+                if (!is_numeric($uid)) continue;
+                $pos = (($uid - 1) % 10) + 1;
+                if ($pos >= 1 && $pos <= 6) {
+                    $w = round($count * $healPct);
+                    if ($w > 0) $wounded[$uid] = $w;
+                }
+            }
+            return $wounded;
+        };
+
+        $finalResult['wounded'] = ['attacker' => [], 'defender' => ['own' => [], 'reinforcements' => []]];
+
+        // 5.5a Atacante (hospital na vila de origem)
+        $attWref = $attacker['info']['wref'];
+        $attHosp = $this->getTypeLevel(46, $attWref);
+        $attBigHosp = $this->getTypeLevel(48, $attWref);
+        $attHeal = $attBigHosp > 0 ? 0.6 : ($attHosp > 0 ? 0.4 : 0);
+        if ($attHeal > 0) {
+            $wounded = $calcWounded($finalResult['casualties']['attacker'], $attHeal);
+            foreach ($wounded as $uid => $w) {
+                $finalResult['wounded']['attacker'][$uid] = $w;
+                $finalResult['casualties']['attacker'][$uid] -= $w;
+            }
+        }
+
+        // 5.5b Defensor (tropas próprias)
+        $defWref = $defender['info']['wref'];
+        $defHosp = $this->getTypeLevel(46, $defWref);
+        $defBigHosp = $this->getTypeLevel(48, $defWref);
+        $defHeal = $defBigHosp > 0 ? 0.6 : ($defHosp > 0 ? 0.4 : 0);
+        if ($defHeal > 0) {
+            $wounded = $calcWounded($finalResult['casualties']['defender']['own'], $defHeal);
+            foreach ($wounded as $uid => $w) {
+                $finalResult['wounded']['defender']['own'][$uid] = $w;
+                $finalResult['casualties']['defender']['own'][$uid] -= $w;
+            }
+        }
+
+        // 5.5c Reforços (cada reforço usa hospital da sua vila de origem)
+        if (!empty($finalResult['casualties']['defender']['reinforcements'])) {
+            foreach ($finalResult['casualties']['defender']['reinforcements'] as $rid => $casualties) {
+                $reinfFrom = null;
+                foreach ($context['defender']['forces']['reinforcements'] as $r) {
+                    if (isset($r['id']) && $r['id'] == $rid) { $reinfFrom = $r['from']; break; }
+                }
+                if (!$reinfFrom) continue;
+                $rHosp = $this->getTypeLevel(46, $reinfFrom);
+                $rBigHosp = $this->getTypeLevel(48, $reinfFrom);
+                $rHeal = $rBigHosp > 0 ? 0.6 : ($rHosp > 0 ? 0.4 : 0);
+                if ($rHeal > 0) {
+                    $wounded = $calcWounded($casualties, $rHeal);
+                    foreach ($wounded as $uid => $w) {
+                        $finalResult['wounded']['defender']['reinforcements'][$rid][$uid] = $w;
+                        $finalResult['casualties']['defender']['reinforcements'][$rid][$uid] -= $w;
+                    }
+                }
             }
         }
 

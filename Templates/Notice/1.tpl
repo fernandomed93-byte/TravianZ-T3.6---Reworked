@@ -222,6 +222,16 @@ if(isset($dataarray[$heroIndex]) && $dataarray[$heroIndex] > 0){
     echo "<td $tdclass1>".$dataarray[$heroIndex + $heroDeadIndex]."</td>";
 }
 }
+
+$woundFlagIdx = count($dataarray) - 1;
+
 ?>
 </tr></tbody></table>
-</td></tr></tbody></table>
+</td></tr>
+
+<?php
+if (isset($dataarray[$woundFlagIdx]) && $dataarray[$woundFlagIdx] > 0) {
+    echo "<tr><td colspan=2 >Some units were wounded in the battle.</td></tr>";
+}
+?>
+</tbody></table>

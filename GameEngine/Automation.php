@@ -55,7 +55,8 @@ class Automation {
 
     private $group_world_maintenance_methods = [
         "pruneResource", "pruneOResource", "clearDeleting", "starvationNew",
-        "delTradeRoute", "TradeRoute", "regenerateOasisTroops", "archiveAndPrune"
+        "delTradeRoute", "TradeRoute", "regenerateOasisTroops", "archiveAndPrune",
+        "woundedDecay"
     ];
 
     private $group_game_events_methods = [
@@ -1493,7 +1494,11 @@ class Automation {
                     }
                     else $trained = $train['amt'];               
                     
-                    if($train['unit'] > 1000 && $train['unit'] != 99){
+                    if($train['unit'] > 2000) {
+                        $realUnit = $train['unit'] - 2000;
+                        $database->modifyUnit($train['vref'], [$realUnit], [$trained], [1]);
+                    }
+                    elseif($train['unit'] > 1000 && $train['unit'] != 99){
                         $database->modifyUnit($train['vref'], [$train['unit'] - 1000], [$trained], [1]);
                     }
                     else $database->modifyUnit($train['vref'], [$train['unit']], [$trained], [1]);
@@ -2818,6 +2823,11 @@ class Automation {
                 mysqli_query($db, $updateAQ);
             }
         }
+    }
+
+    function woundedDecay(){
+        global $database;
+        $database->woundedDecay();
     }
 
     /**

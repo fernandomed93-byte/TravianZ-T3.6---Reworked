@@ -11,6 +11,7 @@
     <li><a href="manual.php?typ=4&amp;gid=9">Bakery</a></li>
     <li><a href="manual.php?typ=4&amp;gid=10">Warehouse</a></li>
     <li><a href="manual.php?typ=4&amp;gid=11">Granary</a></li>
+    <li><a href="manual.php?typ=4&amp;gid=45">Waterworks</a></li>
 </ul>
 <map id="nav" name="nav">
     <area href="<?php echo NEW_FUNCTIONS_MANUAL_NATURENATARS ? "manual.php?typ=2&amp;s=5" : "manual.php?typ=2&amp;s=3"; ?>" title="back" coords="0,0,45,18" shape="rect" alt="" />
