@@ -560,13 +560,14 @@ class Building {
             case 42: return $session->tribe == 7;
             case 43: return $session->tribe == 6;
             case 44: return $this->getTypeLevel(15) >= 5 && $session->tribe == 6 && !$isBuilt && !$this->getTypeField(25) && !$this->getTypeField(26);
-            case 45: return $this->getTypeLevel(37) >= 10 && $session->tribe == 7 && !$isBuilt;
+            case 45: return $this->getTypeLevel(37) >= 10 && $this->getTypeLevel(15) >= 10 && $session->tribe == 7 && !$isBuilt;
             case 46: return $this->getTypeLevel(15) >= 10 && $this->getTypeLevel(22) >= 15 && !$isBuilt && !$this->getTypeField(48);
             case 47: return $session->tribe == 8;
-            case 48: return $this->getTypeLevel(16) >= 10 && $this->getTypeLevel(20) == 20 && ($session->tribe == 8 || $session->tribe == 9) && !$isBuilt && !$this->getTypeField(46);
+            case 48: return $this->getTypeLevel(15) >= 5 && $this->getTypeLevel(22) == 10 && ($session->tribe == 8 || $session->tribe == 9) && !$isBuilt && !$this->getTypeField(46);
             case 49: return GREAT_WKS && $this->getTypeLevel(21) == 20 && $village->capital == 0 && !$isBuilt;
             case 50: return $session->tribe == 9;
             default: return false;
+
         }
 	}
 
