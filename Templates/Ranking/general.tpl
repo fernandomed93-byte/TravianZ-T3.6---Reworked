@@ -1,26 +1,34 @@
 <?php
- 
+
 #################################################################################
 ##              -= YOU MAY NOT REMOVE OR CHANGE THIS NOTICE =-                 ##
 ## --------------------------------------------------------------------------- ##
-##  Filename       general    .tpl                                             ##
+##  Filename       general.tpl                                                 ##
 ##  Developed by:  Dzoki                                                       ##
 ##  License:       TravianZ Project                                            ##
 ##  Copyright:     TravianZ (c) 2010-2011. All rights reserved.                ##
 ##  Enhanced:      saulyzas                                                    ##
+##  Optimized:     Consolidated 20+ queries into 4 (2024)                      ##
 #################################################################################
- 
-   $tribe1 = mysqli_fetch_array(mysqli_query($database->dblink,"SELECT Count(*) as Total FROM ".TB_PREFIX."users WHERE tribe = 1"), MYSQLI_ASSOC);
-   $tribe2 = mysqli_fetch_array(mysqli_query($database->dblink,"SELECT Count(*) as Total FROM ".TB_PREFIX."users WHERE tribe = 2"), MYSQLI_ASSOC);
-   $tribe3 = mysqli_fetch_array(mysqli_query($database->dblink,"SELECT Count(*) as Total FROM ".TB_PREFIX."users WHERE tribe = 3"), MYSQLI_ASSOC);
-   $tribe6 = mysqli_fetch_array(mysqli_query($database->dblink,"SELECT Count(*) as Total FROM ".TB_PREFIX."users WHERE tribe = 6"), MYSQLI_ASSOC);
-   $tribe7 = mysqli_fetch_array(mysqli_query($database->dblink,"SELECT Count(*) as Total FROM ".TB_PREFIX."users WHERE tribe = 7"), MYSQLI_ASSOC);
-   $tribe8 = mysqli_fetch_array(mysqli_query($database->dblink,"SELECT Count(*) as Total FROM ".TB_PREFIX."users WHERE tribe = 8"), MYSQLI_ASSOC);
-   $tribe9 = mysqli_fetch_array(mysqli_query($database->dblink,"SELECT Count(*) as Total FROM ".TB_PREFIX."users WHERE tribe = 9"), MYSQLI_ASSOC);
 
-   $tribes = [$tribe1['Total'], $tribe2['Total'], $tribe3['Total'], $tribe6['Total'], $tribe7['Total'], $tribe8['Total'], $tribe9['Total']];
-   $users = mysqli_fetch_array(mysqli_query($database->dblink,"SELECT Count(*) as Total FROM " . TB_PREFIX . "users WHERE tribe > 0 AND (tribe <=3 OR tribe > 5)"), MYSQLI_ASSOC);
-   $users = $users['Total'];
+// Query 1: All tribe counts in a single GROUP BY (replaces 7 separate queries)
+$tribeCounts = [];
+$result = mysqli_query($database->dblink, "SELECT tribe, COUNT(*) as Total FROM ".TB_PREFIX."users WHERE tribe IN (1,2,3,6,7,8,9) GROUP BY tribe");
+while ($row = mysqli_fetch_assoc($result)) {
+    $tribeCounts[(int)$row['tribe']] = (int)$row['Total'];
+}
+$tribes = [
+    $tribeCounts[1] ?? 0,
+    $tribeCounts[2] ?? 0,
+    $tribeCounts[3] ?? 0,
+    $tribeCounts[6] ?? 0,
+    $tribeCounts[7] ?? 0,
+    $tribeCounts[8] ?? 0,
+    $tribeCounts[9] ?? 0,
+];
+
+// Total registered players (from tribe GROUP BY sum is cheaper than another query)
+$users = array_sum($tribes);
 ?>
 <table cellpadding="1" cellspacing="1" id="world_player" class="world">
         <thead>
@@ -29,17 +37,15 @@
             </tr>
             <tr>
                 <td>Total Villages</td>
-                
                 <td>Total Population</td>
             </tr>
         </thead>
         <tbody>
             <tr>
-                
                 <td>
 <?php
+// Query 2: Village totals (single query, was already fine but keeping it)
 $result2 = mysqli_fetch_array(mysqli_query($database->dblink,"SELECT Count(*) as Total, SUM(pop) AS sumofpop FROM ".TB_PREFIX."vdata"), MYSQLI_ASSOC);
-
 echo $result2['Total'];
 ?></td>
                 <td>
@@ -50,61 +56,56 @@ echo $result2['sumofpop'];
 </tbody>
 </table>
 <br />
- 
+
     <table cellpadding="1" cellspacing="1" id="world_player" class="world">
         <thead>
             <tr>
                 <th colspan="2">Players</th>
             </tr>
         </thead>
- 
+
         <tbody>
             <tr>
                 <th>Registered players</th>
- 
-                <td><?php
-                   echo $users; ?></td>
+                <td><?php echo $users; ?></td>
             </tr>
- 
+
             <tr>
                 <th>Active players</th>
- 
                 <td><?php
-                   $active = mysqli_num_rows(mysqli_query($database->dblink,"SELECT * FROM ".TB_PREFIX."users WHERE timestamp > ".(time() - (3600*24))." AND tribe!=0 AND tribe!=4 AND tribe!=5"));
-                   echo $active; ?></td>
+                   // Query 3: Active players (using COUNT instead of SELECT *)
+                   $activeResult = mysqli_query($database->dblink,"SELECT COUNT(*) as Total FROM ".TB_PREFIX."users WHERE timestamp > ".(time() - 86400)." AND tribe!=0 AND tribe!=4 AND tribe!=5");
+                   echo mysqli_fetch_assoc($activeResult)['Total'];
+                   ?></td>
             </tr>
- 
+
             <tr>
                 <th>Players online</th>
- 
                 <td><?php
-                    $online = mysqli_query($database->dblink,"SELECT Count(*) as Total FROM ".TB_PREFIX."users WHERE timestamp > ".(time() - (60*10))." AND tribe!=0 AND tribe!=4 AND tribe!=5");
+                    $online = mysqli_query($database->dblink,"SELECT Count(*) as Total FROM ".TB_PREFIX."users WHERE timestamp > ".(time() - 600)." AND tribe!=0 AND tribe!=4 AND tribe!=5");
                     if (!empty($online)) {
                         echo mysqli_fetch_assoc($online)['Total'];
                     } else {
                         echo 0;
                     }
                    ?></td>
-                   
             </tr>
         </tbody>
     </table>
- 
+
     <table cellpadding="1" cellspacing="1" id="world_tribes" class="world">
         <thead>
             <tr>
                 <th colspan="3">Tribes</th>
             </tr>
- 
+
             <tr>
                 <td>Tribe</td>
- 
                 <td>Registered</td>
- 
                 <td>Percent</td>
             </tr>
         </thead>
- 
+
         <tbody>
             <tr>
                 <td>Romans</td>
@@ -160,73 +161,32 @@ echo $result2['sumofpop'];
             <tr>
                 <th colspan="3">Miscellaneous</th>
             </tr>
- 
+
             <tr>
                 <td>Attacks</td>
- 
                 <td>Casualties</td>
- 
                 <td>Date</td>
             </tr>
         </thead>
- 
+
         <tbody>
-            <tr>
-                <td><?php echo $database->getAttackByDate(time()); ?></td>
- 
-                <td><?php echo $database->getAttackCasualties(time()); ?></td>
- 
-                <td><?php echo date("j. M"); ?></td>
-            </tr>
-            
-            <tr>
-                <td><?php echo $database->getAttackByDate(time()-(86400*1)); ?></td>
- 
-                <td><?php echo $database->getAttackCasualties(time()-(86400*1)); ?></td>
- 
-                <td><?php echo date("j. M",time()-(86400*1)); ?></td>
-            </tr>
- 
-            <tr>
-                <td><?php echo $database->getAttackByDate(time()-(86400*2)); ?></td>
- 
-                <td><?php echo $database->getAttackCasualties(time()-(86400*2)); ?></td>
- 
-                <td><?php echo date("j. M",time()-(86400*2)); ?></td>
-            </tr>
- 
-            <tr>
-                <td><?php echo $database->getAttackByDate(time()-(86400*3)); ?></td>
- 
-                <td><?php echo $database->getAttackCasualties(time()-(86400*3)); ?></td>
- 
-                <td><?php echo date("j. M",time()-(86400*3)); ?></td>
-            </tr>
-            <tr>
-                <td><?php echo $database->getAttackByDate(time()-(86400*4)); ?></td>
- 
-                <td><?php echo $database->getAttackCasualties(time()-(86400*4)); ?></td>
- 
-                <td><?php echo date("j. M",time()-(86400*4)); ?></td>
-            </tr>
- 
-            <tr>
-                <td><?php echo $database->getAttackByDate(time()-(86400*5)); ?></td>
- 
-                <td><?php echo $database->getAttackCasualties(time()-(86400*5)); ?></td>
- 
-                <td><?php echo date("j. M",time()-(86400*5)); ?></td>
-            </tr>
- 
-            <tr>
-                <td><?php echo $database->getAttackByDate(time()-(86400*6)); ?></td>
- 
-                <td><?php echo $database->getAttackCasualties(time()-(86400*6)); ?></td>
- 
-                <td><?php echo date("j. M",time()-(86400*6)); ?></td>
-            </tr>
+<?php
+// Query 4: Weekly attack stats in a single aggregated query (replaces 14 queries + 14 PHP loops)
+$weeklyStats = $database->getWeeklyAttackStats();
+for ($d = 0; $d < 7; $d++) {
+    $dayTs = time() - (86400 * $d);
+    $dayKey = date("Y-m-d", $dayTs);
+    $attacks = isset($weeklyStats[$dayKey]) ? $weeklyStats[$dayKey]['attack_count'] : 0;
+    $casualties = isset($weeklyStats[$dayKey]) ? $weeklyStats[$dayKey]['total_casualties'] : 0;
+    echo "<tr>
+        <td>$attacks</td>
+        <td>$casualties</td>
+        <td>".date("j. M", $dayTs)."</td>
+    </tr>";
+}
+?>
         </tbody>
     </table>
     <?php  ?>
-    
+
 <table cellpadding="1" cellspacing="1" id="search_navi"> <?php //fix the problem with footer.php, don't change or remove it ?>

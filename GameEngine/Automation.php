@@ -49,8 +49,8 @@ class Automation {
 
     private $group_accounts_alliances_methods = [
         "procNewClimbers", "ClearUser", "ClearInactive",
-        "celebrationComplete", "culturePoints", "updateGeneralAttack",
-        "checkInvitedPlayes", "CheckBan", "loyaltyRegeneration"
+        "celebrationComplete", "culturePoints", "rebuildStatCaches",
+        "updateGeneralAttack", "checkInvitedPlayes", "CheckBan", "loyaltyRegeneration"
     ];
 
     private $group_world_maintenance_methods = [
@@ -1843,11 +1843,20 @@ class Automation {
 
 
     
+	private function rebuildStatCaches() {
+		global $ranking;
+		$ranking->rebuildUserStats();
+		$ranking->rebuildVillageRanks();
+	}
+
 	private function procNewClimbers() {
 		global $database, $ranking;
 
+		// Garante que user_stats está populado antes de carregar o ranking completo
+		$ranking->rebuildUserStats();
+
 		// --- ETAPA 1: PREPARAÇÃO - Ler e processar o ranking completo UMA ÚNICA VEZ.
-		$ranking->procRankArray();
+		$ranking->procRankArray(0, 999999, true);
 		$climbers = $ranking->getRank();
 
 		// Guarda de segurança: se não há jogadores, não há o que fazer.
@@ -1910,7 +1919,8 @@ class Automation {
     private function procClimbers($uid) {
         global $database, $ranking;
         
-        $ranking->procRankArray();
+        $ranking->rebuildUserStats();
+        $ranking->procRankArray(0, 999999, true);
         $climbers = $ranking->getRank();
 		
         if(count($ranking->getRank()) > 0){

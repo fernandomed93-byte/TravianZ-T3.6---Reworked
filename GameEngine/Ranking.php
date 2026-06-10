@@ -7,43 +7,103 @@
 |              Advocaite & Dzoki & Donnchadh              |
 |                                                         |
 | Copyright:   TravianZ Project All rights reserved       |
+| Optimized:   SQL pagination + user_stats/village_ranks  |
+|              cache tables with staleness checks (2024)  |
 \** --------------------------------------------------- **/
 
 		class Ranking {
 
 			public $rankarray = [];
 			private $rlastupdate;
+			private $rankCount = 0;
+
+			// Staleness thresholds in seconds
+			const USER_STATS_TTL = 300;    // 5 minutes
+			const VILLAGE_RANKS_TTL = 900;  // 15 minutes
 
 			public function getRank() {
 				return $this->rankarray;
 			}
 
+			public function getRankCount() {
+				return $this->rankCount;
+			}
+
 			public function getUserRank($id) {
 			    global $database;
-			    
-				$ranking = $this->getRank();
-				$users = "SELECT Count(*) as Total FROM " . TB_PREFIX . "users WHERE access < " . (INCLUDE_ADMIN ? "10" : "8");
-				$users2 = mysqli_fetch_array(mysqli_query($database->dblink,$users), MYSQLI_ASSOC);
-				$users2 = $users2['Total'];
-				$users3 = $users2 + 1;
-				$myrank = 0;
-				if(count($ranking) > 0) {
-					for($i = 0;$i < $users3; $i++) {
-						if( isset( $ranking[$i]['userid'] ) ) {
-							if($ranking[$i]['userid'] == $id && $ranking[$i] != "pad") {
-								$myrank = $i;
-							}
-						}
-					}
+				$id = (int)$id;
+				$q = "SELECT rank_pos FROM " . TB_PREFIX . "user_stats WHERE uid = $id";
+				$result = mysqli_query($database->dblink, $q);
+				if ($result && ($row = mysqli_fetch_assoc($result))) {
+					return (int)$row['rank_pos'];
 				}
-				return $myrank;
+				return 0;
 			}
+
+			public function getAttackRank($uid) {
+				global $database;
+				$uid = (int)$uid;
+
+				$access_level = INCLUDE_ADMIN ? "10" : "8";
+				$tribeWhere = SHOW_NATARS
+					? "u.tribe <= 9 AND (u.id > 5 OR u.id = 3)"
+					: "(u.tribe <= 3 OR u.tribe > 5) AND u.id > 5";
+
+				$q = "SELECT COUNT(*) + 1 as rnk
+					FROM " . TB_PREFIX . "user_stats us
+					JOIN " . TB_PREFIX . "users u ON u.id = us.uid
+					WHERE (us.apall > (SELECT apall FROM " . TB_PREFIX . "user_stats WHERE uid = $uid)
+					       OR (us.apall = (SELECT apall FROM " . TB_PREFIX . "user_stats WHERE uid = $uid)
+					           AND us.totalpop > (SELECT totalpop FROM " . TB_PREFIX . "user_stats WHERE uid = $uid))
+					       OR (us.apall = (SELECT apall FROM " . TB_PREFIX . "user_stats WHERE uid = $uid)
+					           AND us.totalpop = (SELECT totalpop FROM " . TB_PREFIX . "user_stats WHERE uid = $uid)
+					           AND us.uid > $uid))
+					AND us.apall >= 0
+					AND u.access < $access_level
+					AND $tribeWhere";
+
+				$result = mysqli_query($database->dblink, $q);
+				if ($result && ($row = mysqli_fetch_assoc($result))) return (int)$row['rnk'];
+				return 0;
+			}
+
+			public function getDefenseRank($uid) {
+				global $database;
+				$uid = (int)$uid;
+
+				$access_level = INCLUDE_ADMIN ? "10" : "8";
+				$tribeWhere = SHOW_NATARS
+					? "u.tribe <= 9 AND (u.id > 5 OR u.id = 3)"
+					: "(u.tribe <= 3 OR u.tribe > 5) AND u.id > 5";
+
+				$q = "SELECT COUNT(*) + 1 as rnk
+					FROM " . TB_PREFIX . "user_stats us
+					JOIN " . TB_PREFIX . "users u ON u.id = us.uid
+					WHERE (us.dpall > (SELECT dpall FROM " . TB_PREFIX . "user_stats WHERE uid = $uid)
+					       OR (us.dpall = (SELECT dpall FROM " . TB_PREFIX . "user_stats WHERE uid = $uid)
+					           AND us.totalpop > (SELECT totalpop FROM " . TB_PREFIX . "user_stats WHERE uid = $uid))
+					       OR (us.dpall = (SELECT dpall FROM " . TB_PREFIX . "user_stats WHERE uid = $uid)
+					           AND us.totalpop = (SELECT totalpop FROM " . TB_PREFIX . "user_stats WHERE uid = $uid)
+					           AND us.uid > $uid))
+					AND us.dpall >= 0
+					AND u.access < $access_level
+					AND $tribeWhere";
+
+				$result = mysqli_query($database->dblink, $q);
+				if ($result && ($row = mysqli_fetch_assoc($result))) return (int)$row['rnk'];
+				return 0;
+			}
+
+			// ========== DISPATCH ==========
 
 			public function procRankReq($get) {
 				global $village, $session;
 				if(isset($get['id'])) {
 					switch($get['id']) {
 						case 1:
+							$this->ensureUserStatsFresh();
+							$rank = $this->searchRank($session->uid, "userid");
+							$this->getStart($rank > 0 ? $rank : 1);
 							$this->procRankArray();
 							break;
 						case 8:
@@ -55,37 +115,35 @@
 							}
 							break;
 						case 11:
+							$this->ensureUserStatsFresh();
+							$rank = $this->searchRank($session->uid, "userid");
+							$this->getStart($rank > 0 ? $rank : 1);
 							$this->procRankRaceArray(1);
-							if($this->searchRank($session->uid, "userid") != 0){
-							$this->getStart($this->searchRank($session->uid, "userid"));
-							}else{
-							$this->getStart(1);
-							}
 							break;
 						case 12:
+							$this->ensureUserStatsFresh();
+							$rank = $this->searchRank($session->uid, "userid");
+							$this->getStart($rank > 0 ? $rank : 1);
 							$this->procRankRaceArray(2);
-							if($this->searchRank($session->uid, "userid") != 0){
-							$this->getStart($this->searchRank($session->uid, "userid"));
-							}else{
-							$this->getStart(1);
-							}
 							break;
 						case 13:
+							$this->ensureUserStatsFresh();
+							$rank = $this->searchRank($session->uid, "userid");
+							$this->getStart($rank > 0 ? $rank : 1);
 							$this->procRankRaceArray(3);
-							if($this->searchRank($session->uid, "userid") != 0){
-							$this->getStart($this->searchRank($session->uid, "userid"));
-							}else{
-							$this->getStart(1);
-							}
 							break;
-						case 31:
-							$this->procAttRankArray();
-							$this->getStart($this->searchRank($session->uid, "userid"));
-							break;
-						case 32:
-							$this->procDefRankArray();
-							$this->getStart($this->searchRank($session->uid, "userid"));
-							break;
+					case 31:
+						$this->ensureUserStatsFresh();
+						$rank = $this->getAttackRank($session->uid);
+						$this->getStart($rank > 0 ? $rank : 1);
+						$this->procAttRankArray();
+						break;
+					case 32:
+						$this->ensureUserStatsFresh();
+						$rank = $this->getDefenseRank($session->uid);
+						$this->getStart($rank > 0 ? $rank : 1);
+						$this->procDefRankArray();
+						break;
 						case 2:
 							$this->getVRankPart();
 							$this->getStart($this->searchRank($village->wid, "wref"));
@@ -116,8 +174,10 @@
 							break;
 					}
 				} else {
+					$this->ensureUserStatsFresh();
+					$rank = $this->searchRank($session->uid, "userid");
+					$this->getStart($rank > 0 ? $rank : 1);
 					$this->procRankArray();
-					$this->getStart($this->searchRank($session->uid, "userid"));
 				}
 			}
 
@@ -165,13 +225,11 @@
 				if(!is_numeric($search)) {
 					$_SESSION['search'] = htmlspecialchars($search);
 				} else {
-					if($search > count($this->rankarray)) {
-						$search = count($this->rankarray) - 1;
-					}
+					$search = max(1, (int)$search);
 					while($search > (20 * $multiplier)) {
 						$multiplier += 1;
 					}
-					$start = 20 * $multiplier - 19 - 1;
+					$start = 20 * $multiplier - 19;
 					$_SESSION['search'] = htmlspecialchars($search);
 					$_SESSION['start'] = htmlspecialchars($start);
 				}
@@ -197,254 +255,471 @@
 				}
 			}
 
+			// ========== FAST SEARCH USING user_stats ==========
+
 			public function searchRank($name, $field) {
-			    
-			    while(1) {
-			        //$key = key($this->rankarray);
-			        for($key = 0; $key < count($this->rankarray); $key++){
-			            if($this->rankarray[$key]!="pad") {
-			                if($this->rankarray[$key][$field] == $name) return $key;
+			    global $database;
+
+			    if ($field == 'userid') {
+			        $name = (int)$name;
+			        $q = "SELECT rank_pos FROM " . TB_PREFIX . "user_stats WHERE uid = $name";
+			        $result = mysqli_query($database->dblink, $q);
+			        if ($result && ($row = mysqli_fetch_assoc($result))) return (int)$row['rank_pos'];
+			        return 0;
+			    }
+
+			    if ($field == 'username') {
+			        $nameEsc = $database->escape($name);
+			        $q = "SELECT us.rank_pos FROM " . TB_PREFIX . "user_stats us
+			              JOIN " . TB_PREFIX . "users u ON u.id = us.uid
+			              WHERE u.username = '$nameEsc'";
+			        $result = mysqli_query($database->dblink, $q);
+			        if ($result && ($row = mysqli_fetch_assoc($result))) return (int)$row['rank_pos'];
+			        return $name;
+			    }
+
+			    if ($field == 'uid') {
+			        $name = (int)$name;
+			        $q = "SELECT rank_pos FROM " . TB_PREFIX . "user_stats WHERE uid = $name";
+			        $result = mysqli_query($database->dblink, $q);
+			        if ($result && ($row = mysqli_fetch_assoc($result))) return (int)$row['rank_pos'];
+			        return 0;
+			    }
+
+			    if ($field == 'tag') {
+			        $nameEsc = $database->escape($name);
+			        $q = "SELECT rank_pos FROM " . TB_PREFIX . "user_stats WHERE ally_tag = '$nameEsc' LIMIT 1";
+			        $result = mysqli_query($database->dblink, $q);
+			        if ($result && ($row = mysqli_fetch_assoc($result))) return (int)$row['rank_pos'];
+			        return $name;
+			    }
+
+			    if ($field == 'id') {
+			        $name = (int)$name;
+			        // Alliance ID lookup — fallback to array scan
+			        if (count($this->rankarray) > 1) {
+			            for ($key = 0; $key < count($this->rankarray); $key++) {
+			                if ($this->rankarray[$key] != "pad" && isset($this->rankarray[$key]['id']) && $this->rankarray[$key]['id'] == $name) return $key;
 			            }
 			        }
-			        if(!next($this->rankarray)) {
-			            if($field != "userid") return $name;    
-			            else return 0;
-			        }
-			        
+			        return 0;
 			    }
+
+			    if ($field == 'name') {
+			        $nameEsc = $database->escape($name);
+			        $q = "SELECT rank_pos FROM " . TB_PREFIX . "village_ranks WHERE name = '$nameEsc' LIMIT 1";
+			        $result = mysqli_query($database->dblink, $q);
+			        if ($result && ($row = mysqli_fetch_assoc($result))) return (int)$row['rank_pos'];
+			        return $name;
+			    }
+
+			    if ($field == 'wref') {
+			        $name = (int)$name;
+			        $q = "SELECT rank_pos FROM " . TB_PREFIX . "village_ranks WHERE wref = $name";
+			        $result = mysqli_query($database->dblink, $q);
+			        if ($result && ($row = mysqli_fetch_assoc($result))) return (int)$row['rank_pos'];
+			        return 0;
+			    }
+
+			    // Fallback: scan array (for alliance tags, etc.)
+			    if (count($this->rankarray) > 1) {
+			        for ($key = 0; $key < count($this->rankarray); $key++) {
+			            if ($this->rankarray[$key] != "pad" && isset($this->rankarray[$key][$field]) && $this->rankarray[$key][$field] == $name) return $key;
+			        }
+			    }
+			    return ($field != "userid" && $field != "uid") ? $name : 0;
 			}
 
-			public function procRankArray() {
+			// ========== CACHE HELPERS ==========
+
+			private function ensureUserStatsFresh() {
+				global $database;
+				$lastUpdate = $database->getUserStatsLastUpdate();
+				if ($lastUpdate < (time() - self::USER_STATS_TTL)) {
+					$this->rebuildUserStats();
+				}
+			}
+
+			private function ensureVillageRanksFresh() {
+				global $database;
+				$lastUpdate = $database->getVillageRanksLastUpdate();
+				if ($lastUpdate < (time() - self::VILLAGE_RANKS_TTL)) {
+					$this->rebuildVillageRanks();
+				}
+			}
+
+			// ========== REBUILD: user_stats ==========
+
+			public function rebuildUserStats() {
+				global $database;
+
+				$access_level = INCLUDE_ADMIN ? "10" : "8";
+
+				if(SHOW_NATARS == True){
+					$where_conditions_users = "u.access < " . $access_level . " AND u.tribe <= 9 AND (u.id > 5 OR u.id = 3)";
+				} else {
+					$where_conditions_users = "u.access < " . $access_level . " AND (u.tribe <= 3 OR u.tribe > 5) AND u.id > 5";
+				}
+
+				// Populate user_stats with aggregated data from vdata
+				$q = "INSERT INTO " . TB_PREFIX . "user_stats
+						(uid, totalpop, totalvils, apall, dpall, ally_id, ally_tag, tribe, username, updated_at)
+					  SELECT
+						u.id,
+						COALESCE(SUM(v.pop), 0),
+						COUNT(CASE WHEN v.type != 99 THEN v.wref ELSE NULL END),
+						COALESCE(u.apall, 0),
+						COALESCE(u.dpall, 0),
+						u.alliance,
+						ad.tag,
+						u.tribe,
+						u.username,
+						UNIX_TIMESTAMP()
+					  FROM " . TB_PREFIX . "users u
+					  LEFT JOIN " . TB_PREFIX . "vdata v ON v.owner = u.id
+					  LEFT JOIN " . TB_PREFIX . "alidata ad ON ad.id = u.alliance
+					  WHERE $where_conditions_users
+					  GROUP BY u.id
+					  ON DUPLICATE KEY UPDATE
+						totalpop = VALUES(totalpop),
+						totalvils = VALUES(totalvils),
+						apall = VALUES(apall),
+						dpall = VALUES(dpall),
+						ally_id = VALUES(ally_id),
+						ally_tag = VALUES(ally_tag),
+						tribe = VALUES(tribe),
+						username = VALUES(username),
+						updated_at = VALUES(updated_at)";
+
+				mysqli_query($database->dblink, $q);
+
+				// Remove stale entries (users that no longer match filters)
+				$delWhere = "u.access >= " . $access_level;
+				if(SHOW_NATARS == True){
+					$delWhere = "(u.access >= " . $access_level . " OR (u.tribe > 9 AND u.id != 3) OR u.id <= 5) AND u.id != 3";
+				} else {
+					$delWhere = "(u.access >= " . $access_level . " OR (u.tribe = 4 OR u.tribe = 5) OR u.id <= 5)";
+				}
+				mysqli_query($database->dblink, "DELETE us FROM " . TB_PREFIX . "user_stats us
+					LEFT JOIN " . TB_PREFIX . "users u ON u.id = us.uid
+					WHERE $delWhere OR u.id IS NULL");
+
+				// Update rank_pos based on totalpop ordering
+				mysqli_query($database->dblink, "SET @rank = 0");
+				mysqli_query($database->dblink, "UPDATE " . TB_PREFIX . "user_stats
+					SET rank_pos = (@rank := @rank + 1)
+					ORDER BY totalpop DESC, totalvils DESC, uid DESC");
+			}
+
+			// ========== PLAYER RANKING (overview) ==========
+
+			public function procRankArray($offset = null, $limit = null, $full = false) {
 				global $multisort, $database;
-				
-				if($GLOBALS['db']->countUser() > 0){
-					$holder = array();
-					$access_level = INCLUDE_ADMIN ? "10" : "8";
-					$where_conditions_users = "";
 
-					if(SHOW_NATARS == True){
-						// Simplificado: (u.tribe <= 5 OR u.tribe = 5) é o mesmo que u.tribe <= 5
-						$where_conditions_users = "u.access < " . $access_level . " AND u.tribe <= 9 AND (u.id > 5 OR u.id = 3)";
-					} else {
-						$where_conditions_users = "u.access < " . $access_level . " AND (u.tribe <= 3 OR u.tribe > 5) AND u.id > 5";
+				$this->ensureUserStatsFresh();
+
+				$access_level = INCLUDE_ADMIN ? "10" : "8";
+
+				if(SHOW_NATARS == True){
+					$where_conditions_users = "u.access < " . $access_level . " AND u.tribe <= 9 AND (u.id > 5 OR u.id = 3)";
+				} else {
+					$where_conditions_users = "u.access < " . $access_level . " AND (u.tribe <= 3 OR u.tribe > 5) AND u.id > 5";
+				}
+
+				// Count total
+				$countQ = "SELECT COUNT(*) as total FROM " . TB_PREFIX . "user_stats us
+				           JOIN " . TB_PREFIX . "users u ON u.id = us.uid
+				           WHERE $where_conditions_users";
+				$countResult = mysqli_query($database->dblink, $countQ);
+				$this->rankCount = (int)mysqli_fetch_assoc($countResult)['total'];
+
+				// Determine offset/limit — $full bypasses pagination for cron use
+				if ($full) {
+					$offset = 0;
+					$limit = 999999;
+				} elseif ($offset === null) {
+					$page = 1;
+					if (isset($_SESSION['start'])) {
+						$page = max(1, (int)ceil((int)$_SESSION['start'] / 20));
 					}
-					
-					$q = "SELECT
-								u.id AS userid,
-								u.username AS username,
-								u.oldrank AS oldrank,
-								u.alliance AS alliance,
-								COALESCE(vd_agg.totalpop, 0) AS totalpop,
-								COALESCE(vd_agg.totalvillages, 0) AS totalvillages,
-								ad.tag AS allitag
-							FROM
-								" . TB_PREFIX . "users u
-							LEFT JOIN (
-								SELECT
-									owner,
-									SUM(pop) AS totalpop,
-									COUNT(CASE WHEN type != 99 THEN wref ELSE NULL END) AS totalvillages
-								FROM " . TB_PREFIX . "vdata
-								GROUP BY owner
-							) vd_agg ON vd_agg.owner = u.id
-							LEFT JOIN
-								" . TB_PREFIX . "alidata ad ON ad.id = u.alliance
-							WHERE
-								" . $where_conditions_users . "
-							ORDER BY
-								totalpop DESC, totalvillages DESC, u.id DESC";
-
-				$datas = [];
-
-				$result = (mysqli_query($database->dblink,$q));
-				while($row = mysqli_fetch_assoc($result)) $datas[] = $row;
-
-				if (count($datas)) {
-					foreach($datas as $result) {
-						$value['userid'] = $result['userid'];
-						$value['username'] = $result['username'];
-						$value['oldrank'] = $result['oldrank'];
-						$value['alliance'] = $result['alliance'];
-						$value['aname'] = $result['allitag'];
-						$value['totalpop'] = $result['totalpop'];
-						$value['totalvillage'] = $result['totalvillages'];
-						array_push($holder, $value);
+					if (isset($_GET['rank']) && is_numeric($_GET['rank']) && $_GET['rank'] > 0) {
+						$page = max(1, (int)ceil((int)$_GET['rank'] / 20));
 					}
+					$offset = ($page - 1) * 20;
+				}
+				$offset = max(0, $offset);
+				$limit = max(1, ($limit !== null ? $limit : 20));
+
+				// Query from cache
+				$q = "SELECT
+						u.id AS userid,
+						u.username AS username,
+						u.oldrank AS oldrank,
+						u.alliance AS alliance,
+						u.access AS access,
+						COALESCE(us.totalpop, 0) AS totalpop,
+						COALESCE(us.totalvils, 0) AS totalvillages,
+						COALESCE(us.ally_tag, '') AS allitag,
+						COALESCE(us.rank_pos, 0) AS rank_pos,
+						COALESCE(us.apall, 0) AS apall,
+						COALESCE(us.dpall, 0) AS dpall
+					FROM " . TB_PREFIX . "users u
+					JOIN " . TB_PREFIX . "user_stats us ON us.uid = u.id
+					WHERE $where_conditions_users
+					ORDER BY us.rank_pos ASC
+					LIMIT $offset, $limit";
+
+				$result = mysqli_query($database->dblink, $q);
+				$holder = [];
+				while ($row = mysqli_fetch_assoc($result)) {
+					$value = [
+						'userid' => $row['userid'],
+						'username' => $row['username'],
+						'oldrank' => $row['oldrank'],
+						'alliance' => $row['alliance'],
+						'aname' => $row['allitag'],
+						'totalpop' => $row['totalpop'],
+						'totalvillage' => $row['totalvillages'],
+						'access' => $row['access'],
+						'rank_pos' => $row['rank_pos'],
+					];
+					$holder[] = $value;
 				}
 
 				$newholder = ["pad"];
-				foreach($holder as $key) array_push($newholder, $key);
-				
+				foreach($holder as $key) $newholder[] = $key;
+
 				$this->rankarray = $newholder;
-				
-			    }
 			}
+
+			// ========== PLAYER RACE RANKING ==========
 
 			public function procRankRaceArray($race) {
 				global $multisort, $database;
-				$race = $database->escape((int) $race);
-				//$array = $GLOBALS['db']->getRanking();
-				$holder = array();
-				//$value['totalvillage'] = count($GLOBALS['db']->getVillagesID($value['id']));
-				//$value['totalvillage'] = count($GLOBALS['db']->getVillagesID($value['id']));
-				//$value['totalpop'] = $GLOBALS['db']->getVSumField($value['id'],"pop");
-				//$value['aname'] = $GLOBALS['db']->getAllianceName($value['alliance']);
-				$q = "SELECT " . TB_PREFIX . "users.id userid, " . TB_PREFIX . "users.tribe tribe, " . TB_PREFIX . "users.username username," . TB_PREFIX . "users.alliance alliance, (
+				$race = (int)$race;
 
-					SELECT SUM( " . TB_PREFIX . "vdata.pop )
-					FROM " . TB_PREFIX . "vdata
-					WHERE " . TB_PREFIX . "vdata.owner = userid
-					)totalpop, (
+				$this->ensureUserStatsFresh();
 
-					SELECT COUNT( " . TB_PREFIX . "vdata.wref )
-					FROM " . TB_PREFIX . "vdata
-					WHERE " . TB_PREFIX . "vdata.owner = userid AND type != 99
-					)totalvillages, (
+				$access_level = INCLUDE_ADMIN ? "10" : "8";
 
-					SELECT " . TB_PREFIX . "alidata.tag
-					FROM " . TB_PREFIX . "alidata, " . TB_PREFIX . "users
-					WHERE " . TB_PREFIX . "alidata.id = " . TB_PREFIX . "users.alliance
-					AND " . TB_PREFIX . "users.id = userid
-					)allitag
-					FROM " . TB_PREFIX . "users
-					WHERE " . TB_PREFIX . "users.tribe = $race AND " . TB_PREFIX . "users.access < " . (INCLUDE_ADMIN ? "10" : "8") . "
-					AND " . TB_PREFIX . "users.id > 5
-					ORDER BY totalpop DESC, totalvillages DESC, userid DESC";
+				// Count
+				$countQ = "SELECT COUNT(*) as total FROM " . TB_PREFIX . "user_stats us
+				           JOIN " . TB_PREFIX . "users u ON u.id = us.uid
+				           WHERE u.tribe = $race AND u.access < $access_level AND u.id > 5";
+				$countResult = mysqli_query($database->dblink, $countQ);
+				$this->rankCount = (int)mysqli_fetch_assoc($countResult)['total'];
 
-
-				$result = (mysqli_query($database->dblink,$q));
-				while($row = mysqli_fetch_assoc($result)) {
-					$datas[] = $row;
+				$page = 1;
+				if (isset($_SESSION['start'])) {
+					$page = max(1, (int)ceil((int)$_SESSION['start'] / 20));
 				}
+				if (isset($_GET['rank']) && is_numeric($_GET['rank']) && $_GET['rank'] > 0) {
+					$page = max(1, (int)ceil((int)$_GET['rank'] / 20));
+				}
+				$offset = ($page - 1) * 20;
 
-				if(mysqli_num_rows($result)) {
+				// Since user_stats is ordered by population globally, we need per-tribe ordering
+				// For race-specific ranking we re-order by totalpop within the tribe
+				$q = "SELECT
+						u.id AS userid,
+						u.username AS username,
+						u.alliance AS alliance,
+						COALESCE(us.totalpop, 0) AS totalpop,
+						COALESCE(us.totalvils, 0) AS totalvillages,
+						COALESCE(us.ally_tag, '') AS allitag,
+						ROW_NUMBER() OVER (ORDER BY us.totalpop DESC, us.totalvils DESC, us.uid DESC) AS rank_pos
+					FROM " . TB_PREFIX . "user_stats us
+					JOIN " . TB_PREFIX . "users u ON u.id = us.uid
+					WHERE u.tribe = $race AND u.access < $access_level AND u.id > 5
+					ORDER BY us.totalpop DESC, us.totalvils DESC, us.uid DESC
+					LIMIT $offset, 20";
 
+				// Fallback if ROW_NUMBER() not available (MySQL < 8.0)
+				$result = @mysqli_query($database->dblink, $q);
+				if (!$result) {
+					// Fallback without ROW_NUMBER — assign ranks in PHP
+					$q2 = "SELECT
+							u.id AS userid,
+							u.username AS username,
+							u.alliance AS alliance,
+							COALESCE(us.totalpop, 0) AS totalpop,
+							COALESCE(us.totalvils, 0) AS totalvillages,
+							COALESCE(us.ally_tag, '') AS allitag
+						FROM " . TB_PREFIX . "user_stats us
+						JOIN " . TB_PREFIX . "users u ON u.id = us.uid
+						WHERE u.tribe = $race AND u.access < $access_level AND u.id > 5
+						ORDER BY us.totalpop DESC, us.totalvils DESC, us.uid DESC
+						LIMIT $offset, 20";
+					$result = mysqli_query($database->dblink, $q2);
 
-					foreach($datas as $result) {
-						$value['userid'] = $result['userid'];
-						$value['username'] = $result['username'];
-						$value['alliance'] = $result['alliance'];
-						$value['aname'] = $result['allitag'];
-						$value['totalpop'] = $result['totalpop'];
-						$value['totalvillage'] = $result['totalvillages'];
-						//SELECT (SELECT SUM(".TB_PREFIX."vdata.pop) FROM ".TB_PREFIX."vdata WHERE ".TB_PREFIX."vdata.owner = 2)  totalpop, (SELECT COUNT(".TB_PREFIX."vdata.wref) FROM ".TB_PREFIX."vdata WHERE ".TB_PREFIX."vdata.owner = 2) totalvillages, (SELECT ".TB_PREFIX."alidata.tag FROM ".TB_PREFIX."alidata WHERE ".TB_PREFIX."alidata.id = ".TB_PREFIX."users.alliance AND ".TB_PREFIX."users.id = 2);
-						array_push($holder, $value);
+					$holder = [];
+					while ($row = mysqli_fetch_assoc($result)) {
+						$value = [
+							'userid' => $row['userid'],
+							'username' => $row['username'],
+							'alliance' => $row['alliance'],
+							'aname' => $row['allitag'],
+							'totalpop' => $row['totalpop'],
+							'totalvillage' => $row['totalvillages'],
+							'rank_pos' => $offset + count($holder) + 1,
+						];
+						$holder[] = $value;
 					}
 				} else {
-					$value['userid'] = 0;
-					$value['username'] = "No User";
-					$value['alliance'] = "";
-					$value['aname'] = "";
-					$value['totalpop'] = "";
-					$value['totalvillage'] = "";
-					array_push($holder, $value);
+					$holder = [];
+					while ($row = mysqli_fetch_assoc($result)) {
+						$value = [
+							'userid' => $row['userid'],
+							'username' => $row['username'],
+							'alliance' => $row['alliance'],
+							'aname' => $row['allitag'],
+							'totalpop' => $row['totalpop'],
+							'totalvillage' => $row['totalvillages'],
+							'rank_pos' => $row['rank_pos'],
+						];
+						$holder[] = $value;
+					}
 				}
-				//$holder = $multisort->sorte($holder, "'totalvillage'", false, 2, "'totalpop'", false, 2);
-				$newholder = array("pad");
-				foreach($holder as $key) {
-					array_push($newholder, $key);
+
+				if (empty($holder)) {
+					$holder[] = [
+						'userid' => 0,
+						'username' => 'No User',
+						'alliance' => '',
+						'aname' => '',
+						'totalpop' => '',
+						'totalvillage' => '',
+						'rank_pos' => 0,
+					];
 				}
+
+				$newholder = ["pad"];
+				foreach($holder as $key) $newholder[] = $key;
 				$this->rankarray = $newholder;
+			}
+
+			// ========== ATTACK / DEFENSE RANKING ==========
+
+			private function procPointRankArray($field, $pointField) {
+				global $database;
+
+				$this->ensureUserStatsFresh();
+
+				$access_level = INCLUDE_ADMIN ? "10" : "8";
+				$tribeWhere = SHOW_NATARS
+					? "u.tribe <= 9 AND (u.id > 5 OR u.id = 3)"
+					: "(u.tribe <= 3 OR u.tribe > 5) AND u.id > 5";
+
+				// Count
+				$countQ = "SELECT COUNT(*) as total FROM " . TB_PREFIX . "user_stats us
+				           JOIN " . TB_PREFIX . "users u ON u.id = us.uid
+				           WHERE us.$field >= 0 AND u.access < $access_level AND $tribeWhere";
+				$countResult = mysqli_query($database->dblink, $countQ);
+				$this->rankCount = (int)mysqli_fetch_assoc($countResult)['total'];
+
+				$page = 1;
+				if (isset($_SESSION['start'])) {
+					$page = max(1, (int)ceil((int)$_SESSION['start'] / 20));
+				}
+				if (isset($_GET['rank']) && is_numeric($_GET['rank']) && $_GET['rank'] > 0) {
+					$page = max(1, (int)ceil((int)$_GET['rank'] / 20));
+				}
+				$offset = ($page - 1) * 20;
+
+				$q = "SELECT
+						u.id AS userid,
+						u.username AS username,
+						us.$field AS $pointField,
+						COALESCE(us.totalpop, 0) AS totalpop,
+						COALESCE(us.totalvils, 0) AS totalvillages
+					FROM " . TB_PREFIX . "user_stats us
+					JOIN " . TB_PREFIX . "users u ON u.id = us.uid
+					WHERE us.$field >= 0 AND u.access < $access_level AND $tribeWhere
+					ORDER BY us.$field DESC, us.totalpop DESC, us.uid DESC
+					LIMIT $offset, 20";
+
+				$result = mysqli_query($database->dblink, $q);
+				$holder = [];
+				$rank = $offset + 1;
+				while ($row = mysqli_fetch_assoc($result)) {
+					$value = [
+						'userid' => $row['userid'],
+						'username' => $row['username'],
+						'id' => $row['userid'],
+						'totalpop' => $row['totalpop'],
+						'totalvillages' => $row['totalvillages'],
+						$pointField => $row[$pointField],
+						'rank_pos' => $rank,
+					];
+					$holder[] = $value;
+					$rank++;
+				}
+
+				$newholder = ["pad"];
+				foreach($holder as $key) $newholder[] = $key;
+				return $newholder;
 			}
 
 			public function procAttRankArray() {
-				global $multisort, $database;
-				//$array = $GLOBALS['db']->getRanking();
-				$holder = array();
-
-				//$value['totalvillage'] = count($GLOBALS['db']->getVillagesID($value['id']));
-				//$value['totalpop'] = $GLOBALS['db']->getVSumField($value['id'],"pop");
-				$q = "SELECT " . TB_PREFIX . "users.id userid, " . TB_PREFIX . "users.username username, " . TB_PREFIX . "users.apall,  (
-
-					SELECT COUNT( " . TB_PREFIX . "vdata.wref )
-					FROM " . TB_PREFIX . "vdata
-					WHERE " . TB_PREFIX . "vdata.owner = userid AND type != 99
-					)totalvillages, (
-
-					SELECT SUM( " . TB_PREFIX . "vdata.pop )
-					FROM " . TB_PREFIX . "vdata
-					WHERE " . TB_PREFIX . "vdata.owner = userid
-					)pop
-					FROM " . TB_PREFIX . "users
-					WHERE " . TB_PREFIX . "users.apall >=0 AND " . TB_PREFIX . "users.access < " . (INCLUDE_ADMIN ? "10" : "8") . " AND (" . TB_PREFIX . "users.tribe <= 3 OR " . TB_PREFIX . "users.tribe > 5)
-					AND " . TB_PREFIX . "users.id > 5
-					ORDER BY " . TB_PREFIX . "users.apall DESC, pop DESC, userid DESC";
-				$result = mysqli_query($database->dblink,$q) or die(mysqli_error($database->dblink));
-				while($row = mysqli_Fetch_assoc($result)) {
-					$datas[] = $row;
-				}
-
-				foreach($datas as $key => $row) {
-					$value['userid'] = $row['userid'];
-					$value['username'] = $row['username'];
-					$value['totalvillages'] = $row['totalvillages'];
-					$value['id'] = $row['userid'];
-					$value['totalpop'] = $row['pop'];
-					$value['apall'] = $row['apall'];
-					array_push($holder, $value);
-					printf("\n<!-- %s %s %s %s -->\n", $value['username'], $value['totalvillages'], $value['totalpop'], $value['apall']);
-				}
-
-				//$holder = $multisort->sorte($holder, "'ap'", false, 2, "'totalvillages'", false, 2, "'ap'", false, 2);
-				$newholder = array("pad");
-				foreach($holder as $key) {
-					array_push($newholder, $key);
-				}
-				$this->rankarray = $newholder;
+				$this->rankarray = $this->procPointRankArray('apall', 'apall');
 			}
 
 			public function procDefRankArray() {
-			    global $database;
-				//global $GLOBALS['db'], $multisort;
-				//$array = $GLOBALS['db']->getRanking();
-				$holder = array();
-				$q = "SELECT " . TB_PREFIX . "users.id userid, " . TB_PREFIX . "users.username username, " . TB_PREFIX . "users.dpall,  (
+				$this->rankarray = $this->procPointRankArray('dpall', 'dpall');
+			}
 
-					SELECT COUNT( " . TB_PREFIX . "vdata.wref )
-					FROM " . TB_PREFIX . "vdata
-					WHERE " . TB_PREFIX . "vdata.owner = userid AND type != 99
-					)totalvillages, (
+			// ========== VILLAGE RANKING ==========
 
-					SELECT SUM( " . TB_PREFIX . "vdata.pop )
-					FROM " . TB_PREFIX . "vdata
-					WHERE " . TB_PREFIX . "vdata.owner = userid
-					)pop
-					FROM " . TB_PREFIX . "users
-					WHERE " . TB_PREFIX . "users.dpall >=0 AND " . TB_PREFIX . "users.access < " . (INCLUDE_ADMIN ? "10" : "8") . " AND (" . TB_PREFIX . "users.tribe <= 3 OR " . TB_PREFIX . "users.tribe > 5)
-					AND " . TB_PREFIX . "users.id > 5
-					ORDER BY " . TB_PREFIX . "users.dpall DESC, pop DESC, userid DESC";
-				$result = mysqli_query($database->dblink,$q) or die(mysqli_error($database->dblink));
-				while($row = mysqli_Fetch_assoc($result)) {
-					$datas[] = $row;
-				}
+			public function rebuildVillageRanks() {
+				global $database;
 
-				foreach($datas as $key => $row) {
-					$value['userid'] = $row['userid'];
-					$value['username'] = $row['username'];
-					$value['totalvillages'] = $row['totalvillages'];
-					$value['id'] = $row['userid'];
-					$value['totalpop'] = $row['pop'];
-					$value['dpall'] = $row['dpall'];
-					array_push($holder, $value);
+				$tribeIn = SHOW_NATARS
+					? "u.tribe IN(1,2,3,5,6,7,8,9)"
+					: "u.tribe IN(1,2,3,6,7,8,9)";
+				$accessMax = INCLUDE_ADMIN ? "10" : "8";
 
-				}
+				$q = "INSERT INTO " . TB_PREFIX . "village_ranks
+						(wref, name, pop, owner, owner_name, x, y, updated_at)
+					  SELECT
+						v.wref, v.name, v.pop, v.owner, u.username as owner_name, w.x, w.y, UNIX_TIMESTAMP()
+					  FROM " . TB_PREFIX . "vdata v
+					  JOIN " . TB_PREFIX . "users u ON v.owner = u.id
+					  JOIN " . TB_PREFIX . "wdata w ON v.wref = w.id
+					  WHERE $tribeIn AND v.wref != '' AND u.access < $accessMax
+					  ON DUPLICATE KEY UPDATE
+						name = VALUES(name),
+						pop = VALUES(pop),
+						owner = VALUES(owner),
+						owner_name = VALUES(owner_name),
+						x = VALUES(x),
+						y = VALUES(y),
+						updated_at = VALUES(updated_at)";
 
-				//$holder = $multisort->sorte($holder, "'dpall'", false, 2, "'totalvillage'", false, 2, "'dpall'", false, 2);
-				$newholder = array("pad");
-				foreach($holder as $key) {
-					array_push($newholder, $key);
-				}
-				$this->rankarray = $newholder;
+				mysqli_query($database->dblink, $q);
+
+				// Delete villages that no longer match
+				mysqli_query($database->dblink, "DELETE vr FROM " . TB_PREFIX . "village_ranks vr
+					LEFT JOIN " . TB_PREFIX . "vdata v ON v.wref = vr.wref
+					LEFT JOIN " . TB_PREFIX . "users u ON u.id = v.owner
+					WHERE v.wref IS NULL OR u.access >= $accessMax OR u.tribe NOT IN(1,2,3,5,6,7,8,9)");
+
+				// Update rank_pos
+				mysqli_query($database->dblink, "SET @rank = 0");
+				mysqli_query($database->dblink, "UPDATE " . TB_PREFIX . "village_ranks
+					SET rank_pos = (@rank := @rank + 1)
+					ORDER BY pop DESC, wref DESC");
 			}
 
 			public function getVRankPart($offset = 0, $limit = 20) {
 				global $multisort, $database;
 
+				$this->ensureVillageRanksFresh();
+
 				$offset = (int)$offset;
 			    $limit = (int)$limit;
 
 				$array = $database->getVRanking($offset, $limit);
-				
+
 				$holder = array();
 				foreach($array as $row) {
 					$holder[] = $row;
@@ -455,78 +730,64 @@
 					array_push($newholder, $key);
 				}
 				return $newholder;
-
 			}
 
 			public function getCountVillages() {
 				global $database;
-				$where = "u.tribe IN(1,2,3,6,7,8,9".(SHOW_NATARS ? ',5' : '').") 
-					AND v.wref != '' 
-					AND u.access<" . (INCLUDE_ADMIN ? "10" : "8");
-						
-				$q = "SELECT COUNT(*) as total FROM " . TB_PREFIX . "vdata v 
-					JOIN " . TB_PREFIX . "users u ON v.owner = u.id 
-					WHERE $where";
+				$this->ensureVillageRanksFresh();
+				$q = "SELECT COUNT(*) as total FROM " . TB_PREFIX . "village_ranks";
 				$result = mysqli_query($database->dblink, $q);
 				$row = mysqli_fetch_assoc($result);
-				return $row['total'];
+				return (int)$row['total'];
 			}
 
 			public function getVillageRankPosition($wref) {
 				global $database;
-				$where = "u.tribe IN(1,2,3,6,7,8,9".(SHOW_NATARS ? ',5' : '').") 
-              AND u.access < " . (INCLUDE_ADMIN ? "10" : "8") . " 
-              AND v.wref != '' "; // Exclui contas de sistema/natars iniciais se necessário
-
-				$q = "SELECT COUNT(*) as position 
-					FROM " . TB_PREFIX . "vdata v
-					JOIN " . TB_PREFIX . "users u ON v.owner = u.id
-					WHERE u.tribe IN(1,2,3,6,7,8,9".(SHOW_NATARS ? ',5' : '').") 
-					AND v.wref != '' 
-					AND u.access<" . (INCLUDE_ADMIN ? "10" : "8") . "
-					AND (
-						v.pop > (SELECT pop FROM " . TB_PREFIX . "vdata WHERE wref = $wref)
-						OR (v.pop = (SELECT pop FROM " . TB_PREFIX . "vdata WHERE wref = $wref) AND v.wref >= $wref)
-					)";
-
+				$this->ensureVillageRanksFresh();
+				$wref = (int)$wref;
+				$q = "SELECT rank_pos FROM " . TB_PREFIX . "village_ranks WHERE wref = $wref";
 				$result = mysqli_query($database->dblink, $q);
-				$row = mysqli_fetch_assoc($result);
-				return ($row['position'] > 0) ? $row['position'] : 1;
+				if ($result && ($row = mysqli_fetch_assoc($result))) {
+					return (int)$row['rank_pos'];
+				}
+				return 1;
 			}
+
+			// ========== ALLIANCE RANKING (optimized: 1 query instead of N+1) ==========
 
 			public function procARankArray() {
 				global $multisort, $database;
-				$array = $GLOBALS['db']->getARanking();
-				$holder = array();
 
-				foreach($array as $value) {
-					$memberlist = $GLOBALS['db']->getAllMember($value['id']);
-					$totalpop = 0;
+				$access_level = INCLUDE_ADMIN ? "10" : "8";
+				$tribeWhere = SHOW_NATARS
+					? "u.tribe <= 9 AND (u.id > 5 OR u.id = 3)"
+					: "(u.tribe <= 3 OR u.tribe > 5) AND u.id > 5";
 
-                    $memberIDs = [];
-                    foreach($memberlist as $member) {
-                        $memberIDs[] = $member['id'];
-                    }
-                    $data = $database->getVSumField($memberIDs,"pop");
+				$q = "SELECT
+						a.id, a.name, a.tag, a.oldrank, a.Aap, a.Adp,
+						COUNT(DISTINCT u.id) as players,
+						COALESCE(SUM(vd.totalpop), 0) as totalpop
+					FROM " . TB_PREFIX . "alidata a
+					LEFT JOIN " . TB_PREFIX . "users u ON u.alliance = a.id AND u.access < $access_level AND $tribeWhere
+					LEFT JOIN (
+						SELECT owner, SUM(pop) as totalpop
+						FROM " . TB_PREFIX . "vdata
+						GROUP BY owner
+					) vd ON vd.owner = u.id
+					WHERE a.id != ''
+					GROUP BY a.id
+					ORDER BY totalpop DESC";
 
-                    if (count($data)) {
-                        foreach ($data as $row) {
-                            $totalpop += $row['Total'];
-                        }
-                    }
-
-					$value['players'] = count($memberlist);
-					$value['totalpop'] = $totalpop;
-					if(!isset($value['avg']) && count($memberlist) > 0) {
-						$value['avg'] = @round($totalpop / count($memberlist));
-					} else {
-						$value['avg'] = 0;
-					}
-
-					array_push($holder, $value);
+				$result = mysqli_query($database->dblink, $q);
+				$holder = [];
+				while ($row = mysqli_fetch_assoc($result)) {
+					$row['avg'] = $row['players'] > 0 ? round($row['totalpop'] / $row['players']) : 0;
+					$holder[] = $row;
 				}
-				$holder = $multisort->sorte($holder, "totalpop", false, 2);
-				$newholder = array("pad");
+
+				$this->rankCount = count($holder);
+
+				$newholder = ["pad"];
 				foreach($holder as $key) {
 					array_push($newholder, $key);
 				}
@@ -551,6 +812,7 @@
 					array_push($newholder, $key);
 				}
 				$this->rankarray = $newholder;
+				$this->rankCount = count($holder);
 			}
 
 			public function procAAttRankArray() {

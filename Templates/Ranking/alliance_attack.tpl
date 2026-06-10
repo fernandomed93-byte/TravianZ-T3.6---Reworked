@@ -32,9 +32,9 @@ else $search = $_SESSION['search'];
                 
                 $start = 20 * $multiplier - 19;
             }
-            else $start = ($_SESSION['start'] + 1);
+            else $start = (int)$_SESSION['start'];
         }
-        else $start = ($_SESSION['start'] + 1);
+        else $start = (int)$_SESSION['start'];
         
         if(count($rankArray) > 1) {
             for($i = $start; $i < $start + 20; $i++) {

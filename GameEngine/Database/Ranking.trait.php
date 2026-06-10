@@ -22,18 +22,12 @@ trait DBRanking {
 
 	}
 
-        // no need to cache this method
+        // Reads from village_ranks cache table (populated by Ranking::ensureVillageRanksFresh)
 	function getVRanking($offset = 0, $limit = 20) {
-	    $q = "SELECT v.wref, v.name, v.pop, v.owner, u.username as user, w.x, w.y
-					FROM " . TB_PREFIX . "vdata v
-					JOIN " . TB_PREFIX . "users u ON v.owner = u.id
-					JOIN " . TB_PREFIX . "wdata w ON v.wref = w.id
-					WHERE u.tribe IN(1,2,3,6,7,8,9".(SHOW_NATARS ? ',5' : '').") 
-					AND v.wref != '' 
-					AND u.access<" . (INCLUDE_ADMIN ? "10" : "8") . "
-					ORDER BY v.pop DESC, v.wref DESC
-					LIMIT $offset, $limit";
-
+	    $q = "SELECT wref, name, pop, owner, owner_name as user, x, y
+			  FROM " . TB_PREFIX . "village_ranks
+			  ORDER BY rank_pos ASC
+			  LIMIT $offset, $limit";
 		$result = mysqli_query($this->dblink,$q);
 		return $this->mysqli_fetch_all($result);
 	}
@@ -148,5 +142,45 @@ trait DBRanking {
 		}
 		return $casualties;
 	}
+
+    // Returns aggregated attack stats for the last 7 days in a single query
+    // Replaces 14 separate queries + PHP loops per general.tpl page load
+    function getWeeklyAttackStats() {
+        $sevenDaysAgo = time() - (86400 * 7);
+        $q = "SELECT 
+                DATE(FROM_UNIXTIME(time)) as attack_date,
+                COUNT(*) as attack_count,
+                COALESCE(SUM(casualties), 0) as total_casualties
+              FROM " . TB_PREFIX . "general 
+              WHERE shown = 1 
+                AND time >= $sevenDaysAgo
+              GROUP BY DATE(FROM_UNIXTIME(time))";
+        $result = $this->query_return($q);
+        $stats = [];
+        foreach ($result as $row) {
+            $stats[$row['attack_date']] = $row;
+        }
+        return $stats;
+    }
+
+    // Returns max updated_at timestamp from user_stats (for staleness check)
+    function getUserStatsLastUpdate() {
+        $q = "SELECT MAX(updated_at) as last_update FROM " . TB_PREFIX . "user_stats";
+        $result = mysqli_query($this->dblink, $q);
+        if ($row = mysqli_fetch_assoc($result)) {
+            return (int)$row['last_update'];
+        }
+        return 0;
+    }
+
+    // Returns max updated_at timestamp from village_ranks (for staleness check)
+    function getVillageRanksLastUpdate() {
+        $q = "SELECT MAX(updated_at) as last_update FROM " . TB_PREFIX . "village_ranks";
+        $result = mysqli_query($this->dblink, $q);
+        if ($row = mysqli_fetch_assoc($result)) {
+            return (int)$row['last_update'];
+        }
+        return 0;
+    }
 
 }

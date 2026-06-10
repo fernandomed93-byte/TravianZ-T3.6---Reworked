@@ -1689,7 +1689,8 @@ CREATE TABLE IF NOT EXISTS `%PREFIX%vdata` (
   KEY `idx_storage_check` (`updateStorage`, `lastupdate`, `wref`),
   KEY `idx_vdata_capital` (`capital`),
   KEY `idx_owner_pop` (`owner`,`pop`),
-  KEY `idx_owner_wref` (`owner`,`wref`)
+  KEY `idx_owner_wref` (`owner`,`wref`),
+  KEY `idx_pop` (`pop`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 
@@ -1722,4 +1723,46 @@ CREATE TABLE IF NOT EXISTS `%PREFIX%ww_attacks` (
   `attack_time` int DEFAULT NULL,
   KEY `attack_time` (`attack_time`),
   KEY `vid` (`vid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+--
+-- Table structure for table `%prefix%user_stats`
+-- Cached aggregated stats per player for ranking pages (Player, Romans, Teutons, Gauls, Attackers, Defenders)
+-- Rebuilt on-demand when stale (> 5 minutes)
+--
+
+CREATE TABLE IF NOT EXISTS `%PREFIX%user_stats` (
+  `uid` int NOT NULL PRIMARY KEY,
+  `totalpop` int NOT NULL DEFAULT 0,
+  `totalvils` int NOT NULL DEFAULT 0,
+  `apall` int NOT NULL DEFAULT 0,
+  `dpall` int NOT NULL DEFAULT 0,
+  `ally_id` int DEFAULT NULL,
+  `ally_tag` varchar(8) DEFAULT NULL,
+  `rank_pos` int NOT NULL DEFAULT 0,
+  `tribe` tinyint(1) DEFAULT NULL,
+  `username` varchar(100) DEFAULT NULL,
+  `updated_at` int DEFAULT NULL,
+  KEY `idx_rank_pos` (`rank_pos`),
+  KEY `idx_updated_at` (`updated_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+--
+-- Table structure for table `%prefix%village_ranks`
+-- Cached village ranking for Village ranking page
+-- Rebuilt on-demand when stale (> 15 minutes)
+--
+
+CREATE TABLE IF NOT EXISTS `%PREFIX%village_ranks` (
+  `wref` int NOT NULL PRIMARY KEY,
+  `name` varchar(100) DEFAULT NULL,
+  `pop` int DEFAULT NULL,
+  `owner` int DEFAULT NULL,
+  `owner_name` varchar(100) DEFAULT NULL,
+  `x` int DEFAULT NULL,
+  `y` int DEFAULT NULL,
+  `rank_pos` int NOT NULL DEFAULT 0,
+  `updated_at` int DEFAULT NULL,
+  KEY `idx_rank_pos` (`rank_pos`),
+  KEY `idx_updated_at` (`updated_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
