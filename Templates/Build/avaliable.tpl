@@ -343,10 +343,11 @@ if(($brewery == 0 && $village->capital == 1 && $rallypoint <= 9 && $rallypoint >
 if($greatbarracks == 0 && $barrack >= 18 && $village->capital == 0 && !($barrack >= 15) && !($shown['greatbarracks'] ?? false)) $soon_count++;
 if($greatstable == 0 && $stable >= 18 && $village->capital == 0 && !($stable >= 15) && !($shown['greatstable'] ?? false)) $soon_count++;
 if($greatworkshop == 0 && $workshop >= 18 && $village->capital == 0 && GREAT_WKS && !($workshop >= 15) && !($shown['greatworkshop'] ?? false)) $soon_count++;
+
 if($session->tribe == 6 && $commandcenter == 0 && $mainbuilding >= 3 && $mainbuilding <= 4 && !$building->isCastleBuilt() && $residence == 0 && $palace == 0 && !($shown['commandcenter'] ?? false)) $soon_count++;
-if($session->tribe == 7 && $waterworks == 0 && $hero >= 7 && $hero <= 9 && !($shown['waterworks'] ?? false)) $soon_count++;
-if($hospital == 0 && $mainbuilding >= 5 && $academy >= 8 && !($mainbuilding >= 10 && $academy >= 15) && $bighospital == 0 && !($shown['hospital'] ?? false)) $soon_count++;
-if($bighospital == 0 && $rallypoint >= 5 && $stable >= 15 && ($session->tribe == 8 || $session->tribe == 9) && !($rallypoint >= 10 && $stable == 20) && $hospital == 0 && !($shown['bighospital'] ?? false)) $soon_count++;
+if($session->tribe == 7 && $waterworks == 0 && ($hero >= 6 && $mainbuilding >= 6) && ($hero <= 9 || $mainbuilding <= 9) && !($shown['waterworks'] ?? false)) $soon_count++;
+if($hospital == 0 && ($mainbuilding >= 5 && $academy >= 10) && ($mainbuilding <= 10 || $academy <= 15) && $bighospital == 0 && !($shown['hospital'] ?? false)) $soon_count++;
+if(($session->tribe == 8 || $session->tribe == 9) && $bighospital == 0 && ($mainbuilding >= 3 && $academy >= 5) && ($mainbuilding <= 5 || $academy <= 10) && $hospital == 0 && !($shown['bighospital'] ?? false)) $soon_count++;
 
 $all_count = 0;
 if($academy == 0 && ($mainbuilding == 1 || $barrack == 0) && !($shown['academy'] ?? false)) $all_count++;
@@ -368,10 +369,11 @@ if($brewery == 0 && ($rallypoint <= 5 || $granary <= 10) && $session->tribe == 2
 if($greatbarracks == 0 && $barrack >= 15 && $village->capital == 0 && !($shown['greatbarracks'] ?? false)) $all_count++;
 if($greatstable == 0 && $stable >= 15 && $village->capital == 0 && !($shown['greatstable'] ?? false)) $all_count++;
 if($greatworkshop == 0 && $workshop >= 15 && $village->capital == 0 && GREAT_WKS && !($shown['greatworkshop'] ?? false)) $all_count++;
+
 if($session->tribe == 6 && $commandcenter == 0 && $mainbuilding <= 2 && !($shown['commandcenter'] ?? false)) $all_count++;
 if($session->tribe == 7 && $waterworks == 0 && $hero <= 6 && !($shown['waterworks'] ?? false)) $all_count++;
-if($hospital == 0 && ($mainbuilding < 5 || $academy < 8) && $bighospital == 0 && !($shown['hospital'] ?? false)) $all_count++;
-if($bighospital == 0 && ($rallypoint < 5 || $stable < 15) && ($session->tribe == 8 || $session->tribe == 9) && $hospital == 0 && !($shown['bighospital'] ?? false)) $all_count++;
+if($hospital == 0 && ($mainbuilding < 5 || $academy < 10) && $bighospital == 0 && !($shown['hospital'] ?? false)) $all_count++;
+if(($session->tribe == 8 || $session->tribe == 9) && $bighospital == 0 && ($mainbuilding < 3 || $academy < 5) && $hospital == 0 && !($shown['bighospital'] ?? false)) $all_count++;
 
 if($soon_count > 0) {
 ?>

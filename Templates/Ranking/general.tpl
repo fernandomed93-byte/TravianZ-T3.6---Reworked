@@ -138,21 +138,9 @@ echo $result2['sumofpop'];
                 <td><?php echo ($users > 0) ? ($percents[5] = round(100 * ($tribes[5] / $users), 2))."%" : "---"; ?></td>
             </tr>
             <tr>
-            <?php
-                $vikingPercent = 100
-                    - $percents[0]
-                    - $percents[1]
-                    - $percents[2]
-                    - $percents[3]
-                    - $percents[4]
-                    - $percents[5];
-
-                $vikingPercent = max(0, $vikingPercent);
-            ?>
-
                 <td>Vikings</td>
                 <td><?php echo $tribes[6]; ?></td>
-                <td><?php echo ($users > 0) ? $vikingPercent ."%" : '---'; ?></td>
+                <td><?php echo ($users > 0) ? ($percents[6] = round(100 * ($tribes[6] / $users), 2))."%" : "---"; ?></td>
             </tr>
         </tbody>
     </table>

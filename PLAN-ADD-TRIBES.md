@@ -250,7 +250,7 @@
 - [x] `Manual - Tropas` - Criar templates das tropas novas.
 - [x] `Imagens Tropas U2` - Criar imagens grandes das tropas para manual.
 - [x] `Manual - Edificios` - Criar templates dos edificios novos.
-- [ ] `Estatísticas` - Criar filtros para as novas tribos, como os já existentes (geral, ataque e defesa, não filtrar por tribos no top10)
+- [x] `Estatísticas` - Criar filtros para as novas tribos, como os já existentes (geral, ataque e defesa, não filtrar por tribos no top10)
 
 ### Edificios novos
 - [x] `gid44 - Command Center` - Criar UI e permitir treinos.
