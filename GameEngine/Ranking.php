@@ -135,131 +135,166 @@
 
 			public function procRankReq($get) {
 				global $village, $session;
-				$this->highlightRank = 0;
+				$isPostSearch = isset($_POST['ft']);
+				if (!$isPostSearch) {
+					$this->highlightRank = 0;
+				}
 				if(isset($get['id'])) {
 					switch($get['id']) {
 						case 1:
 							$this->ensureUserStatsFresh();
-							$rank = $this->searchRank($session->uid, "userid");
-							$this->getStart($rank > 0 ? $rank : 1);
-							$this->highlightRank = $rank;
+							if (!$isPostSearch) {
+								$rank = $this->searchRank($session->uid, "userid");
+								$this->getStart($rank > 0 ? $rank : 1);
+								$this->highlightRank = $rank;
+							}
 							$this->procRankArray();
 							break;
 						case 8:
 							$this->procHeroRankArray();
-							if($get['hero'] == 0) {
-								$this->getStart(1);
-							} else {
-								$rank = $this->searchHeroRank($session->uid);
-								$this->getStart($rank > 0 ? $rank : 1);
-								$this->highlightRank = $rank;
+							if (!$isPostSearch) {
+								if($get['hero'] == 0) {
+									$this->getStart(1);
+								} else {
+									$rank = $this->searchHeroRank($session->uid);
+									$this->getStart($rank > 0 ? $rank : 1);
+									$this->highlightRank = $rank;
+								}
 							}
 							break;
 						case 11:
 							$this->ensureUserStatsFresh();
-							$rank = ($session->tribe == 1) ? $this->getRaceRank($session->uid, 1) : 0;
-							$this->getStart($rank > 0 ? $rank : 1);
-							$this->highlightRank = $rank;
+							if (!$isPostSearch) {
+								$rank = ($session->tribe == 1) ? $this->getRaceRank($session->uid, 1) : 0;
+								$this->getStart($rank > 0 ? $rank : 1);
+								$this->highlightRank = $rank;
+							}
 							$this->procRankRaceArray(1);
 							break;
 						case 12:
 							$this->ensureUserStatsFresh();
-							$rank = ($session->tribe == 2) ? $this->getRaceRank($session->uid, 2) : 0;
-							$this->getStart($rank > 0 ? $rank : 1);
-							$this->highlightRank = $rank;
+							if (!$isPostSearch) {
+								$rank = ($session->tribe == 2) ? $this->getRaceRank($session->uid, 2) : 0;
+								$this->getStart($rank > 0 ? $rank : 1);
+								$this->highlightRank = $rank;
+							}
 							$this->procRankRaceArray(2);
 							break;
 						case 13:
 							$this->ensureUserStatsFresh();
-							$rank = ($session->tribe == 3) ? $this->getRaceRank($session->uid, 3) : 0;
-							$this->getStart($rank > 0 ? $rank : 1);
-							$this->highlightRank = $rank;
+							if (!$isPostSearch) {
+								$rank = ($session->tribe == 3) ? $this->getRaceRank($session->uid, 3) : 0;
+								$this->getStart($rank > 0 ? $rank : 1);
+								$this->highlightRank = $rank;
+							}
 							$this->procRankRaceArray(3);
 							break;
 						case 16:
 							$this->ensureUserStatsFresh();
-							$rank = ($session->tribe == 6) ? $this->getRaceRank($session->uid, 6) : 0;
-							$this->getStart($rank > 0 ? $rank : 1);
-							$this->highlightRank = $rank;
+							if (!$isPostSearch) {
+								$rank = ($session->tribe == 6) ? $this->getRaceRank($session->uid, 6) : 0;
+								$this->getStart($rank > 0 ? $rank : 1);
+								$this->highlightRank = $rank;
+							}
 							$this->procRankRaceArray(6);
 							break;
 						case 17:
 							$this->ensureUserStatsFresh();
-							$rank = ($session->tribe == 7) ? $this->getRaceRank($session->uid, 7) : 0;
-							$this->getStart($rank > 0 ? $rank : 1);
-							$this->highlightRank = $rank;
+							if (!$isPostSearch) {
+								$rank = ($session->tribe == 7) ? $this->getRaceRank($session->uid, 7) : 0;
+								$this->getStart($rank > 0 ? $rank : 1);
+								$this->highlightRank = $rank;
+							}
 							$this->procRankRaceArray(7);
 							break;
 						case 18:
 							$this->ensureUserStatsFresh();
-							$rank = ($session->tribe == 8) ? $this->getRaceRank($session->uid, 8) : 0;
-							$this->getStart($rank > 0 ? $rank : 1);
-							$this->highlightRank = $rank;
+							if (!$isPostSearch) {
+								$rank = ($session->tribe == 8) ? $this->getRaceRank($session->uid, 8) : 0;
+								$this->getStart($rank > 0 ? $rank : 1);
+								$this->highlightRank = $rank;
+							}
 							$this->procRankRaceArray(8);
 							break;
 						case 19:
 							$this->ensureUserStatsFresh();
-							$rank = ($session->tribe == 9) ? $this->getRaceRank($session->uid, 9) : 0;
-							$this->getStart($rank > 0 ? $rank : 1);
-							$this->highlightRank = $rank;
+							if (!$isPostSearch) {
+								$rank = ($session->tribe == 9) ? $this->getRaceRank($session->uid, 9) : 0;
+								$this->getStart($rank > 0 ? $rank : 1);
+								$this->highlightRank = $rank;
+							}
 							$this->procRankRaceArray(9);
 							break;
 						case 31:
 							$this->ensureUserStatsFresh();
-							$rank = $this->getAttackRank($session->uid);
-							$this->getStart($rank > 0 ? $rank : 1);
-							$this->highlightRank = $rank;
+							if (!$isPostSearch) {
+								$rank = $this->getAttackRank($session->uid);
+								$this->getStart($rank > 0 ? $rank : 1);
+								$this->highlightRank = $rank;
+							}
 							$this->procAttRankArray();
 							break;
 						case 32:
 							$this->ensureUserStatsFresh();
-							$rank = $this->getDefenseRank($session->uid);
-							$this->getStart($rank > 0 ? $rank : 1);
-							$this->highlightRank = $rank;
+							if (!$isPostSearch) {
+								$rank = $this->getDefenseRank($session->uid);
+								$this->getStart($rank > 0 ? $rank : 1);
+								$this->highlightRank = $rank;
+							}
 							$this->procDefRankArray();
 							break;
 						case 2:
 							$this->getVRankPart();
-							$rank = $this->searchRank($village->wid, "wref");
-							$this->getStart($rank);
-							$this->highlightRank = $rank;
+							if (!$isPostSearch) {
+								$rank = $this->searchRank($village->wid, "wref");
+								$this->getStart($rank);
+								$this->highlightRank = $rank;
+							}
 							break;
 						case 4:
 							$this->procARankArray();
-							if($get['aid'] == 0) {
-								$this->getStart(1);
-							} else {
-								$rank = $this->searchRank($get['aid'], "id");
-								$this->getStart($rank);
-								$this->highlightRank = $rank;
+							if (!$isPostSearch) {
+								if($get['aid'] == 0) {
+									$this->getStart(1);
+								} else {
+									$rank = $this->searchRank($get['aid'], "id");
+									$this->getStart($rank);
+									$this->highlightRank = $rank;
+								}
 							}
 							break;
 						case 41:
 							$this->procAAttRankArray();
-							if($get['aid'] == 0) {
-								$this->getStart(1);
-							} else {
-								$rank = $this->searchRank($get['aid'], "id");
-								$this->getStart($rank);
-								$this->highlightRank = $rank;
+							if (!$isPostSearch) {
+								if($get['aid'] == 0) {
+									$this->getStart(1);
+								} else {
+									$rank = $this->searchRank($get['aid'], "id");
+									$this->getStart($rank);
+									$this->highlightRank = $rank;
+								}
 							}
 							break;
 						case 42:
 							$this->procADefRankArray();
-							if($get['aid'] == 0) {
-								$this->getStart(1);
-							} else {
-								$rank = $this->searchRank($get['aid'], "id");
-								$this->getStart($rank);
-								$this->highlightRank = $rank;
+							if (!$isPostSearch) {
+								if($get['aid'] == 0) {
+									$this->getStart(1);
+								} else {
+									$rank = $this->searchRank($get['aid'], "id");
+									$this->getStart($rank);
+									$this->highlightRank = $rank;
+								}
 							}
 							break;
 					}
 				} else {
 					$this->ensureUserStatsFresh();
-					$rank = $this->searchRank($session->uid, "userid");
-					$this->getStart($rank > 0 ? $rank : 1);
-					$this->highlightRank = $rank;
+					if (!$isPostSearch) {
+						$rank = $this->searchRank($session->uid, "userid");
+						$this->getStart($rank > 0 ? $rank : 1);
+						$this->highlightRank = $rank;
+					}
 					$this->procRankArray();
 				}
 			}
@@ -275,9 +310,12 @@
 						case "r32":
 							if(isset($post['rank']) && $post['rank'] != "") {
 								$this->getStart($post['rank']);
+								$this->highlightRank = (int)$post['rank'];
 							}
 							if(isset($post['name']) && $post['name'] != "") {
-								$this->getStart($this->searchRank(stripslashes($post['name']), "username"));
+								$found = $this->searchRank(stripslashes($post['name']), "username");
+								$this->getStart($found);
+								$this->highlightRank = $found;
 							}
 							break;
 						case "r4":
@@ -285,18 +323,24 @@
 						case "r41":
 							if(isset($post['rank']) && $post['rank'] != "") {
 								$this->getStart($post['rank']);
+								$this->highlightRank = (int)$post['rank'];
 							}
 							if(isset($post['name']) && $post['name'] != "") {
-								$this->getStart($this->searchRank(stripslashes($post['name']), "tag"));
+								$found = $this->searchRank(stripslashes($post['name']), "tag");
+								$this->getStart($found);
+								$this->highlightRank = $found;
 							}
 							break;
 						case "r2":
 						case "r8":
 							if(isset($post['rank']) && $post['rank'] != "") {
 								$this->getStart($post['rank']);
+								$this->highlightRank = (int)$post['rank'];
 							}
 							if(isset($post['name']) && $post['name'] != "") {
-								$this->getStart($this->searchRank(stripslashes($post['name']), "name"));
+								$found = $this->searchRank(stripslashes($post['name']), "name");
+								$this->getStart($found);
+								$this->highlightRank = $found;
 							}
 							break;
 					}
