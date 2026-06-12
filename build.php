@@ -285,6 +285,9 @@ if(isset($_GET['id']) || isset($_GET['gid']) || $route == 1 || isset($_POST['rou
 	if (!ctype_digit($_GET['id'])) $_GET['id'] = 1;
 
 	$id = $_GET['id'];
+	$loopsame = ($building->isCurrent($id) || $building->isLoop($id)) ? 1 : 0;
+	$doublebuild = ($building->isCurrent($id) && $building->isLoop($id)) ? 1 : 0;
+	$master = count($database->getMasterJobsByField($village->wid,$id));
 	if($_GET['id'] == 99 && $village->resarray['f99t'] == 40){
 	   include("Templates/Build/ww.tpl");
 	} elseif($village->resarray['f'.$_GET['id'].'t'] == 0 && $_GET['id'] >= 19) {

@@ -1209,33 +1209,34 @@ class Automation {
     	$database->updateOasis($bountywid);
     }
     
-    public function updateRes($bountywid) {
-    	global $database, $technology;
-    	
-    	//Get village infos
-    	$villageInfoArray = $database->getVillage($bountywid);
-    	
-    	//Get building and resource fields array
-    	$resArray = $database->getResourceLevel($bountywid, false);
-    	
-    	//Get oasis array
-    	$oasisArray = $database->getOasis($bountywid);
-    	
-    	//Get an array with the numbers of the oasis
-    	$numberOfOasis = $this->bountysortOasis($oasisArray);
-    	
-    	//Set the village population (if WW Villages, it's halved)
-    	$villagePopulation = !$villageInfoArray['natar'] ? $villageInfoArray['pop'] : round($villageInfoArray['pop'] / 2);
-    	
-    	//Get the upkeep of the village
-    	$upkeep = $technology->getUpkeep($this->getAllUnits($bountywid), 0, $bountywid);   	
- 
-    	//Calculate the produced resources
-    	$timepast = time() - $villageInfoArray['lastupdate'];
-    	$nwood = ($this->bountyGetWoodProd($resArray, $numberOfOasis) / 3600) * $timepast;
-    	$nclay = ($this->bountyGetClayProd($resArray, $numberOfOasis) / 3600) * $timepast;
-    	$niron = ($this->bountyGetIronProd($resArray, $numberOfOasis) / 3600) * $timepast;
-    	$ncrop = (($this->bountyGetCropProd($resArray, $numberOfOasis) - $villagePopulation - $upkeep) / 3600) * $timepast;
+	public function updateRes($bountywid) {
+		global $database, $technology;
+		
+		//Get village infos
+		$villageInfoArray = $database->getVillage($bountywid);
+		
+		//Get building and resource fields array
+		$resArray = $database->getResourceLevel($bountywid, false);
+		
+		//Get oasis array
+		$oasisArray = $database->getOasis($bountywid);
+		
+		//Get an array with the numbers of the oasis
+		$numberOfOasis = $this->bountysortOasis($oasisArray);
+		
+		//Set the village population (if WW Villages, it's halved)
+		$villagePopulation = !$villageInfoArray['natar'] ? $villageInfoArray['pop'] : round($villageInfoArray['pop'] / 2);
+		
+		//Get the upkeep of the village
+		$upkeep = $technology->getUpkeep($this->getAllUnits($bountywid), 0, $bountywid);   	
+	
+		//Calculate the produced resources
+		$timepast = time() - $villageInfoArray['lastupdate'];
+		$wwMult = $database->getOasisMultiplier($resArray);
+		$nwood = ($this->bountyGetWoodProd($resArray, $numberOfOasis, $wwMult) / 3600) * $timepast;
+		$nclay = ($this->bountyGetClayProd($resArray, $numberOfOasis, $wwMult) / 3600) * $timepast;
+		$niron = ($this->bountyGetIronProd($resArray, $numberOfOasis, $wwMult) / 3600) * $timepast;
+		$ncrop = (($this->bountyGetCropProd($resArray, $numberOfOasis, $wwMult) - $villagePopulation - $upkeep) / 3600) * $timepast;
     	$database->modifyResource($bountywid, $nwood, $nclay, $niron, $ncrop, 1);
     	$database->updateVillage($bountywid);
     }
@@ -1326,8 +1327,7 @@ class Automation {
 		$prisoners = $database->getPrisoners($base, 1);
 		if(!empty($prisoners)){
 			foreach($prisoners as $prisoner){
-				$owner = $database->getVillageField($base, "owner");
-				$ownertribe = $database->getUserField($owner, "tribe", 0);
+                $ownertribe = $database->getVillageOwnerTribe($prisoner['from']);
 				$start = ($ownertribe - 1) * 10 + 1;
 				$end = ($ownertribe * 10);
 				for($i = $start; $i <= $end; $i++){
@@ -1340,7 +1340,7 @@ class Automation {
 		return $ownunit;
     }
     
-    private function bountyGetWoodProd($resArray, $oasisNumber) {
+    private function bountyGetWoodProd($resArray, $oasisNumber, $wwMult = 0.25) {
         global $bid1, $bid5;
         
         $wood = $sawmill = 0;
@@ -1353,12 +1353,12 @@ class Automation {
         for($i = 0; $i <= count($woodholder) - 1; $i++) $wood += $bid1[$resArray[$woodholder[$i]]]['prod'];
         
         if($sawmill >= 1) $wood += $wood / 100 * $bid5[$sawmill]['attri'];
-        if($oasisNumber[0] > 0) $wood += $wood * 0.25 * $oasisNumber[0];
+        if($oasisNumber[0] > 0) $wood += $wood * $wwMult * $oasisNumber[0];
 
         return round($wood * SPEED);
     }
     
-    private function bountyGetClayProd($resArray, $oasisNumber) {
+    private function bountyGetClayProd($resArray, $oasisNumber, $wwMult = 0.25) {
         global $bid2, $bid6;
         
         $clay = $brick = 0;
@@ -1371,12 +1371,12 @@ class Automation {
         for($i = 0; $i <= count($clayholder) - 1; $i++) $clay += $bid2[$resArray[$clayholder[$i]]]['prod'];
         
         if($brick >= 1) $clay += $clay / 100 * $bid6[$brick]['attri'];
-        if($oasisNumber[1] > 0) $clay += $clay * 0.25 * $oasisNumber[1];
+        if($oasisNumber[1] > 0) $clay += $clay * $wwMult * $oasisNumber[1];
 
         return round($clay * SPEED);
     }
 
-    private function bountyGetIronProd($resArray, $oasisNumber) {
+    private function bountyGetIronProd($resArray, $oasisNumber, $wwMult = 0.25) {
         global $bid3, $bid7;
         
         $iron = $foundry = 0;
@@ -1389,12 +1389,12 @@ class Automation {
         for($i = 0; $i <= count($ironholder) - 1; $i++) $iron += $bid3[$resArray[$ironholder[$i]]]['prod'];
         
         if($foundry >= 1) $iron += $iron / 100 * $bid7[$foundry]['attri'];
-        if($oasisNumber[2] > 0) $iron += $iron * 0.25 * $oasisNumber[2];
+        if($oasisNumber[2] > 0) $iron += $iron * $wwMult * $oasisNumber[2];
 
         return round($iron * SPEED);
     }
 
-    private function bountyGetCropProd($resArray, $oasisNumber) {
+    private function bountyGetCropProd($resArray, $oasisNumber, $wwMult = 0.25) {
         global $bid4, $bid8, $bid9, $database;
         
         $crop = $grainmill = $bakery = 0;
@@ -1408,7 +1408,7 @@ class Automation {
         
         if($grainmill >= 1) $crop += $crop / 100 * (isset($bid8[$grainmill]['attri']) ? $bid8[$grainmill]['attri'] : 0);
         if($bakery >= 1) $crop += $crop / 100 * (isset($bid9[$bakery]['attri']) ? $bid9[$bakery]['attri'] : 0);                
-        if($oasisNumber[3] > 0) $crop += $crop * 0.25 * $oasisNumber[3];       
+        if($oasisNumber[3] > 0) $crop += $crop * $wwMult * $oasisNumber[3];       
         
         if(!empty($resArray['vref']) && is_numeric($resArray['vref'])){
         	$who = $database->getVillageField($resArray['vref'], "owner");

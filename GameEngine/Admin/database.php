@@ -790,14 +790,15 @@ class adm_DB {
 		$isNatar = $database->getVillageField($wid, "natar");
 		$upkeep = $technology->getUpkeep($this->getAllUnits($wid), 0, $wid);
 		$production = [];
-		$production['wood'] = $this->getWoodProd($fdata, $ocounter,$b1);
-		$production['clay'] = $this->getClayProd($fdata, $ocounter,$b2);
-		$production['iron'] = $this->getIronProd($fdata, $ocounter,$b3);
-		$production['crop'] = $this->getCropProd($fdata, $ocounter,$b4) - (!$isNatar ? $pop : round($pop / 2)) - $upkeep;
+		$wwMult = $database->getOasisMultiplier($fdata);
+		$production['wood'] = $this->getWoodProd($fdata, $ocounter, $b1, $wwMult);
+		$production['clay'] = $this->getClayProd($fdata, $ocounter, $b2, $wwMult);
+		$production['iron'] = $this->getIronProd($fdata, $ocounter, $b3, $wwMult);
+		$production['crop'] = $this->getCropProd($fdata, $ocounter, $b4, $wwMult) - (!$isNatar ? $pop : round($pop / 2)) - $upkeep;
 		return $production;
 	}
 
-	private function getWoodProd($fdata,$ocounter,$b1) {
+	private function getWoodProd($fdata, $ocounter, $b1, $wwMult = 0.25) {
 		global $bid1,$bid5;
 		$basewood = $sawmill = 0;
 		$woodholder = array();
@@ -810,7 +811,7 @@ class adm_DB {
 			}
 		}
 		for($i=0;$i<=count($woodholder)-1;$i++) { $basewood+= $bid1[$fdata[$woodholder[$i]]]['prod']; }
-		$wood = $basewood + $basewood * 0.25 * $ocounter[0];
+		$wood = $basewood + $basewood * $wwMult * $ocounter[0];
 		if($sawmill >= 1) {
 			$wood += $basewood / 100 * $bid5[$sawmill]['attri'];
 		}
@@ -821,7 +822,7 @@ class adm_DB {
 		return round($wood);
 	}
 
-	private function getClayProd($fdata,$ocounter,$b2) {
+	private function getClayProd($fdata, $ocounter, $b2, $wwMult = 0.25) {
 		global $bid2,$bid6,$session;
 		$baseclay = $clay = $brick = 0;
 		$clayholder = array();
@@ -834,7 +835,7 @@ class adm_DB {
 			}
 		}
 		for($i=0;$i<=count($clayholder)-1;$i++) { $baseclay+= $bid2[$fdata[$clayholder[$i]]]['prod']; }
-		$clay = $baseclay + $baseclay * 0.25 * $ocounter[1];
+		$clay = $baseclay + $baseclay * $wwMult * $ocounter[1];
 		if($brick >= 1) {
 			$clay += $baseclay / 100 * $bid6[$brick]['attri'];
 		}
@@ -845,7 +846,7 @@ class adm_DB {
 		return round($clay);
 	}
 
-	private function getIronProd($fdata,$ocounter,$b3) {
+	private function getIronProd($fdata, $ocounter, $b3, $wwMult = 0.25) {
 		global $bid3,$bid7;
 		$baseiron = $foundry = 0;
 		$ironholder = array();
@@ -858,7 +859,7 @@ class adm_DB {
 			}
 		}
 		for($i=0;$i<=count($ironholder)-1;$i++) { $baseiron+= $bid3[$fdata[$ironholder[$i]]]['prod']; }
-		$iron = $baseiron + $baseiron * 0.25 * $ocounter[2];
+		$iron = $baseiron + $baseiron * $wwMult * $ocounter[2];
 		if($foundry >= 1) {
 			$iron += $baseiron / 100 * $bid7[$foundry]['attri'];
 		}
@@ -869,7 +870,7 @@ class adm_DB {
 		return round($iron);
 	}
 
-	private function getCropProd($fdata,$ocounter,$b4) {
+	private function getCropProd($fdata, $ocounter, $b4, $wwMult = 0.25) {
 		global $bid4,$bid8,$bid9;
 		$basecrop = $grainmill = $bakery = 0;
 		$cropholder = array();
@@ -885,7 +886,7 @@ class adm_DB {
 			}
 		}
 		for($i=0;$i<=count($cropholder)-1;$i++) { $basecrop+= $bid4[$fdata[$cropholder[$i]]]['prod']; }
-		$crop = $basecrop + $basecrop * 0.25 * $ocounter[3];
+		$crop = $basecrop + $basecrop * $wwMult * $ocounter[3];
 		$jcrop=0;
 		if($grainmill >= 1) $jcrop=(isset($bid8[$grainmill]['attri']) ? $bid8[$grainmill]['attri'] : 0);
 		if($bakery >= 1) $jcrop+=(isset($bid9[$bakery]['attri']) ? $bid9[$bakery]['attri'] : 0);

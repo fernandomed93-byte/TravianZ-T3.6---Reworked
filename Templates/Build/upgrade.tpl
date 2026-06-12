@@ -9,12 +9,6 @@ if($bindicate == 1) {
 } else if($bindicate == 11) {
 	echo "<p><span class=\"none\">".BUILDING_BEING_DEMOLISHED."</span></p>";
 } else {
-	$loopsame = ($building->isCurrent($id) || $building->isLoop($id)) ? 1 : 0;
-	$doublebuild = ($building->isCurrent($id) && $building->isLoop($id)) ? 1 : 0;
-	$master = count($database->getMasterJobsByField($village->wid,$id));
-
-	// master and loopsame would have duplicated level display,
-    // so we need to decrease loopsame if master is the only job left
 	if ($master == 1 && $loopsame == 1) $loopsame = 0;
 
     //-- If available resources combined are not enough, remove NPC button

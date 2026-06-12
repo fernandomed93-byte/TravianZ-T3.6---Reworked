@@ -264,4 +264,16 @@ trait DBOasis {
 		}
 	}
 
+	public function getOasisMultiplier($fdata) {
+		global $bid45;
+		for ($i = 1; $i <= 38; $i++) {
+			if (isset($fdata['f'.$i.'t']) && $fdata['f'.$i.'t'] == 45) {
+				$level = $fdata['f'.$i];
+				if ($level > 0 && isset($bid45[$level]['attri'])) {
+					return 0.25 * (1 + $bid45[$level]['attri'] / 100);
+				}
+			}
+		}
+		return 0.25;
+	}
 }

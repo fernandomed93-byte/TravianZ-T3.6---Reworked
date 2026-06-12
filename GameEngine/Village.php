@@ -184,7 +184,7 @@ class Village {
 	}
 
 	private function getWoodProd() {
-		global $bid1, $bid5, $session;
+		global $bid1, $bid5, $session, $database;
 		
 		$wood = $sawmill = 0;
 		$woodholder = [];
@@ -194,7 +194,7 @@ class Village {
 		}
 		
 		for($i = 0; $i <= count($woodholder) - 1; $i++) $wood += $bid1[$this->resarray[$woodholder[$i]]]['prod'];
-		$wood = $wood + $wood * 0.25 * $this->ocounter[0];
+		$wood = $wood + $wood * $database->getOasisMultiplier($this->resarray) * $this->ocounter[0];
 		
 		if($sawmill >= 1) $wood += $wood / 100 * $bid5[$sawmill]['attri'];
 		if($session->bonus1 == 1) $wood *= 1.25;
@@ -203,7 +203,7 @@ class Village {
 	}
 
 	private function getClayProd() {
-		global $bid2, $bid6, $session;
+		global $bid2, $bid6, $session, $database;
 		
 		$clay = $brick = 0;
 		$clayholder = [];
@@ -213,7 +213,7 @@ class Village {
 		}
 		
 		for($i = 0; $i <= count($clayholder) - 1; $i++) $clay+= $bid2[$this->resarray[$clayholder[$i]]]['prod'];
-		$clay = $clay + $clay * 0.25 * $this->ocounter[1];
+		$clay = $clay + $clay * $database->getOasisMultiplier($this->resarray) * $this->ocounter[1];
 		
 		if($brick >= 1) $clay += $clay / 100 * $bid6[$brick]['attri'];
 		if($session->bonus2 == 1) $clay *= 1.25;
@@ -222,7 +222,7 @@ class Village {
 	}
 
 	private function getIronProd() {
-		global $bid3, $bid7, $session;
+		global $bid3, $bid7, $session, $database;
 		
 		$iron = $foundry = 0;
 		$ironholder = [];
@@ -232,7 +232,7 @@ class Village {
 		}
 		
 		for($i = 0;$i <= count($ironholder) - 1; $i++) $iron+= $bid3[$this->resarray[$ironholder[$i]]]['prod'];
-		$iron = $iron + $iron * 0.25 * $this->ocounter[2];
+		$iron = $iron + $iron * $database->getOasisMultiplier($this->resarray) * $this->ocounter[2];
 		
 		if($foundry >= 1) $iron += $iron / 100 * $bid7[$foundry]['attri'];
 		if($session->bonus3 == 1) $iron *= 1.25;
@@ -241,7 +241,7 @@ class Village {
 	}
 
 	private function getCropProd() {
-		global $bid4, $bid8, $bid9, $session;
+		global $bid4, $bid8, $bid9, $session, $database;
 		
 		$crop = $grainmill = $bakery = 0;
 		$cropholder = [];
@@ -252,8 +252,7 @@ class Village {
 		}
 		
 		for ($i = 0; $i <= count($cropholder) - 1; $i++) $crop += $bid4[$this->resarray[$cropholder[$i]]]['prod'];
-		$bonus = 0.25 * $this->ocounter[3];
-		$crop = $crop + $crop * 0.25 * $this->ocounter[3];
+		$crop = $crop + $crop * $database->getOasisMultiplier($this->resarray) * $this->ocounter[3];
 		
 		if($grainmill >= 1 || $bakery >= 1) {
 		    $crop += $crop / 100 * ((isset($bid8[$grainmill]['attri']) ? $bid8[$grainmill]['attri'] : 0) + (isset($bid9[$bakery]['attri']) ? $bid9[$bakery]['attri'] : 0));

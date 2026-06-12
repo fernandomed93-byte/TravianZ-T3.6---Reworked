@@ -6,7 +6,7 @@
 	<table cellpadding="1" cellspacing="1" id="build_value">
 		<tr>
 			<th><?php echo CURRENT_BONUS; ?></th>
-			<td><b><?php echo $village->resarray['f'.$id] > 0 ? $bid45[$village->resarray['f'.$id]]['attri'] * 100 : 0; ?></b> <?php echo PERCENT; ?></td>
+			<td><b><?php echo $village->resarray['f'.$id] > 0 ? $bid45[$village->resarray['f'.$id]]['attri'] : 0; ?></b> <?php echo PERCENT; ?></td>
 		</tr>
 		<tr>
 		<?php 
@@ -15,12 +15,12 @@
 		if($next <= 20){
         ?>
 			<th><?php echo BONUS_LEVEL; ?> <?php echo $next; ?>:</th>
-			<td><b><?php echo $bid45[$next]['attri'] * 100; ?></b> <?php echo PERCENT; ?></td>
+			<td><b><?php echo $bid45[$next]['attri']; ?></b> <?php echo PERCENT; ?></td>
             <?php
             }else{
         ?>
 			<th><?php echo BONUS_LEVEL; ?> 20:</th>
-			<td><b><?php echo $bid45[20]['attri'] * 100; ?></b> <?php echo PERCENT; ?></td>
+			<td><b><?php echo $bid45[20]['attri']; ?></b> <?php echo PERCENT; ?></td>
             <?php
 			}}
             ?>
