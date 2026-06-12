@@ -246,8 +246,8 @@ trait DBTroops {
 
 		$q = "SELECT * FROM " . TB_PREFIX . "research where vref = $vid ORDER BY timestamp ASC";
 		$result = mysqli_query($this->dblink,$q);
-        $researchingCache[$vid] = $this->mysqli_fetch_all($result);
-        return $researchingCache[$vid];
+        self::$researchingCache[$vid] = $this->mysqli_fetch_all($result);
+        return self::$researchingCache[$vid];
 	}
 
 	function checkIfResearched($vref, $unit, $use_cache = true) {
@@ -796,52 +796,50 @@ trait DBTroops {
 
     // no need to cache this method
 	function getVillageMovement($id) {
-        list($id) = $this->escape_input($id);
+		$id = (int) $id;
+		$prefix = TB_PREFIX;
 
-		$vinfo = $this->getVillage($id);
-		$vtribe = $this->getUserField($vinfo['owner'], "tribe", 0);
-        $movingunits = [];
-        
-		$outgoingarray = $this->getMovement(3, $id, 0);
-		if(!empty($outgoingarray) && count($outgoingarray)) {
-			foreach($outgoingarray as $out) {
-				for($i = 1; $i <= 10; $i++) {
-				    if (!isset($movingunits['u'.(($vtribe - 1) * 10 + $i)])) {
-				        $movingunits['u'.(($vtribe - 1) * 10 + $i)] = 0;
-				    }
+		$vtribe = $this->getVillageOwnerTribe($id);
+		$movingunits = [];
 
-				    if (!isset($out['t'.$i])) $out['t'.$i] = 0;
-					$movingunits['u'.(($vtribe - 1) * 10 + $i)] += $out['t'.$i];
+		$q = "(SELECT 'outgoing' AS _src, t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11
+			   FROM {$prefix}movement m, {$prefix}attacks a
+			   WHERE m.`from` = $id AND m.ref = a.id AND m.proc = 0 AND m.sort_type = 3)
+			  UNION ALL
+			  (SELECT 'returning' AS _src, t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11
+			   FROM {$prefix}movement m, {$prefix}attacks a
+			   WHERE m.`to` = $id AND m.ref = a.id AND m.proc = 0 AND m.sort_type = 4)
+			  UNION ALL
+			  (SELECT 'settler' AS _src, 0,0,0,0,0,0,0,0,0,0,0
+			   FROM {$prefix}movement m
+			   WHERE m.`from` = $id AND m.sort_type = 5 AND m.proc = 0)";
+
+		$result = mysqli_query($this->dblink, $q);
+		if ($result) {
+			$settlerCount = 0;
+			while ($row = mysqli_fetch_assoc($result)) {
+				switch ($row['_src']) {
+					case 'outgoing':
+					case 'returning':
+						for ($i = 1; $i <= 10; $i++) {
+							$key = 'u' . (($vtribe - 1) * 10 + $i);
+							if (!isset($movingunits[$key])) $movingunits[$key] = 0;
+							$movingunits[$key] += (int)($row['t' . $i] ?? 0);
+						}
+						if (!isset($movingunits['hero'])) $movingunits['hero'] = 0;
+						$movingunits['hero'] += (int)($row['t11'] ?? 0);
+						break;
+
+					case 'settler':
+						$settlerCount++;
+						break;
 				}
-
-				if (!isset($movingunits['hero'])) $movingunits['hero'] = 0;
-				if (!isset($out['t11'])) $out['t11'] = 0;
-				
-				$movingunits['hero'] += $out['t11'];
 			}
-		}
-		
-		$returningarray = $this->getMovement(4, $id, 1);
-		if(!empty($returningarray) && count($returningarray)) {
-			foreach($returningarray as $ret) {
-			    for($i = 1; $i <= 10; $i++) {
-			        if (!isset($movingunits['u'.(($vtribe - 1) * 10 + $i)])) {
-			            $movingunits['u'.(($vtribe - 1) * 10 + $i)] = 0;
-			        }
-			        $movingunits['u'.(($vtribe - 1) * 10 + $i)] += $ret['t' . $i];
-			    }
-			    
-			    if (!isset($movingunits['hero'])) $movingunits['hero'] = 0;
-			    $movingunits['hero'] += $ret['t11'];
+			if ($settlerCount > 0) {
+				$key = 'u' . ($vtribe * 10);
+				if (!isset($movingunits[$key])) $movingunits[$key] = 0;
+				$movingunits[$key] += 3 * $settlerCount;
 			}
-		}
-		
-		$settlerarray = $this->getMovement(5, $id, 0);
-		if(!empty($settlerarray)) {
-		    if (!isset($movingunits['u'.($vtribe * 10)])) {
-		        $movingunits['u'.($vtribe * 10)] = 0;
-		    }
-			$movingunits['u'.($vtribe * 10)] += 3 * count($settlerarray);
 		}
 		return $movingunits;
 	}

@@ -55,7 +55,7 @@ class Village {
         global $database, $session;
 
         // preload villages for this user account
-        $database->getProfileVillages($session->uid, 5);
+        //$database->getProfileVillages($session->uid, 5); //##REDUNDANTE
 
         // preload villages world data records
         $database->cacheVillageByWorldIDs($session->uid);
@@ -73,26 +73,33 @@ class Village {
 	private function LoadTown($second_run = false) {
 		global $database, $session, $logging, $technology;
 		
-		$this->infoarray = $database->getVillage($this->wid);
+		$data = $database->loadFullVillageData($this->wid);
+		if (!$data) {
+			$this->wid = $session->villages[0];
+			$data = $database->loadFullVillageData($this->wid);
+		}
+
+		$this->infoarray = $data['infoarray'];
 		if($this->infoarray['owner'] != $session->uid && !$session->isAdmin) {
 			unset($_SESSION['wid']);
 			$logging->addIllegal($session->uid,$this->wid,1);
 			$this->wid = $session->villages[0];
-			$this->infoarray = $database->getVillage($this->wid);
+			$data = $database->loadFullVillageData($this->wid);
+			$this->infoarray = $data['infoarray'];
 		}
-		$this->resarray = $database->getResourceLevel($this->wid);
-		$this->coor = $database->getCoor($this->wid);
-		$this->type = $database->getVillageType($this->wid);
-		$this->oasisowned = $database->getOasis($this->wid);
+		$this->resarray = $data['resarray'];
+		$this->coor = $data['coor'];
+		$this->type = $data['type'];
+		$this->oasisowned = $data['oasisowned'];
 		$this->ocounter = $this->sortOasis();
-		$this->unitarray = $database->getUnit($this->wid);
-		$this->enforcetome = $database->getEnforceVillage($this->wid,0);
-		$this->enforcetoyou = $database->getEnforceVillage($this->wid,1);
-		$this->enforceoasis = $database->getOasisEnforce($this->wid,0);
+		$this->unitarray = $data['unitarray'];
+		$this->enforcetome = $data['enforcetome'];
+		$this->enforcetoyou = $data['enforcetoyou'];
+		$this->enforceoasis = $data['enforceoasis'];
 		$this->unitall =  $technology->getAllUnits($this->wid);
-		$this->techarray = $database->getTech($this->wid);
-		$this->abarray = $database->getABTech($this->wid);
-		$this->researching = $database->getResearching($this->wid, !$second_run);
+		$this->techarray = $data['techarray'];
+		$this->abarray = $data['abarray'];
+		$this->researching = $data['researching'];
 
 		$this->capital = $this->infoarray['capital'];
 		$this->natar = $this->infoarray['natar'];
@@ -109,7 +116,7 @@ class Village {
 		$this->maxcrop = $this->infoarray['maxcrop'];
 		$this->allcrop = $this->getCropProd();
 		$this->loyalty = $this->infoarray['loyalty'];
-		$this->master = count($database->getMasterJobs($this->wid));
+		$this->master = $data['master'];
 		
 		//If resources overflow the warehouse/granary limit, set them at the maximum value
         $resourceUpdates = [];

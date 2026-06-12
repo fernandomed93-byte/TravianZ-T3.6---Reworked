@@ -18,7 +18,6 @@ trait DBVillage {
         }
 
 		$q = "UPDATE " . TB_PREFIX . "vdata SET ".implode(', ', $pairs)." WHERE wref = $vid";
-		$result = mysqli_query($this->dblink,$q);
 		return mysqli_query($this->dblink,$q);
 	}
 
@@ -1461,13 +1460,163 @@ trait DBVillage {
 		return $result['Total'];
 	}	
 
-    // no need to cache this method
+	// no need to cache this method
 	function getArrayMemberVillage($uid) {
 	    list($uid) = $this->escape_input((int) $uid);
 		$q = 'SELECT a.wref, a.name, b.x, b.y from '.TB_PREFIX.'vdata AS a left join '.TB_PREFIX.'wdata AS b ON b.id = a.wref where owner = '.$uid.' ORDER BY name ASC';
 		$result = mysqli_query($this->dblink,$q);
 		$array = $this->mysqli_fetch_all($result);
 		return $array;
+	}
+
+	/**
+	 * Returns the tribe of a village's owner via a single JOIN query.
+	 *
+	 * @param int $vid The village ID
+	 * @return int The tribe number (0 if not found)
+	 */
+	function getVillageOwnerTribe($vid) {
+		$vid = (int) $vid;
+		$q = "SELECT u.tribe FROM " . TB_PREFIX . "vdata v LEFT JOIN " . TB_PREFIX . "users u ON v.owner = u.id WHERE v.wref = $vid LIMIT 1";
+		$result = mysqli_query($this->dblink, $q);
+		$row = mysqli_fetch_assoc($result);
+		return $row ? (int)$row['tribe'] : 0;
+	}
+
+	/**
+	 * Loads all village data in a single optimized batch of queries,
+	 * replacing ~12 individual SELECT queries previously done in LoadTown().
+	 *
+	 * @param int $wid The village ID
+	 * @return array|null Structured array with all village data
+	 */
+	function loadFullVillageData($wid) {
+		$wid = (int) $wid;
+		$prefix = TB_PREFIX;
+
+		// ===== Query 1: All 1:1 tables via LEFT JOIN =====
+		$q1 = "SELECT *
+			   FROM {$prefix}vdata v
+			   LEFT JOIN {$prefix}fdata f ON v.wref = f.vref
+			   LEFT JOIN {$prefix}wdata w ON v.wref = w.id
+			   LEFT JOIN {$prefix}units u ON v.wref = u.vref
+			   LEFT JOIN {$prefix}tdata t ON v.wref = t.vref
+			   LEFT JOIN {$prefix}abdata a ON v.wref = a.vref
+			   WHERE v.wref = $wid LIMIT 1";
+		$r1 = mysqli_query($this->dblink, $q1);
+		$row = mysqli_fetch_assoc($r1);
+		if (!$row) return null;
+
+		// ===== Extract Query 1 into structured arrays =====
+
+		// vdata columns
+		$vdataKeys = ['wref','owner','name','capital','pop','cp','celebration','type',
+					  'wood','clay','iron','maxstore','crop','maxcrop','lastupdate',
+					  'lastupdate2','loyalty','exp1','exp2','exp3','created','natar',
+					  'starv','starvupdate','updateStorage','evasion'];
+		$infoarray = [];
+		foreach ($vdataKeys as $k) {
+			$infoarray[$k] = $row[$k] ?? null;
+		}
+
+		// fdata columns (f1..f40, f1t..f40t, f99, f99t)
+		$resarray = ['vref' => $row['vref'] ?? null];
+		for ($i = 1; $i <= 40; $i++) {
+			$resarray["f$i"] = $row["f$i"] ?? 0;
+			$resarray["f{$i}t"] = $row["f{$i}t"] ?? 0;
+		}
+		$resarray['f99'] = $row['f99'] ?? 0;
+		$resarray['f99t'] = $row['f99t'] ?? 0;
+
+		// wdata fields
+		$coor = ['x' => (int)($row['x'] ?? 0), 'y' => (int)($row['y'] ?? 0)];
+		$type = (int)($row['fieldtype'] ?? 0);
+
+		// units (u1..u90, hero)
+		$unitarray = ['vref' => $row['vref'] ?? null];
+		for ($i = 1; $i <= 90; $i++) {
+			$unitarray["u$i"] = $row["u$i"] ?? 0;
+		}
+		$unitarray['hero'] = $row['hero'] ?? 0;
+
+		// tdata (vref, t2..t89 per tribe)
+		$techarray = ['vref' => $row['vref'] ?? null];
+		for ($t = 0; $t <= 8; $t++) {
+			$base = $t * 10;
+			for ($u = 2; $u <= 9; $u++) {
+				$col = 't' . ($base + $u);
+				$techarray[$col] = $row[$col] ?? 0;
+			}
+		}
+
+		// abdata (vref, a1..a8, b1..b8)
+		$abarray = ['vref' => $row['vref'] ?? null];
+		for ($i = 1; $i <= 8; $i++) {
+			$abarray["a$i"] = $row["a$i"] ?? 0;
+			$abarray["b$i"] = $row["b$i"] ?? 0;
+		}
+
+		// ===== Query 2: Enforcement (both directions + oasis) via UNION =====
+		$enfCols = 'e.id, e.`from`, e.vref';
+		for ($i = 1; $i <= 90; $i++) {
+			$enfCols .= ", e.u$i";
+		}
+		$enfCols .= ', e.hero';
+
+		$q2 = "(SELECT 'tome' AS _src, $enfCols, NULL AS conqured
+				FROM {$prefix}enforcement e WHERE e.vref = $wid)
+			   UNION ALL
+			   (SELECT 'toyou' AS _src, $enfCols, NULL AS conqured
+				FROM {$prefix}enforcement e WHERE e.`from` = $wid)
+			   UNION ALL
+			   (SELECT 'oasis' AS _src, $enfCols, o.conqured
+				FROM {$prefix}enforcement e
+				LEFT JOIN {$prefix}odata o ON e.vref = o.wref
+				WHERE o.conqured = $wid AND e.`from` != $wid)";
+		$r2 = mysqli_query($this->dblink, $q2);
+
+		$enforcetome = [];
+		$enforcetoyou = [];
+		$enforceoasis = [];
+		if ($r2) {
+			while ($enf = mysqli_fetch_assoc($r2)) {
+				switch ($enf['_src']) {
+					case 'tome':   $enforcetome[]   = $enf; break;
+					case 'toyou':  $enforcetoyou[]  = $enf; break;
+					case 'oasis':  $enforceoasis[]  = $enf; break;
+				}
+			}
+		}
+
+		// ===== Query 3a: Oasis conquered =====
+		$r3a = $this->mysqli_fetch_all(mysqli_query($this->dblink,
+			"SELECT * FROM {$prefix}odata WHERE conqured = $wid"));
+		$oasisowned = $r3a ?: [];
+
+		// ===== Query 3b: Research queue =====
+		$researching = $this->mysqli_fetch_all(mysqli_query($this->dblink,
+			"SELECT * FROM {$prefix}research WHERE vref = $wid ORDER BY timestamp ASC")) ?: [];
+
+		// ===== Query 3c: Master jobs count =====
+		$r3c = mysqli_fetch_assoc(mysqli_query($this->dblink,
+			"SELECT COUNT(*) AS total FROM {$prefix}bdata WHERE wid = $wid AND master = 1"));
+		$master = (int)($r3c['total'] ?? 0);
+
+		return [
+			'infoarray'    => $infoarray,
+			'resarray'     => $resarray,
+			'coor'         => $coor,
+			'type'         => $type,
+			'oasisowned'   => $oasisowned,
+			'unitarray'    => $unitarray,
+			'enforcetome'  => $enforcetome,
+			'enforcetoyou' => $enforcetoyou,
+			'enforceoasis' => $enforceoasis,
+			'techarray'    => $techarray,
+			'abarray'      => $abarray,
+			'researching'  => $researching,
+			'master'       => $master,
+		];
 	}
 
 }

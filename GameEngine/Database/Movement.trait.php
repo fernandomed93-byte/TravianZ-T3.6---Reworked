@@ -256,12 +256,12 @@ trait DBMovement {
 		
 		$q = "SELECT SUM(t1) as t1, SUM(t2) as t2, SUM(t3) as t3, SUM(t4) as t4, SUM(t5) as t5, SUM(t6) as t6  , SUM(t7) as t7  , SUM(t8) as t8  , SUM(t9) as t9  , SUM(t10) as t10  , SUM(t11) as t11  
 		FROM " . TB_PREFIX . "movement, " . TB_PREFIX . "attacks 
-		where " . TB_PREFIX . "movement.from IN(".implode(', ', $village).") and " . TB_PREFIX . "movement.ref = " . TB_PREFIX . "attacks.id and " . TB_PREFIX . "movement.proc = 0 and " . TB_PREFIX . "movement.sort_type = 3
-		OR " . TB_PREFIX . "movement.to IN(".implode(', ', $village).") and " . TB_PREFIX . "movement.ref = " . TB_PREFIX . "attacks.id and " . TB_PREFIX . "movement.proc = 0 and " . TB_PREFIX . "movement.sort_type = 4";
+		where (" . TB_PREFIX . "movement.from IN(".implode(', ', $village).") and " . TB_PREFIX . "movement.ref = " . TB_PREFIX . "attacks.id and " . TB_PREFIX . "movement.proc = 0 and " . TB_PREFIX . "movement.sort_type = 3)
+		OR (" . TB_PREFIX . "movement.to IN(".implode(', ', $village).") and " . TB_PREFIX . "movement.ref = " . TB_PREFIX . "attacks.id and " . TB_PREFIX . "movement.proc = 0 and " . TB_PREFIX . "movement.sort_type = 4)";
 			
-					$result = mysqli_query($this->dblink,$q);
-					$dbarray = mysqli_fetch_array($result);
-					return $dbarray;
+        $result = mysqli_query($this->dblink,$q);
+        $dbarray = mysqli_fetch_array($result);
+        return $dbarray;
 		
 	}
 	
