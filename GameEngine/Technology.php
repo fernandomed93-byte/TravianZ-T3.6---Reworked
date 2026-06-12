@@ -485,7 +485,7 @@ class Technology {
         
         if(!$type){
             $start = 1;
-            $end = 50;
+            $end = 90;
         }else{
             $start = ($type - 1) * 10 + 1;
             $end = $type * 10;

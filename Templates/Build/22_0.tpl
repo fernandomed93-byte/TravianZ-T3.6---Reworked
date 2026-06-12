@@ -27,13 +27,13 @@ for($i=$start;$i<=$end;$i++) {
                    }
                    if(${'r'.$i}['wood'] > $village->maxstore || ${'r'.$i}['clay'] > $village->maxstore || ${'r'.$i}['iron'] > $village->maxstore) {
                     echo "<br><span class=\"none\">".EXPAND_WAREHOUSE1."</span></div></td>";
-                    echo "<td class=\"none\">
+                    echo "<td class=\"act\">
 					<div class=\"none\">".EXPAND_WAREHOUSE."</div>
 				</td></tr>";
                 }
                 else if(${'r'.$i}['crop'] > $village->maxcrop) {
                     echo "<br><span class=\"none\">".EXPAND_GRANARY1."</span></div></td>";
-                    echo "<td class=\"none\">
+                    echo "<td class=\"act\">
 					<div class=\"none\">".EXPAND_GRANARY."</div>
 				</td></tr>";
                 }
@@ -48,7 +48,7 @@ for($i=$start;$i<=$end;$i++) {
 				}
 				else if ( count($acares) > 0 ) {
 					echo "</td>";
-					echo "<td class=\"none\">
+					echo "<td class=\"act\">
 					".RESEARCH_IN_PROGRESS."</td></tr>";
                 }
 				else if($session->access != BANNED){
