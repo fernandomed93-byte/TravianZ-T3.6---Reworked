@@ -1744,7 +1744,8 @@ CREATE TABLE IF NOT EXISTS `%PREFIX%user_stats` (
   `username` varchar(100) DEFAULT NULL,
   `updated_at` int DEFAULT NULL,
   KEY `idx_rank_pos` (`rank_pos`),
-  KEY `idx_updated_at` (`updated_at`)
+  KEY `idx_updated_at` (`updated_at`),
+  KEY `idx_pop_vils_uid` (`totalpop` DESC, `totalvils` DESC, `uid` DESC)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 --
@@ -1764,5 +1765,6 @@ CREATE TABLE IF NOT EXISTS `%PREFIX%village_ranks` (
   `rank_pos` int NOT NULL DEFAULT 0,
   `updated_at` int DEFAULT NULL,
   KEY `idx_rank_pos` (`rank_pos`),
-  KEY `idx_updated_at` (`updated_at`)
+  KEY `idx_updated_at` (`updated_at`),
+  KEY `idx_pop_wref` (`pop` DESC, `wref` DESC)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;

@@ -101,6 +101,43 @@ trait DBMovement {
 		return $result;
 	}
 
+	function getAllFinishedMovements() {
+		$time = time();
+
+		$q = "SELECT
+				m.from, m.to, m.endtime, m.starttime, m.ref, m.moveid,
+				m.wood, m.clay, m.iron, m.crop,
+				a.ctar1, a.ctar2, a.spy, a.attack_type,
+				a.t1, a.t2, a.t3, a.t4, a.t5, a.t6, a.t7, a.t8, a.t9, a.t10, a.t11,
+				(SELECT oasistype FROM ".TB_PREFIX."wdata WHERE id = m.to) as oasistype,
+				CASE
+					WHEN m.sort_type = 3 AND a.attack_type = 2 THEN 1
+					WHEN m.sort_type = 3 AND a.attack_type != 2 THEN 0
+					WHEN m.sort_type = 4 THEN 2
+				END as movement_type
+			FROM ".TB_PREFIX."movement m
+			JOIN ".TB_PREFIX."attacks a ON m.ref = a.id
+			WHERE m.proc = 0
+			  AND m.sort_type IN (3, 4)
+			  AND m.endtime < $time
+			ORDER BY m.endtime ASC,
+				CASE
+					WHEN m.sort_type = 3 AND a.attack_type = 2 THEN 1
+					WHEN m.sort_type = 4 THEN 2
+					WHEN m.sort_type = 3 AND a.attack_type != 2 THEN 3
+				END ASC";
+
+		$result = $this->query_return($q);
+
+		$q2 = "SELECT `to`, moveid
+			   FROM ".TB_PREFIX."movement
+			   WHERE ref = 0 AND proc = 0 AND sort_type = 4 AND endtime < $time";
+
+		$settlers = $this->query_return($q2);
+
+		return ['movements' => $result, 'settlers' => $settlers];
+	}
+
     public function hasFutureAttacks() {
         $time = time();
         //Verifica quantos ataques atualmente existem no servidor partindo de vilas ativas na última hora

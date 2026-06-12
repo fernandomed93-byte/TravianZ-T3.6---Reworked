@@ -295,8 +295,7 @@ class Technology {
 			$prisoners = $database->getPrisoners($base, 0, $useCache);
 			if(!empty($prisoners)){
 				foreach($prisoners as $prisoner){
-					$owner = $database->getVillageField($base, "owner");
-					$ownertribe = $database->getUserField($owner, "tribe", 0);
+					$ownertribe = $database->getVillageOwnerTribe($prisoner['from']);
 					$start = ($ownertribe - 1) * 10 + 1;
 					$end = ($ownertribe * 10);
 					for($i = $start; $i <= $end; $i++){

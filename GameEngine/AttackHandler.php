@@ -69,9 +69,7 @@ class AttackHandler {
 
         if ($village_destroyed_flag) {
             $aftermath['village_destroyed'] = true;
-        }
-
-        $canDestroy = $this->canVillageBeDestroyed($battleContext);
+        }        
 
         $aftermath['ram_info'] = $this->handleRamAttack($battleContext, $battleResult);
         $aftermath['catapult_info'] = $this->handleCatapultAttack($battleContext, $battleResult, $village_destroyed_flag);
@@ -129,8 +127,22 @@ class AttackHandler {
         if ($attackData['attack_type'] >= 3) {
             $this->database->addGeneralAttack($battleResult['totals']['attacker']['casualties'] + $battleResult['totals']['defender']['casualties']);
         }
-        if ($village_destroyed_flag && $canDestroy) {
-            $this->handleVillageDestruction($battleContext);
+        if ($village_destroyed_flag) {
+            $atkInfo = $battleContext['attackData'];
+            $totRams = 0;
+            if (isset($atkInfo['t7'])) $totRams += $atkInfo['t7'];
+            $totCats = 0;
+            if (isset($atkInfo['t8'])) $totCats += $atkInfo['t8'];
+
+            if ($totRams > 0 || $totCats > 0) {
+                $canDestroy = $this->canVillageBeDestroyed($battleContext);
+            }else{
+                $canDestroy = false;
+            }
+
+            if ($canDestroy) {
+                $this->handleVillageDestruction($battleContext);
+            }
         }
         $this->database->addStarvationData($battleContext['defender']['info']['wref']);
     }

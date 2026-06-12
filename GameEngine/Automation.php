@@ -48,9 +48,12 @@ class Automation {
     ];
 
     private $group_accounts_alliances_methods = [
-        "procNewClimbers", "ClearUser", "ClearInactive",
-        "celebrationComplete", "culturePoints", "rebuildStatCaches",
+        "ClearUser", "ClearInactive","celebrationComplete", "culturePoints",
         "updateGeneralAttack", "checkInvitedPlayes", "CheckBan", "loyaltyRegeneration"
+    ];
+
+    private $group_ranks_climbers_methods = [
+        "rebuildStatCaches", "procNewClimbers"
     ];
 
     private $group_world_maintenance_methods = [
@@ -87,6 +90,13 @@ class Automation {
                 'lockFile'  => 'automation_accounts_alliances.lock',
                 'cooldown'  => 30,     // Segundos (30)
                 'maxExecTime' => 120   // Segundos (2 min)
+            ],
+            [
+                'name'      => 'Ranks_Climbers',
+                'methods'   => $this->group_ranks_climbers_methods,
+                'lockFile'  => 'automation_ranks_climbers.lock',
+                'cooldown'  => 120,    // 2 minutos
+                'maxExecTime' => 300
             ],
             [
                 'name'      => 'World_Maintenance',
@@ -266,131 +276,90 @@ class Automation {
 
     private function completeMovementsSequentially() {
 		global $database, $battle, $technology, $units;
-	
+
+		$time = time();
+		$hasMovements = false;
 		$events = [];
-        $time = time();
-        $hasMovements = false;
-		
-		// Busca Ataques/Raids (type 0)
-		$ataques = $database->getFinishedMovements(0);
-		foreach ($ataques as $ataque) {
-			$events[] = [
-				'endtime' => (int)$ataque['endtime'],
-				'priority' => 3, // Prioridade 3 (menor) para ataques
-				'type' => 'Attack',
-				'data' => $ataque 
-			];
+
+		$allData = $database->getAllFinishedMovements();
+
+		foreach ($allData['movements'] as $row) {
+			switch ($row['movement_type']) {
+				case 0:
+					$events[] = ['endtime' => (int)$row['endtime'], 'priority' => 3, 'type' => 'Attack', 'data' => $row];
+					break;
+				case 1:
+					$events[] = ['endtime' => (int)$row['endtime'], 'priority' => 1, 'type' => 'Reinforcement', 'data' => $row];
+					break;
+				case 2:
+					$events[] = ['endtime' => (int)$row['endtime'], 'priority' => 2, 'type' => 'Return', 'data' => $row];
+					break;
+			}
 		}
-		
-		// Busca Reforços (type 1)
-		$reforcos = $database->getFinishedMovements(1);
-		foreach ($reforcos as $reforco) {
-			$events[] = [
-				'endtime' => (int)$reforco['endtime'],
-				'priority' => 1, // Prioridade 1 (máxima) para reforços
-				'type' => 'Reinforcement',
-				'data' => $reforco
-			];
-		}
-		
-		// Busca Retornos (type 2)
-		$retornos = $database->getFinishedMovements(2);
-		foreach ($retornos as $retorno) {
-			$events[] = [
-				'endtime' => (int)$retorno['endtime'],
-				'priority' => 2, // Prioridade 2 para retornos
-				'type' => 'Return',
-				'data' => $retorno
-			];
-		}
-		
-		$settler_returns = $database->getFinishedMovements(3);
-		foreach ($settler_returns as $settler_return) {
-			$events[] = [
-				'endtime' => (int)$settler_return['endtime'],
-				'priority' => 2, // Mesma prioridade de um retorno normal
-				'type' => 'Return_Settlers', // Um tipo específico para ele
-				'data' => $settler_return
-			];
+
+		foreach ($allData['settlers'] as $row) {
+			$events[] = ['endtime' => 0, 'priority' => 2, 'type' => 'Return_Settlers', 'data' => $row];
 		}
 
         if (!empty($events)) {
             $hasMovements = true;
         } else {
-            // 2. Se não há nada finalizado, verificamos se existe ALGO no futuro, validamos apenas com ataques a caminho, visto que uns poucos retornos ainda pode significar falha no bot
             $hasMovements = $database->hasFutureAttacks();
         }
 
-        // 3. Informa o BD que está iniciando o processamento
         $database->updateAutomationTime($time, $hasMovements);
-		
+
 		if (empty($events)) {
-			return; // Nada a fazer neste ciclo
+			return;
 		}
-		
+
 		$vilIDsAT = [];
 		$vilIDsREF = [];
 		$enforce_tos = [];
         $enforce_froms = [];
 		$vilIDsRET = [];
-		
+
 		foreach ($events as $event) {
-			// Coleta os IDs de origem e destino de todos os eventos
 			if ($event['type'] == 'Attack') {
 				$vilIDsAT[$event['data']['from']] = true;
                 $vilIDsAT[$event['data']['to']] = true;
-			}
-			
-			if ($event['type'] == 'Reinforcement') {
+			} elseif ($event['type'] == 'Reinforcement') {
 				$vilIDsREF[$event['data']['from']] = true;
 				$vilIDsREF[$event['data']['to']] = true;
 				$enforce_tos[$event['data']['to']] = true;
 				$enforce_froms[$event['data']['from']] = true;
-			}
-			
-			if ($event['type'] == 'Return') {
+			} elseif ($event['type'] == 'Return') {
 				$vilIDsRET[$event['data']['from']] = true;
                 $vilIDsRET[$event['data']['to']] = true;
 			}
-			
 		}
-		
+
+		$allIDs = array_keys($vilIDsAT + $vilIDsREF + $vilIDsRET);
+		if (!empty($allIDs)) {
+			$database->getProfileVillages($allIDs, 5);
+			$database->getUnit($allIDs);
+		}
+
 		if (!empty($vilIDsAT)){
 			$vilIDsAT = array_keys($vilIDsAT);
-            $database->getProfileVillages($vilIDsAT, 5);
-            $database->getUnit($vilIDsAT);
             $database->getEnforceVillage($vilIDsAT, 0);
             $database->getMovement(34, $vilIDsAT, 1);
             $database->getABTech($vilIDsAT);
 		}
-		
+
 		if (!empty($vilIDsREF)){
 			$vilIDsREF = array_keys($vilIDsREF);
-            $database->getProfileVillages($vilIDsREF, 5);
-            $database->getUnit($vilIDsREF);
             $database->getEnforce(array_keys($enforce_tos), array_keys($enforce_froms));
-            $database->getVillageByWorldID($vilIDsREF);		
+            $database->getVillageByWorldID($vilIDsREF);
 		}
-		
+
 		if (!empty($vilIDsRET)){
 			$vilIDsRET = array_keys($vilIDsRET);
-			$database->getProfileVillages($vilIDsRET, 5);
             $database->getOasisEnforce($vilIDsRET, 0);
             $database->getOasisEnforce($vilIDsRET, 1);
 		}
-		
-		// Ordena primeiro por 'endtime' (cronológico), e depois por 'priority' para desempate
-		usort($events, function($a, $b) {
-			if ($a['endtime'] == $b['endtime']) {
-				return $a['priority'] <=> $b['priority']; // Prioridade menor (1) vem primeiro
-			}
-			return $a['endtime'] <=> $b['endtime']; // Ordena pelo tempo de conclusão
-		});
-	
-	
-		foreach ($events as $event) {
 
-			// Delega para o método de tratamento correto com base no tipo
+		foreach ($events as $event) {
 			switch ($event['type']) {
 				case 'Attack':
 					$this->processAttackArrival($event['data']);
@@ -406,9 +375,7 @@ class Automation {
 					break;
 			}
 		}
-		
-		$this->pruneResource();
-		
+
 	}
 
 	
@@ -1852,9 +1819,6 @@ class Automation {
 	private function procNewClimbers() {
 		global $database, $ranking;
 
-		// Garante que user_stats está populado antes de carregar o ranking completo
-		$ranking->rebuildUserStats();
-
 		// --- ETAPA 1: PREPARAÇÃO - Ler e processar o ranking completo UMA ÚNICA VEZ.
 		$ranking->procRankArray(0, 999999, true);
 		$climbers = $ranking->getRank();
@@ -1871,49 +1835,40 @@ class Automation {
 		$week = mysqli_num_rows($result_week) > 0 ? mysqli_fetch_assoc($result_week)['week'] + 1 : 1;
 		$totalPlayers = count($climbers) - 1;
 
-		// Itera sobre o ranking ATUAL e COMPLETO que está em memória.
+		$clpChanges = [];
+		$clpSets = [];
+		$oldrankUpdates = [];
+
 		foreach ($climbers as $currentRank => $playerData) {
-			// Pula o elemento "pad" no início do array.
 			if ($currentRank == 0 || !isset($playerData['userid'])) {
 				continue;
 			}
 
 			$uid = $playerData['userid'];
-			// Pega o rank antigo que estava SALVO no banco de dados.
 			$savedOldRank = $playerData['oldrank'];
 
-			// Se for um jogador novo, seu rank antigo efetivo é sua posição atual para o cálculo.
 			if ($savedOldRank == 0) {
 				$savedOldRank = $currentRank;
 			}
-			
-			// A principal verificação: o rank salvo no banco é diferente do rank real de agora?
-			if ($currentRank != $savedOldRank) {
-				// Sim, a posição do jogador mudou. Precisamos recalcular seus pontos de escalador.
-				if ($week > 1) {
-					// Lógica diferencial para semanas > 1: calcula a MUDANÇA nos pontos.
-					$points_change = $savedOldRank - $currentRank; // Positivo se subiu, negativo se desceu.
-					
-					if ($points_change > 0) {
-						$database->addclimberrankpop($uid, $points_change);
-					} else {
-						$database->removeclimberrankpop($uid, abs($points_change));
-					}
 
+			if ($currentRank != $savedOldRank) {
+				if ($week > 1) {
+					$points_change = $savedOldRank - $currentRank;
+					$clpChanges[$uid] = ($clpChanges[$uid] ?? 0) + $points_change;
 				} else {
-					// Lógica absoluta para a semana 1: define os pontos totais com base na posição.
 					$totalpoints = $totalPlayers - $currentRank;
-					$database->setclimberrankpop($uid, $totalpoints);
+					$clpSets[$uid] = $totalpoints;
 				}
 			}
 
-			// --- ETAPA 3: ATUALIZAÇÃO ---
-			// Garante que o 'oldrank' no banco de dados reflita a posição ATUAL do jogador.
-			// Isso "quita a dívida" e garante que na próxima vez que a função rodar, o estado estará correto.
 			if ($playerData['oldrank'] != $currentRank) {
-				$database->updateoldrank($uid, $currentRank);
+				$oldrankUpdates[$uid] = $currentRank;
 			}
 		}
+
+		$database->batchAddClimberPop($clpChanges);
+		$database->batchSetClimberPop($clpSets);
+		$database->batchUpdateOldrank($oldrankUpdates);
 	}
 
     private function procClimbers($uid) {

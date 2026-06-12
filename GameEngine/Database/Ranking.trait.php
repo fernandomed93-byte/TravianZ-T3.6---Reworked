@@ -163,6 +163,47 @@ trait DBRanking {
         return $stats;
     }
 
+    // ========== BATCH UPDATES (substitui N queries individuais) ==========
+
+    function batchAddClimberPop(array $changes) {
+        if (empty($changes)) return;
+        $whens = []; $ids = [];
+        foreach ($changes as $uid => $delta) {
+            $uid = (int)$uid; $delta = (int)$delta;
+            $ids[] = $uid;
+            $whens[] = "WHEN $uid THEN clp + $delta";
+        }
+        $q = "UPDATE ".TB_PREFIX."users SET clp = CASE id "
+            . implode(' ', $whens) . " ELSE clp END WHERE id IN(" . implode(',', $ids) . ")";
+        return mysqli_query($this->dblink, $q);
+    }
+
+    function batchSetClimberPop(array $sets) {
+        if (empty($sets)) return;
+        $whens = []; $ids = [];
+        foreach ($sets as $uid => $value) {
+            $uid = (int)$uid; $value = (int)$value;
+            $ids[] = $uid;
+            $whens[] = "WHEN $uid THEN $value";
+        }
+        $q = "UPDATE ".TB_PREFIX."users SET clp = CASE id "
+            . implode(' ', $whens) . " ELSE clp END WHERE id IN(" . implode(',', $ids) . ")";
+        return mysqli_query($this->dblink, $q);
+    }
+
+    function batchUpdateOldrank(array $ranks) {
+        if (empty($ranks)) return;
+        $whens = []; $ids = [];
+        foreach ($ranks as $uid => $rank) {
+            $uid = (int)$uid; $rank = (int)$rank;
+            $ids[] = $uid;
+            $whens[] = "WHEN $uid THEN $rank";
+        }
+        $q = "UPDATE ".TB_PREFIX."users SET oldrank = CASE id "
+            . implode(' ', $whens) . " ELSE oldrank END WHERE id IN(" . implode(',', $ids) . ")";
+        return mysqli_query($this->dblink, $q);
+    }
+
     // Returns max updated_at timestamp from user_stats (for staleness check)
     function getUserStatsLastUpdate() {
         $q = "SELECT MAX(updated_at) as last_update FROM " . TB_PREFIX . "user_stats";
