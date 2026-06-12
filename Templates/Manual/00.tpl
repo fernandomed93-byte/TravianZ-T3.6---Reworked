@@ -28,6 +28,7 @@
     <li><a href="manual.php?typ=3&amp;s=1">Resources</a></li>
     <li><a href="manual.php?typ=3&amp;s=2">Military</a></li>
     <li><a href="manual.php?typ=3&amp;s=3">Infrastructure</a></li>
+	<li><a href="manual.php?typ=3&amp;s=4">Walls</a></li>
 </ul>
 
 <br>

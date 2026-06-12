@@ -1,8 +1,11 @@
-<h1><img class="unit ugeb" src="gpack/travian_default/img/x.gif"> Great Stable</h1><img class="building g30" src="gpack/travian_default/img/x.gif" alt="Great Stable" title="Great Stable" />The great stable allows you to build more units at the same time but they cost thrice the original amount.<br /><br />It cannot be built in the capital.<p><b>Costs</b> and <b>construction time</b> for level 1:<br /><img class="r1" src="gpack/travian_default/img/x.gif" alt="Lumber" title="Lumber" />780 | <img class="r2" src="gpack/travian_default/img/x.gif" alt="Clay" title="Clay" />420 | <img class="r3" src="gpack/travian_default/img/x.gif" alt="Iron" title="Iron" />660 | <img class="r4" src="gpack/travian_default/img/x.gif" alt="Crop" title="Crop" />300 | <img class="r5" src="gpack/travian_default/img/x.gif" alt="Crop consumption" title="Crop consumption" />5 | <span class="dur"><img class="clock" alt="duration" title="duration" src="gpack/travian_default/img/x.gif" />0:36:40</span></p>
-	<p><b>Prerequisites</b><br /><a href="manual.php?typ=4&gid=20">Stable</a> Level 20</p>
+﻿<?php $gid = 30; ?>
+<?php include "Templates/Manual/building_header.tpl"; ?>
+<?php include "Templates/Manual/building_costs.tpl"; ?>
+<?php include "Templates/Manual/building_prereqs.tpl"; ?>
 <map id="nav" name="nav">
     <area href="manual.php?typ=4&amp;gid=29" title="back" coords="0,0,45,18" shape="rect" alt="" />
     <area href="manual.php?s=1" title="Overview" coords="46,0,70,18" shape="rect" alt="" />
-    <area href="manual.php?typ=4&amp;gid=42" title="forward" coords="71,0,116,18" shape="rect" alt="" />
+    <area href="manual.php?typ=4&amp;gid=49" title="forward" coords="71,0,116,18" shape="rect" alt="" />
 </map>
 <img usemap="#nav" src="gpack/travian_default/img/x.gif" class="navi" alt="" />
+

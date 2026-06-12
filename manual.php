@@ -14,6 +14,7 @@
 include_once("GameEngine/config.php");
 include_once("GameEngine/Lang/" . LANG . ".php");
 include_once("GameEngine/Data/unitdata.php");
+include_once("GameEngine/Data/buidata.php");
 ?>
 
 <html>
@@ -56,7 +57,11 @@ else if (isset($_GET['typ']) && $_GET['typ'] == 5 && $_GET['s'] == 3) {
 }
 else {
 	if(isset($_GET['gid'])) {
-		include("Templates/Manual/".$_GET['typ'].(preg_replace("/[^a-zA-Z0-9_-]/","",$_GET['gid'])).".tpl");
+		$gid = preg_replace("/[^a-zA-Z0-9_-]/", "", $_GET['gid']);
+		if ($_GET['typ'] == 4 && ctype_digit($gid)) {
+			$gid = str_pad($gid, 2, '0', STR_PAD_LEFT);
+		}
+		include("Templates/Manual/".$_GET['typ'].$gid.".tpl");
 	}
 	else {
 		if($_GET['typ'] == 4 && $_GET['s'] == 0) {

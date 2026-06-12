@@ -1,8 +1,11 @@
-<h1><img class="unit ugeb" src="gpack/travian_default/img/x.gif"> Command Center</h1><img class="building g44" src="gpack/travian_default/img/x.gif" alt="Command Center" title="Command Center" />The Command Center improves expansion abilities and protects villages from enemy conquests. You can train settlers and chiefs here.<br>Additionally, the Command Center provides an expansion slot at levels 10, 15 and 20 each.<p><b>Costs</b> and <b>construction time</b> for level 1:<br /><img class="r1" src="gpack/travian_default/img/x.gif" alt="Lumber" title="Lumber" />1600 | <img class="r2" src="gpack/travian_default/img/x.gif" alt="Clay" title="Clay" />1250 | <img class="r3" src="gpack/travian_default/img/x.gif" alt="Iron" title="Iron" />1050 | <img class="r4" src="gpack/travian_default/img/x.gif" alt="Crop" title="Crop" />200 | <img class="r5" src="gpack/travian_default/img/x.gif" alt="Crop consumption" title="Crop consumption" />1 | <span class="dur"><img class="clock" alt="duration" title="duration" src="gpack/travian_default/img/x.gif" />0:33:20</span></p>
-	<p><b>Prerequisites</b><br /><a href="manual.php?typ=4&gid=15">Main Building</a> Level 5, <a href="manual.php?typ=4&gid=25"><strike>Residence</strike></a>, <a href="manual.php?typ=4&gid=26"><strike>Palace</strike></a></p>
+﻿<?php $gid = 44; ?>
+<?php include "Templates/Manual/building_header.tpl"; ?>
+<?php include "Templates/Manual/building_costs.tpl"; ?>
+<?php include "Templates/Manual/building_prereqs.tpl"; ?>
 <map id="nav" name="nav">
     <area href="manual.php?typ=4&amp;gid=41" title="back" coords="0,0,45,18" shape="rect" alt="" />
     <area href="manual.php?s=1" title="Overview" coords="46,0,70,18" shape="rect" alt="" />
     <area href="manual.php?typ=4&amp;gid=46" title="forward" coords="71,0,116,18" shape="rect" alt="" />
 </map>
 <img usemap="#nav" src="gpack/travian_default/img/x.gif" class="navi" alt="" />
+

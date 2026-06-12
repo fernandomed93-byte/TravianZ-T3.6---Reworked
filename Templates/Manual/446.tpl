@@ -1,8 +1,11 @@
-<h1><img class="unit ugeb" src="gpack/travian_default/img/x.gif"> Hospital</h1><img class="building g46" src="gpack/travian_default/img/x.gif" alt="Hospital" title="Hospital" />The Hospital allows you to treat wounded troops so they can rejoin your army. Can heal up to 40% of the troops lost in battle. Healing troops takes half the time of normal training, but costs the same resources.<p><b>Costs</b> and <b>construction time</b> for level 1:<br /><img class="r1" src="gpack/travian_default/img/x.gif" alt="Lumber" title="Lumber" />320 | <img class="r2" src="gpack/travian_default/img/x.gif" alt="Clay" title="Clay" />280 | <img class="r3" src="gpack/travian_default/img/x.gif" alt="Iron" title="Iron" />420 | <img class="r4" src="gpack/travian_default/img/x.gif" alt="Crop" title="Crop" />360 | <img class="r5" src="gpack/travian_default/img/x.gif" alt="Crop consumption" title="Crop consumption" />3 | <span class="dur"><img class="clock" alt="duration" title="duration" src="gpack/travian_default/img/x.gif" />0:50:00</span></p>
-	<p><b>Prerequisites</b><br /><a href="manual.php?typ=4&gid=15">Main Building</a> Level 10, <a href="manual.php?typ=4&gid=22">Academy</a> Level 15, <a href="manual.php?typ=4&gid=48"><strike>Big Hospital</strike></a></p>
+﻿<?php $gid = 46; ?>
+<?php include "Templates/Manual/building_header.tpl"; ?>
+<?php include "Templates/Manual/building_costs.tpl"; ?>
+<?php include "Templates/Manual/building_prereqs.tpl"; ?>
 <map id="nav" name="nav">
     <area href="manual.php?typ=4&amp;gid=44" title="back" coords="0,0,45,18" shape="rect" alt="" />
     <area href="manual.php?s=1" title="Overview" coords="46,0,70,18" shape="rect" alt="" />
     <area href="manual.php?typ=4&amp;gid=48" title="forward" coords="71,0,116,18" shape="rect" alt="" />
 </map>
 <img usemap="#nav" src="gpack/travian_default/img/x.gif" class="navi" alt="" />
+

@@ -1,5 +1,7 @@
-<h1><img class="unit ugeb" src="gpack/travian_default/img/x.gif"> Rally Point</h1><img class="building g16 gid16" src="gpack/travian_default/img/x.gif" alt="Rally Point" title="Rally Point" />Your village's troops meet here. From here you can send them out to conquer, raid or reinforce other villages.<br /><br />The rally point can only be built on the green grassland below your main building and to the right.<p><b>Costs</b> and <b>construction time</b> for level 1:<br /><img class="r1" src="gpack/travian_default/img/x.gif" alt="Lumber" title="Lumber" />110 | <img class="r2" src="gpack/travian_default/img/x.gif" alt="Clay" title="Clay" />160 | <img class="r3" src="gpack/travian_default/img/x.gif" alt="Iron" title="Iron" />90 | <img class="r4" src="gpack/travian_default/img/x.gif" alt="Crop" title="Crop" />70 | <img class="r5" src="gpack/travian_default/img/x.gif" alt="Crop consumption" title="Crop consumption" />1 | <span class="dur"><img class="clock" alt="duration" title="duration" src="gpack/travian_default/img/x.gif" />0:33:20</span></p>
-	<p><b>Prerequisites</b><br />none</p>
+<?php $gid = 16; ?>
+<?php include "Templates/Manual/building_header.tpl"; ?>
+<?php include "Templates/Manual/building_costs.tpl"; ?>
+<?php include "Templates/Manual/building_prereqs.tpl"; ?>
 <map id="nav" name="nav">
     <area href="manual.php?typ=4&amp;gid=14" title="back" coords="0,0,45,18" shape="rect" alt="" />
     <area href="manual.php?s=1" title="Overview" coords="46,0,70,18" shape="rect" alt="" />

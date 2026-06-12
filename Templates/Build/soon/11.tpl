@@ -1,0 +1,1 @@
+<?php $gid = 11; include __DIR__."/soon_building.tpl"; ?>

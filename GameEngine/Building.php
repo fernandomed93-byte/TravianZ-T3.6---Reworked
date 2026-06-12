@@ -502,73 +502,131 @@ class Building {
 	
 	private function meetRequirement($id) {
 		global $village,$session,$database;
-		
+
 		$isBuilt = $this->getTypeField($id);
+		$prereqs = $GLOBALS['buildingPrereqs'][$id] ?? null;
+
+		// sem dados = sempre construtivel
+		if ($prereqs === null) return true;
+
+		// structure: prerequisitos de [gid, level]
+		if (isset($prereqs['structure'])) {
+			foreach ($prereqs['structure'] as $req) {
+				if ($this->getTypeLevel($req[0]) < $req[1]) return false;
+			}
+		}
+
+		// tribes: restricao de tribo
+		if (isset($prereqs['tribes'])) {
+			$tribes = $prereqs['tribes'];
+			if (is_numeric($tribes)) {
+				if ($session->tribe != (int)$tribes) return false;
+			} elseif (is_string($tribes) && strpos($tribes, ',') !== false) {
+				$allowed = array_map('intval', array_map('trim', explode(',', $tribes)));
+				if (!in_array($session->tribe, $allowed)) return false;
+			}
+		}
+
+		// capital: 1 = so na capital, -1 = nao pode na capital
+		if (isset($prereqs['capital'])) {
+			if ($prereqs['capital'] == 1 && $village->capital == 0) return false;
+			if ($prereqs['capital'] == -1 && $village->capital != 0) return false;
+		}
+
+		// conflicts: edificios mutuamente exclusivos
+		if (isset($prereqs['conflicts'])) {
+			foreach ($prereqs['conflicts'] as $cgid) {
+				if ($this->getTypeField($cgid)) return false;
+			}
+		}
+
+		// regra especial precisa vir antes do check multiinstance abaixo
+		switch ($id) {
+			case 40: return $this->allowWwUpgrade();
+		}
+
+		// unique: so pode construir 1 (padrao)
+		if (!($prereqs['multiinstance'] ?? false)) {
+			if ($isBuilt) return false;
+		}
+
+		// regras especiais (nao da pra expressar no map)
+		switch ($id) {
+			case 10: case 11:
+				if ($isBuilt && $this->getTypeLevel($id) != 20) return false;
+				break;
+			case 23:
+				if ($isBuilt && $this->getTypeLevel($id) != 10) return false;
+				break;
+			case 26:
+				if ($this->isCastleBuilt()) return false;
+				break;
+			case 36:
+				if ($isBuilt && $this->getTypeLevel($id) != 20) return false;
+				break;
+			case 38: case 39:
+				if ($isBuilt && $this->getTypeLevel($id) != 20) return false;
+				if (!($village->natar == 1 || count($database->getOwnUniqueArtefactInfo2($village->wid, 6, 1, 1)) || count($database->getOwnUniqueArtefactInfo2($session->uid, 6, 2, 0)))) return false;
+				break;
+			case 49:
+				if (!GREAT_WKS) return false;
+				break;
+		}
+
+		return true;
+	}
+
+	public function getBuildTier($gid) {
+		global $session, $village;
+		$prereqs = $GLOBALS['buildingPrereqs'][$gid] ?? null;
+
+		if ($prereqs === null) return $this->meetRequirement($gid) ? 'available' : null;
+		if ($this->meetRequirement($gid)) return 'available';
+
+		if (isset($prereqs['tribes'])) {
+			$allowed = is_numeric($prereqs['tribes'])
+				? [(int)$prereqs['tribes']]
+				: array_map('intval', array_map('trim', explode(',', $prereqs['tribes'])));
+			if (!in_array($session->tribe, $allowed)) return null;
+		}
+		if (isset($prereqs['capital']) && $prereqs['capital'] == 1 && !$village->capital) return null;
+
+		if ($gid == 49 && !GREAT_WKS) return null;
 		
-        switch ($id) {           
-            case 1:
-            case 2:
-            case 3:
-            case 4: return true;
-            
-            case 5: return $this->getTypeLevel(1) >= 10 && $this->getTypeLevel(15) >= 5 && !$isBuilt;
-            case 6: return $this->getTypeLevel(2) >= 10 && $this->getTypeLevel(15) >= 5 && !$isBuilt;
-            case 7: return $this->getTypeLevel(3) >= 10 && $this->getTypeLevel(15) >= 5 && !$isBuilt;
-            case 8: return $this->getTypeLevel(4) >= 5 && !$isBuilt;                                    
-            case 9: return $this->getTypeLevel(15) >= 5 && $this->getTypeLevel(4) >= 10 && $this->getTypeLevel(8) >= 5 && !$isBuilt;
-            
-            case 10:
-            case 11: return $this->getTypeLevel(15) >= 1 && (!$isBuilt || $this->getTypeLevel($id) == 20);
-            
-            case 12: return $this->getTypeLevel(22) >= 3 && $this->getTypeLevel(15) >= 3 && !$isBuilt;
-            case 13: return $this->getTypeLevel(15) >= 3 && $this->getTypeLevel(22) >= 1 && !$isBuilt;
-            case 14: return $this->getTypeLevel(16) >= 15 && !$isBuilt;
-            
-            case 15:
-            case 16: return !$isBuilt;
-            
-            case 17: return $this->getTypeLevel(15) >= 3 && $this->getTypeLevel(10) >= 1 && $this->getTypeLevel(11) >= 1 && !$isBuilt;
-            case 18: return $this->getTypeLevel(15) >= 1 && !$isBuilt;
-            case 19: return $this->getTypeLevel(15) >= 3 && $this->getTypeLevel(16) >= 1 && !$isBuilt;
-            case 20: return $this->getTypeLevel(12) >= 3 && $this->getTypeLevel(22) >= 5 && !$isBuilt;
-            case 21: return $this->getTypeLevel(22) >= 10 && $this->getTypeLevel(15) >= 5 && !$isBuilt;
-            case 22: return $this->getTypeLevel(15) >= 3 && $this->getTypeLevel(19) >= 3 && !$isBuilt;
-            case 23: return !$isBuilt || $this->getTypeLevel($id) == 10;
-            case 24: return $this->getTypeLevel(22) >= 10 && $this->getTypeLevel(15) >= 10 && !$isBuilt;
-            case 25: return $this->getTypeLevel(15) >= 5 && !$isBuilt && !$this->getTypeField(26) && !$this->getTypeField(44);
-            case 26: return $this->getTypeLevel(18) >= 1 && $this->getTypeLevel(15) >= 5 && !$isBuilt && !$this->isCastleBuilt() && !$this->getTypeField(25) && !$this->getTypeField(44);
-            case 27: return $this->getTypeLevel(15) >= 10 && !$isBuilt;
-            case 28: return $this->getTypeLevel(17) == 20 && $this->getTypeLevel(20) >= 10 && !$isBuilt;
-            case 29: return $this->getTypeLevel(19) == 20 && $village->capital == 0 && !$isBuilt;
-            case 30: return $this->getTypeLevel(20) == 20 && $village->capital == 0 && !$isBuilt;
-            case 31: return $session->tribe == 1;
-            case 32: return $session->tribe == 2;
-            case 33: return $session->tribe == 3;
-            case 34: return $this->getTypeLevel(26) >= 3 && $this->getTypeLevel(15) >= 5 && $this->getTypeLevel(25) == 0 && $village->capital != 0 && !$isBuilt;
-            case 35: return $this->getTypeLevel(16) >= 10 && $this->getTypeLevel(11) == 20 && $session->tribe == 2 && $village->capital != 0 && !$isBuilt;
-            case 36: return $this->getTypeLevel(16) >= 1 && $session->tribe == 3 && (!$isBuilt || $this->getTypeLevel($id) == 20);
-            case 37: return $this->getTypeLevel(15) >= 3 && $this->getTypeLevel(16) >= 1 && !$isBuilt;
+		$hasProgress = true;
+		$gates = [10 => 20, 11 => 20, 23 => 10, 36 => 20, 38 => 20, 39 => 20];
+		if (isset($gates[$gid]) && $this->getTypeField($gid)) {
+			$cur = $this->getTypeLevel($gid);
+			$max = $gates[$gid];
+			$hasProgress = ($cur >= ceil($max * 0.6));
+		} elseif (isset($prereqs['structure'])) {
+			foreach ($prereqs['structure'] as $req) {
+				if ($this->getTypeLevel($req[0]) < ceil($req[1] * 0.6)) {
+					$hasProgress = false; break;
+				}
+			}
+		}
 
-            // great warehouse can only be built with artefact or in Natar villages
-            case 38: return $this->getTypeLevel(15) >= 10 && (!$isBuilt || $this->getTypeLevel($id) == 20) && ($village->natar == 1 || count($database->getOwnUniqueArtefactInfo2($village->wid, 6, 1, 1)) || count($database->getOwnUniqueArtefactInfo2($session->uid, 6, 2, 0)));
+		if (!($prereqs['multiinstance'] ?? false) || !isset($prereqs['structure'])) {
+			$isBuilt = $this->getTypeField($gid);
 
-            // great granary can only be built with artefact or in Natar villages
-            case 39: return $this->getTypeLevel(15) >= 10 && (!$isBuilt || $this->getTypeLevel($id) == 20) && ($village->natar == 1 || count($database->getOwnUniqueArtefactInfo2($village->wid, 6, 1, 1)) || count($database->getOwnUniqueArtefactInfo2($session->uid, 6, 2, 0)));
-            
-            case 40: return $this->allowWwUpgrade();
-            case 41: return $this->getTypeLevel(16) >= 10 && $this->getTypeLevel(20) == 20 && $session->tribe == 1 && !$isBuilt;
-            case 42: return $session->tribe == 7;
-            case 43: return $session->tribe == 6;
-            case 44: return $this->getTypeLevel(15) >= 5 && $session->tribe == 6 && !$isBuilt && !$this->getTypeField(25) && !$this->getTypeField(26);
-            case 45: return $this->getTypeLevel(37) >= 10 && $this->getTypeLevel(15) >= 10 && $session->tribe == 7 && !$isBuilt;
-            case 46: return $this->getTypeLevel(15) >= 10 && $this->getTypeLevel(22) >= 15 && !$isBuilt && !$this->getTypeField(48);
-            case 47: return $session->tribe == 8;
-            case 48: return $this->getTypeLevel(15) >= 5 && $this->getTypeLevel(22) == 10 && ($session->tribe == 8 || $session->tribe == 9) && !$isBuilt && !$this->getTypeField(46);
-            case 49: return GREAT_WKS && $this->getTypeLevel(21) == 20 && $village->capital == 0 && !$isBuilt;
-            case 50: return $session->tribe == 9;
-            default: return false;
+			if (!($prereqs['multiinstance'] ?? false)){
+				if ($isBuilt) return null;
+			}else{
+				if ($isBuilt) $hasProgress = false;
+			}
+		}
 
-        }
+		if (!$hasProgress) {
+			switch ($gid) {
+				case 10: case 11: case 38: case 39:
+				case 36: if ($this->getTypeLevel($gid) >= 12) $hasProgress = true; break;
+				case 23: if ($this->getTypeLevel($gid) >= 6) $hasProgress = true; break;
+			}
+		}
+		
+		if (!$hasProgress && !isset($prereqs['structure'])) return null;
+        return $hasProgress ? 'soon' : 'all';
 	}
 
 	private function checkResource($tid, $id) {

@@ -1,5 +1,7 @@
-<h1><img class="unit ugeb" src="gpack/travian_default/img/x.gif"> Cranny</h1><img class="building g23" src="gpack/travian_default/img/x.gif" alt="Cranny" title="Cranny" />The cranny is used to hide at least some of your resources when the village is attacked. These resources cannot be stolen.<br /><br />At level 1 the cranny holds 100 units of each resource. Gaulic crannies are twice as big as the others.<br /><br />HINTS<br />In T3 the cranny is 66% as effective against Teutons.<br />In T3.5 the cranny is 80% as effective against Teutons.<p><b>Costs</b> and <b>construction time</b> for level 1:<br /><img class="r1" src="gpack/travian_default/img/x.gif" alt="Lumber" title="Lumber" />40 | <img class="r2" src="gpack/travian_default/img/x.gif" alt="Clay" title="Clay" />50 | <img class="r3" src="gpack/travian_default/img/x.gif" alt="Iron" title="Iron" />30 | <img class="r4" src="gpack/travian_default/img/x.gif" alt="Crop" title="Crop" />10 | <img class="r5" src="gpack/travian_default/img/x.gif" alt="Crop consumption" title="Crop consumption" />0 | <span class="dur"><img class="clock" alt="duration" title="duration" src="gpack/travian_default/img/x.gif" />0:12:30</span></p>
-	<p><b>Prerequisites</b><br />none</p>
+<?php $gid = 23; ?>
+<?php include "Templates/Manual/building_header.tpl"; ?>
+<?php include "Templates/Manual/building_costs.tpl"; ?>
+<?php include "Templates/Manual/building_prereqs.tpl"; ?>
 <map id="nav" name="nav">
     <area href="manual.php?typ=4&amp;gid=18" title="back" coords="0,0,45,18" shape="rect" alt="" />
     <area href="manual.php?s=1" title="Overview" coords="46,0,70,18" shape="rect" alt="" />
