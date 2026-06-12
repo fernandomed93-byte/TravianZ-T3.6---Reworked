@@ -921,6 +921,7 @@ class AttackHandler {
         $defenderWref = $context['defender']['info']['wref'];
         $attackerWref = $context['attacker']['info']['wref'];
         $attackerOwner = $context['attacker']['info']['owner'];
+        $defenderOwner = $context['defender']['info']['owner'];
 
         // Lida com artefatos
         $artifact = reset($this->database->getOwnArtefactInfo($defenderWref));
@@ -957,6 +958,10 @@ class AttackHandler {
         $this->units->returnTroops($defenderWref, 1);
         $this->automation->recountPop($defenderWref, false);
         $this->database->reassignHero($defenderWref);
+
+        // Invalida caches de lista de vilas para ambos os jogadores
+        $this->database->clearUserVillageCache($attackerOwner);
+        $this->database->clearUserVillageCache($defenderOwner);
     }
     
     /**

@@ -318,7 +318,13 @@ trait DBVillage {
 
 		$time = time();
 		$q = "INSERT into " . TB_PREFIX . "vdata (wref, owner, name, capital, pop, cp, celebration, wood, clay, iron, maxstore, crop, maxcrop, lastupdate, created, natar) values ($wid, $uid, '$villageName', $capital, $pop, 1, 0, 750, 750, 750, ".STORAGE_BASE.", 750, ".STORAGE_BASE.", $time, $time, $isNatar)";
-		return mysqli_query($this->dblink,$q);
+		$result = mysqli_query($this->dblink,$q);
+
+		if ($result) {
+		    self::clearUserVillageCache($uid);
+		}
+
+		return $result;
 	}
 
 	/**
@@ -1460,13 +1466,41 @@ trait DBVillage {
 		return $result['Total'];
 	}	
 
-	// no need to cache this method
 	function getArrayMemberVillage($uid) {
-	    list($uid) = $this->escape_input((int) $uid);
-		$q = 'SELECT a.wref, a.name, b.x, b.y from '.TB_PREFIX.'vdata AS a left join '.TB_PREFIX.'wdata AS b ON b.id = a.wref where owner = '.$uid.' ORDER BY name ASC';
-		$result = mysqli_query($this->dblink,$q);
-		$array = $this->mysqli_fetch_all($result);
-		return $array;
+	    $uid = (int) $uid;
+
+	    if (!empty(self::$arrayMemberVillageCache[$uid])) {
+	        return self::$arrayMemberVillageCache[$uid];
+	    }
+
+	    $vids = $this->getVillagesID($uid, true);
+	    $result = [];
+	    foreach ($vids as $vid) {
+	        $mode = 0;
+	        if (isset(self::$villageFieldsCache[$vid.$mode], self::$villageFieldsCacheByWorldID[$vid])) {
+	            $vdata = self::$villageFieldsCache[$vid.$mode];
+	            $wdata = self::$villageFieldsCacheByWorldID[$vid];
+	            $result[] = [
+	                'wref' => $vdata['wref'],
+	                'name' => $vdata['name'],
+	                'x'    => $wdata['x'],
+	                'y'    => $wdata['y'],
+	            ];
+	        }
+	    }
+
+	    if (count($result) === count($vids)) {
+	        usort($result, function($a, $b) { return strcmp($a['name'], $b['name']); });
+	        self::$arrayMemberVillageCache[$uid] = $result;
+	        return $result;
+	    }
+
+	    $q = 'SELECT a.wref, a.name, b.x, b.y FROM '.TB_PREFIX.'vdata AS a '
+	       . 'LEFT JOIN '.TB_PREFIX.'wdata AS b ON b.id = a.wref '
+	       . 'WHERE a.owner = '.$uid.' ORDER BY a.name ASC';
+	    $result = $this->mysqli_fetch_all(mysqli_query($this->dblink, $q));
+	    self::$arrayMemberVillageCache[$uid] = $result;
+	    return $result;
 	}
 
 	/**
@@ -1527,6 +1561,9 @@ trait DBVillage {
 		}
 		$resarray['f99'] = $row['f99'] ?? 0;
 		$resarray['f99t'] = $row['f99t'] ?? 0;
+
+		// populate resource levels cache to avoid redundant query in cacheResourceLevels()
+		self::$resourceLevelsCache[$wid] = $resarray;
 
 		// wdata fields
 		$coor = ['x' => (int)($row['x'] ?? 0), 'y' => (int)($row['y'] ?? 0)];

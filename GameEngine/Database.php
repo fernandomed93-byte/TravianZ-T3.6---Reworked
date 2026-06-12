@@ -338,6 +338,11 @@ class MYSQLi_DB implements IDbConnection {
         $resourceLevelsCache = [],
 
         /**
+         * @var array Cache of member village list (wref, name, x, y).
+         */
+        $arrayMemberVillageCache = [],
+
+        /**
          * @var array Cache of field levels in village search.
          */
         $fieldLevelsInVillageSearchCache = [],
@@ -713,8 +718,23 @@ class MYSQLi_DB implements IDbConnection {
      * to be displayed in the front-end.
      */
     public static function clearVillageCache() {
-        self::$villageFieldsCache          = [];
-        self::$villageFieldsCacheByWorldID = [];
+        self::$villageFieldsCache           = [];
+        self::$villageFieldsCacheByWorldID  = [];
+        self::$arrayMemberVillageCache      = [];
+    }
+
+    /**
+     * Clears per-user village list caches so the next getVillagesID / getArrayMemberVillage
+     * call will re-fetch from the database. Call this after adding, conquering, or deleting
+     * a village to prevent stale list bugs (e.g. duplicate village names).
+     *
+     * @param int $uid The user ID whose caches should be cleared.
+     */
+    public static function clearUserVillageCache($uid) {
+        unset(self::$villageIDsCache[$uid]);
+        unset(self::$villageIDsCacheSimple[$uid]);
+        unset(self::$userVillagesCache[$uid.'0']);
+        unset(self::$arrayMemberVillageCache[$uid]);
     }
 
     /**
