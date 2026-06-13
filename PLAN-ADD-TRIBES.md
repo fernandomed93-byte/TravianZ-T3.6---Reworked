@@ -256,7 +256,7 @@
 - [x] `gid44 - Command Center` - Criar UI e permitir treinos.
 - [x] `gid46 - Hospital` - Criar UI e permitir heals, implementar funcionalidade (feridos, cura).
 - [ ] `gid48 - Big Hospital` - Criar UI (precisa verificar).
-- [ ] `gid45 - Waterworks` - Criar UI e Aplicar efeitos de bonus. (ref: https://travian.fandom.com/wiki/Waterworks)
+- [x] `gid45 - Waterworks` - Criar UI e Aplicar efeitos de bonus. (ref: https://travian.fandom.com/wiki/Waterworks)
 
 
 ### Database

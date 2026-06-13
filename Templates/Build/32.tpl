@@ -1,7 +1,9 @@
 <?php
 include("next.tpl");
 ?>
-<div id="build" class="gid32">
+<div id="build" class="gid32"><a href="#" onClick="return Popup(32,4);" class="build_logo">
+    <img class="building g32" src="gpack/travian_default/img/x.gif" alt="Earth Wall" title="<?php echo EARTHWALL; ?>" />
+</a>
 <h1><?php echo EARTHWALL; ?> <span class="level"><?php echo LEVEL; ?> <?php echo $village->resarray['f'.$id]; ?></span></h1>
 <p class="build_desc"><?php echo EARTHWALL_DESC; ?></p>
 

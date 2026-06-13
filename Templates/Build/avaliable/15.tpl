@@ -4,7 +4,7 @@
 	<tbody><tr>
 		<td class="desc"><?php echo MAINBUILDING_DESC ?></td>
 		<td rowspan="3" class="bimg">
-							<a href="#" onClick="return Popup(10,4);">
+							<a href="#" onClick="return Popup(15,4);">
 				<img class="building g15" src="gpack/travian_default/img/x.gif" alt="Main Building" title="Main Building" /></a>
 					</td>
 	</tr>

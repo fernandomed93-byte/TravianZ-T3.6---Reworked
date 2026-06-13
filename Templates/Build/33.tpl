@@ -1,7 +1,9 @@
 <?php
 include("next.tpl");
 ?>
-<div id="build" class="gid33">
+<div id="build" class="gid33"><a href="#" onClick="return Popup(33,4);" class="build_logo">
+    <img class="building g33" src="gpack/travian_default/img/x.gif" alt="Palisade" title="<?php echo PALISADE; ?>" />
+</a>
 <h1><?php echo PALISADE; ?> <span class="level"><?php echo LEVEL; ?> <?php echo $village->resarray['f'.$id]; ?></span></h1>
 <p class="build_desc"><?php echo PALISADE_DESC; ?></p>
 

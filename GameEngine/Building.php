@@ -590,6 +590,7 @@ class Building {
 			if (!in_array($session->tribe, $allowed)) return null;
 		}
 		if (isset($prereqs['capital']) && $prereqs['capital'] == 1 && !$village->capital) return null;
+		if (isset($prereqs['capital']) && $prereqs['capital'] == -1 && $village->capital) return null;
 
 		if ($gid == 49 && !GREAT_WKS) return null;
 		

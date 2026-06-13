@@ -70,6 +70,8 @@ else {
 		$s = isset($_GET['s']) ? preg_replace("/[^a-zA-Z0-9_-]/", "", $_GET['s']) : '';
 		if ($_GET['typ'] == 1 && ctype_digit($s)) {
 			$s = str_pad($s, 2, '0', STR_PAD_LEFT);
+		}else if ($_GET['typ'] == 4 && ctype_digit($s)) {
+			$s = str_pad($s, 2, '0', STR_PAD_LEFT);
 		}
 		include("Templates/Manual/".$_GET['typ'].$s.".tpl");
 	}

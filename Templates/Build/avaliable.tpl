@@ -97,7 +97,7 @@ if (!empty($soonList) && $id != 39 && $id != 40) { ?>
 <?php } ?>
 
 <?php if (!empty($allList) && $id != 39 && $id != 40) { ?>
-<p class="switch"><a id="all_link" class="hide" href="javascript:show_build_list('all');"><?php echo SHOW_MORE;?></a></p>
+<p class="switch"><a id="all_link" class="<?php echo empty($soonList) ? '' : 'hide'; ?>" href="javascript:show_build_list('all');"><?php echo SHOW_MORE;?></a></p>
 <div id="build_list_all" class="hide">
 <?php foreach ($allList as $bgid) {
 	include_once $soonDir."/".$bgid.".tpl";
