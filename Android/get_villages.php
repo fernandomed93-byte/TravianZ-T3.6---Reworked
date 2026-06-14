@@ -1392,6 +1392,8 @@ if (isset($_POST['cropFinder']) && $_POST['cropFinder'] == 1 && isset($session) 
 			$fieldtypeCondition = 'AND wdat.fieldtype = 1';
 		} elseif ($ft == 7) {
 			$fieldtypeCondition = 'AND wdat.fieldtype IN (7, 8, 9)';
+		} elseif ($ft == 0) {
+			// sem filtro de fieldtype — retorna tudo
 		}
 	} else {
 		$fieldtypeCondition = 'AND wdat.fieldtype IN (1, 6, 7, 8, 9)';
