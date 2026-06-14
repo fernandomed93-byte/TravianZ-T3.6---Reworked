@@ -71,7 +71,8 @@ if (strlen($baseName) < 4){
 			// Easily guessed by players so should only be used for testing
 			//$password = $baseName . $i . 'PASS';
 
-			$tribe = ($postTribe == 0) ? rand(1, 3) : $postTribe;
+			$allowedTribes = [1, 2, 3, 6, 7, 8, 9];
+			$tribe = ($postTribe == 0) ? $allowedTribes[array_rand($allowedTribes)] : $postTribe;
 			
 			// Create in a random quad
 			//1 - North West (-|+) 2 - North East (+|+) 3 - South West (-|-) 4 - South East (+|-)
@@ -107,7 +108,7 @@ if (strlen($baseName) < 4){
 			$database->updateUserField($uid,"act","",1);
 			$database->updateUserField($uid,"access",USER,1);
 			
-			$numVillagesToCreate = rand(5, 40);
+			$numVillagesToCreate = rand(5, 65); // Número aleatório de vilas entre 5 e 65, incluindo a capital
 			$villagesData = [];
 			$userVillageWRefs = []; // Coletar IDs das vilas (wref)
 			
