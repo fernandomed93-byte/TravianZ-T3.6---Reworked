@@ -77,6 +77,7 @@ if(isset($_GET['newdid'])) {
 <?php
 if($session->plus){
   if(isset($_GET['s'])){
+    $sub = isset($_GET['t']) ? (int) $_GET['t'] : 1;
 	if($_GET['s'] == 2){
 	  include("Templates/dorf3/2.tpl");
 	}elseif($_GET['s'] == 3){
@@ -84,7 +85,11 @@ if($session->plus){
 	}elseif($_GET['s'] == 4){
 	  include("Templates/dorf3/4.tpl");
 	}elseif($_GET['s'] == 5){
-	  include("Templates/dorf3/5.tpl");
+	  if($sub == 2){
+	    include("Templates/dorf3/5b.tpl");
+	  }else{
+	    include("Templates/dorf3/5.tpl");
+	  }
 	}
   }else{
 	include("Templates/dorf3/1.tpl");
