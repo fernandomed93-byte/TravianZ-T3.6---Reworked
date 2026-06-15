@@ -79,7 +79,8 @@
 					 }
 				}
 				
-				if($key > 1000) { $key -= 1000; }
+				if($key > 1000 && $key < 2000) { $key -= 1000; }
+				if($key > 2000) { $key -= 2000; }
 				$tro .= '<a href="build.php?newdid='.$vid.'&gid='.$calculated_gid.'"> <img class="unit u'.($key == 51 ? 99 : $key).'" src="gpack/travian_default/img/x.gif" title="'.$c.'x '.$technology->getUnitName($key).'" alt="'.$c.'x '.$technology->getUnitName($key).'"></a>';
 			}
 		}else{
