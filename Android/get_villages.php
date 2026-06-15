@@ -811,16 +811,21 @@ if (isset($_POST['vilId'], $_POST['x'], $_POST['y']) && isset($session) && $sess
 }
 
 // BUSCA INFORMAÇÕES E ESTADO ATUAL DAS TROPAS DA VILA
-if (isset($_POST['vref']) && isset($_POST['tropas']) && isset($session) && $session->logged_in){
+if ((isset($_POST['vref']) && isset($_POST['tropas']) || isset($_GET['vref']) && isset($_GET['tropas'])) && isset($session) && $session->logged_in){
 	
 	mysqli_query($database->dblink, "SET SESSION group_concat_max_len = 1048576");
-	$vref = intval($_POST['vref']);
+	if (isset($_GET['vref'])){
+		$vref = intval($_GET['vref']);
+	}else if (isset($_POST['vref'])){
+		$vref = intval($_POST['vref']);
+	}
 	
 	$q = "SELECT
 			t_summary.training_units, t_summary.training_ammount, t_summary.training_timestamp,
 			r_summary.research_techs, r_summary.research_timestamp,
 			tdat.*,
 			undat.*,
+			wounded.*,		  		-- Dados de tropas feridas
 			abdat.*,
 			atkTroops.*,            -- Dados agregados de ataques SAINDO
 			reinfTroops.*,          -- Dados agregados de retornos
@@ -832,6 +837,8 @@ if (isset($_POST['vref']) && isset($_POST['tropas']) && isset($session) && $sess
         FROM " . TB_PREFIX . "tdata AS tdat
 		INNER JOIN " . TB_PREFIX . "units AS undat ON tdat.vref = undat.vref
 		INNER JOIN " . TB_PREFIX . "abdata AS abdat ON tdat.vref = abdat.vref
+		LEFT JOIN (SELECT * FROM " . TB_PREFIX . "wounded) AS wounded ON tdat.vref = wounded.vref
+
 		LEFT JOIN
 			(SELECT
 				trdat.vref,
