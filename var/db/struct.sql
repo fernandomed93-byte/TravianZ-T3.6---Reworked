@@ -1668,6 +1668,7 @@ CREATE TABLE IF NOT EXISTS `%PREFIX%vdata` (
   `starv` int DEFAULT '0',
   `starvupdate` int DEFAULT '0',
   `updateStorage` int DEFAULT '0',
+  `lastupdate_rank` int DEFAULT '0',
   `evasion` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`wref`),
   KEY `owner-capital-pop` (`owner`,`capital`,`pop`),

@@ -405,7 +405,7 @@ class Automation {
         }
         
         Building::recountCP($database, $vid);
-		$q = "UPDATE ".TB_PREFIX."vdata set pop = $popTot where wref = $vid";
+		$q = "UPDATE ".TB_PREFIX."vdata set pop = $popTot, lastupdate_rank = " . time() . " where wref = $vid";
 		mysqli_query($database->dblink, $q);
 		$owner = $database->getVillageField($vid, "owner");
 		$this->procClimbers($owner);
@@ -465,8 +465,6 @@ class Automation {
             }
         }
     }
-
-    
 
     public function getTypeLevel($tid, $vid) {
         global $database;
@@ -1104,6 +1102,7 @@ class Automation {
 				$fieldIDs[] = $data['to'];
 				$database->addVillage($data['to'], $to['owner'], $user, '0');
 				$database->addResourceFields($data['to'], $database->getVillageType($data['to']));
+                $database->setLastUpdateRank($data['to']);
                 $addUnitsWrefs[] = $data['to'];
                 $addTechWrefs[] = $data['to'];
                 $addABTechWrefs[] = $data['to'];
@@ -1125,6 +1124,7 @@ class Automation {
 				}
 				
 				$database->setVillageField($data['from'], $exp, $value);
+            
             }else{
                 // here must come movement from returning settlers
                 $types[] = 4;
@@ -1705,8 +1705,6 @@ class Automation {
         }
     }
 
-
-
     private function checkInvitedPlayes() {
         global $database;
         
@@ -1807,8 +1805,6 @@ class Automation {
             }
         }
     }
-
-
     
 	private function rebuildStatCaches() {
 		global $ranking;
@@ -2038,11 +2034,6 @@ class Automation {
             $database->query($q);
         }
     }
-
-
-
-    
-
 
     public function startFakeAttack() {
         global $database, $units;

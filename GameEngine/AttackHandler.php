@@ -930,8 +930,12 @@ class AttackHandler {
         }
 
         // Muda o dono da aldeia
-        $this->database->setVillageFields($defenderWref, ['loyalty', 'owner', 'lastupdate2'], [0, $attackerOwner, time()]);
+        $this->database->setVillageFields($defenderWref, ['loyalty', 'owner', 'lastupdate2', 'lastupdate_rank'], [0, $attackerOwner, time(), time()]);
 
+        //Marca o antigo dono para update de ranking
+        $this->database->query("UPDATE ".TB_PREFIX."vdata SET lastupdate_rank = ".time()." WHERE owner = ".(int)$defenderOwner." AND capital = 1 LIMIT 1");
+
+        
         // Limpa dados antigos da aldeia
         $this->database->query("DELETE FROM ".TB_PREFIX."abdata WHERE vref = ".(int)$defenderWref);
         $this->database->addABTech($defenderWref);

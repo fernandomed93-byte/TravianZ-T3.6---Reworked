@@ -81,7 +81,7 @@ trait DBVillage {
 	    $vdata = $this->getProfileVillages($ref);
 
 	    foreach($vdata as $village){
-	    	if($village['capital']) return $village;
+	    	if($village['capital'] == 1) return $village;
         }
         return false;
 	}
@@ -950,6 +950,16 @@ trait DBVillage {
         return $this->getVillageByWorldID($wref, $use_cache);
 	}
 
+    //MÉTODO AUXILIA A DEIXAR MAIS LEVE A ATUALIZAÇÃO DE RANKING
+    function setLastUpdateRank($wref){
+        $q = "
+        UPDATE " . TB_PREFIX . "vdata 
+            SET lastupdate_rank = " . time() . " 
+            WHERE wref = $wref";
+
+       return mysqli_query( $this->dblink, $q);
+    }
+
     /////////////ADDED BY BRAINIAC - THANK YOU
 	function modifyResource($vid, $wood, $clay, $iron, $crop, $mode) {
 	     list($vid, $wood, $clay, $iron, $crop, $mode) = $this->escape_input((int) $vid, $wood, $clay, $iron, $crop, $mode);
@@ -1114,9 +1124,9 @@ trait DBVillage {
         list($vid, $pop, $mode) = $this->escape_input((int) $vid, (int) $pop, $mode);
 
         if(!$mode) {
-            $q = "UPDATE " . TB_PREFIX . "vdata set pop = pop + $pop where wref = $vid";
+            $q = "UPDATE " . TB_PREFIX . "vdata set pop = pop + $pop, lastupdate_rank = " . time() . " where wref = $vid";
         } else {
-            $q = "UPDATE " . TB_PREFIX . "vdata set pop = pop - $pop where wref = $vid";
+            $q = "UPDATE " . TB_PREFIX . "vdata set pop = pop - $pop, lastupdate_rank = " . time() . " where wref = $vid";
         }
         return mysqli_query($this->dblink,$q);
     }

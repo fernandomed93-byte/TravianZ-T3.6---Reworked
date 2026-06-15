@@ -96,24 +96,6 @@ trait DBAlliance {
 		return mysqli_num_rows($result);
 	}
 
-	function modifyPoints($aid, $points, $amt) {
-	    $aid = (int) $aid;
-
-	    if (!is_array($points)) {
-	        $points = [$points];
-	        $amt    = [$amt];
-        }
-
-        $updates = [];
-        foreach ($points as $index => $value) {
-            $value = $this->escape($value);
-	        $updates[] = $value.' = ' . $value . ' + ' . (int) $amt[$index];
-        }
-
-		$q = "UPDATE " . TB_PREFIX . "users SET ".implode(', ', $updates)." WHERE id = $aid";
-		return mysqli_query($this->dblink,$q);
-	}
-
 	function modifyPointsAlly($aid, $points, $amt) {
         $aid = (int) $aid;
 

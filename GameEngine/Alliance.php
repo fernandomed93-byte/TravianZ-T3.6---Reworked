@@ -309,6 +309,11 @@ class Alliance {
 			            if (count($memberlist) < $alliance_info['max']) {
 			                $database->removeInvitation($get['d']);
 			                $database->updateUserField($invite['uid'], "alliance", $invite['alliance'], 1);
+
+							//Atualiza o ranking do jogador que entrou para a aliança (para mostrar ally)
+							$village = $database->getVillageID($invite['uid']);
+							$database->setLastUpdateRank($village);
+
 			                $database->createAlliPermissions($invite['uid'], $invite['alliance'], '', 0, 0, 0, 0, 0, 0, 0, 0);
 			                // Log the notice
 			                $database->insertAlliNotice($invite['alliance'], '<a href="spieler.php?uid='.$session->uid.'">'.addslashes($session->username).'</a> has joined the alliance.');

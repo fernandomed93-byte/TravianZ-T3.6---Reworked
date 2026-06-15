@@ -560,4 +560,25 @@ trait DBUser {
         else return false;
     }
 
+	function modifyPoints($aid, $points, $amt) {
+	    $aid = (int) $aid;
+
+	    if (!is_array($points)) {
+	        $points = [$points];
+	        $amt    = [$amt];
+        }
+
+        $updates = [];
+        foreach ($points as $index => $value) {
+            $value = $this->escape($value);
+	        $updates[] = $value.' = ' . $value . ' + ' . (int) $amt[$index];
+        }
+
+		$village = $this->getVillageID($aid);
+        $this->setLastUpdateRank($village);
+
+		$q = "UPDATE " . TB_PREFIX . "users SET ".implode(', ', $updates)." WHERE id = $aid";
+		return mysqli_query($this->dblink,$q);
+	}
+
 }

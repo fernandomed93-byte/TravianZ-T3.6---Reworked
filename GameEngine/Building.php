@@ -1005,7 +1005,7 @@ class Building {
         }
         
         Building::recountCP($database, $vid);
-		$q = "UPDATE ".TB_PREFIX."vdata set pop = $popTot where wref = $vid";
+		$q = "UPDATE ".TB_PREFIX."vdata set pop = $popTot, lastupdate_rank = " . time() . " where wref = $vid";
 		mysqli_query($database->dblink, $q);
 		$owner = $database->getVillageField($vid, "owner");
 
