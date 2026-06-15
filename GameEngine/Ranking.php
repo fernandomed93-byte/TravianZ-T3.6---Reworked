@@ -997,6 +997,153 @@
 				}
 				$this->rankarray = $newholder;
 			}
+
+			public function incrementalRebuildUserStats($lastScan) {
+				global $database;
+				$lastScan = (int)$lastScan;
+
+				$result = mysqli_query($database->dblink,
+					"SELECT DISTINCT v.owner FROM ".TB_PREFIX."vdata v
+					 WHERE v.lastupdate_rank > $lastScan AND v.lastupdate_rank > 0");
+
+				$dirtyUsers = [];
+				while ($row = mysqli_fetch_assoc($result)) {
+					$dirtyUsers[] = (int)$row['owner'];
+				}
+
+				if (empty($dirtyUsers)) return;
+
+				$uidList = implode(',', $dirtyUsers);
+
+				$access_level = INCLUDE_ADMIN ? "10" : "8";
+				$where_conditions_users = SHOW_NATARS
+					? "u.access < " . $access_level . " AND u.tribe <= 9 AND (u.id > 5 OR u.id = 3)"
+					: "u.access < " . $access_level . " AND (u.tribe <= 3 OR u.tribe > 5) AND u.id > 5";
+
+				mysqli_query($database->dblink,
+					"INSERT INTO ".TB_PREFIX."user_stats
+						(uid, totalpop, totalvils, apall, dpall, ally_id, ally_tag, tribe, username, updated_at)
+					  SELECT
+						u.id,
+						COALESCE(SUM(v.pop), 0),
+						COUNT(CASE WHEN v.type != 99 THEN v.wref ELSE NULL END),
+						COALESCE(u.apall, 0),
+						COALESCE(u.dpall, 0),
+						u.alliance,
+						ad.tag,
+						u.tribe,
+						u.username,
+						UNIX_TIMESTAMP()
+					  FROM ".TB_PREFIX."users u
+					  LEFT JOIN ".TB_PREFIX."vdata v ON v.owner = u.id
+					  LEFT JOIN ".TB_PREFIX."alidata ad ON ad.id = u.alliance
+					  WHERE $where_conditions_users AND u.id IN ($uidList)
+					  GROUP BY u.id
+					  ON DUPLICATE KEY UPDATE
+						totalpop = VALUES(totalpop),
+						totalvils = VALUES(totalvils),
+						apall = VALUES(apall),
+						dpall = VALUES(dpall),
+						ally_id = VALUES(ally_id),
+						ally_tag = VALUES(ally_tag),
+						tribe = VALUES(tribe),
+						username = VALUES(username),
+						updated_at = VALUES(updated_at)");
+
+				$delWhere = "u.access >= " . $access_level;
+				if (SHOW_NATARS) {
+					$delWhere = "(u.access >= " . $access_level . " OR (u.tribe > 9 AND u.id != 3) OR u.id <= 5) AND u.id != 3";
+				} else {
+					$delWhere = "(u.access >= " . $access_level . " OR (u.tribe = 4 OR u.tribe = 5) OR u.id <= 5)";
+				}
+				mysqli_query($database->dblink, "DELETE us FROM ".TB_PREFIX."user_stats us
+					LEFT JOIN ".TB_PREFIX."users u ON u.id = us.uid
+					WHERE ($delWhere OR u.id IS NULL) AND us.uid IN ($uidList)");
+
+				$this->recalculateUserRanks();
+			}
+
+			public function recalculateUserRanks() {
+				global $database;
+				$p = TB_PREFIX;
+
+				mysqli_query($database->dblink, "DROP TABLE IF EXISTS {$p}user_stats_shadow");
+				mysqli_query($database->dblink, "CREATE TABLE {$p}user_stats_shadow LIKE {$p}user_stats");
+				mysqli_query($database->dblink, "INSERT INTO {$p}user_stats_shadow SELECT * FROM {$p}user_stats");
+				mysqli_query($database->dblink, "SET @rank = 0");
+				mysqli_query($database->dblink,
+					"UPDATE {$p}user_stats_shadow SET rank_pos = (@rank := @rank + 1)
+					 ORDER BY totalpop DESC, totalvils DESC, uid DESC");
+				mysqli_query($database->dblink,
+					"RENAME TABLE {$p}user_stats TO {$p}user_stats_bak,
+							   {$p}user_stats_shadow TO {$p}user_stats");
+				mysqli_query($database->dblink, "DROP TABLE IF EXISTS {$p}user_stats_bak");
+			}
+
+			public function incrementalRebuildVillageRanks($lastScan) {
+				global $database;
+				$lastScan = (int)$lastScan;
+
+				$tribeIn = SHOW_NATARS
+					? "u.tribe IN(1,2,3,5,6,7,8,9)"
+					: "u.tribe IN(1,2,3,6,7,8,9)";
+				$accessMax = INCLUDE_ADMIN ? "10" : "8";
+
+				$result = mysqli_query($database->dblink,
+					"SELECT v.wref FROM ".TB_PREFIX."vdata v
+					 JOIN ".TB_PREFIX."users u ON u.id = v.owner
+					 WHERE v.lastupdate_rank > $lastScan AND v.lastupdate_rank > 0
+					 AND $tribeIn AND v.wref != '' AND u.access < $accessMax");
+
+				$dirtyVillages = [];
+				while ($row = mysqli_fetch_assoc($result)) {
+					$dirtyVillages[] = (int)$row['wref'];
+				}
+
+				if (empty($dirtyVillages)) return;
+
+				$wrefList = implode(',', $dirtyVillages);
+
+				mysqli_query($database->dblink,
+					"INSERT INTO ".TB_PREFIX."village_ranks
+						(wref, name, pop, owner, owner_name, x, y, updated_at)
+					  SELECT
+						v.wref, v.name, v.pop, v.owner, u.username, w.x, w.y, UNIX_TIMESTAMP()
+					  FROM ".TB_PREFIX."vdata v
+					  JOIN ".TB_PREFIX."users u ON v.owner = u.id
+					  JOIN ".TB_PREFIX."wdata w ON v.wref = w.id
+					  WHERE v.wref IN ($wrefList)
+					  ON DUPLICATE KEY UPDATE
+						name = VALUES(name), pop = VALUES(pop),
+						owner = VALUES(owner), owner_name = VALUES(owner_name),
+						x = VALUES(x), y = VALUES(y),
+						updated_at = VALUES(updated_at)");
+
+				mysqli_query($database->dblink, "DELETE vr FROM ".TB_PREFIX."village_ranks vr
+					LEFT JOIN ".TB_PREFIX."vdata v ON v.wref = vr.wref
+					LEFT JOIN ".TB_PREFIX."users u ON u.id = v.owner
+					WHERE (v.wref IS NULL OR u.access >= $accessMax OR u.tribe NOT IN(1,2,3,5,6,7,8,9))
+					AND vr.wref IN ($wrefList)");
+
+				$this->recalculateVillageRanks();
+			}
+
+			public function recalculateVillageRanks() {
+				global $database;
+				$p = TB_PREFIX;
+
+				mysqli_query($database->dblink, "DROP TABLE IF EXISTS {$p}village_ranks_shadow");
+				mysqli_query($database->dblink, "CREATE TABLE {$p}village_ranks_shadow LIKE {$p}village_ranks");
+				mysqli_query($database->dblink, "INSERT INTO {$p}village_ranks_shadow SELECT * FROM {$p}village_ranks");
+				mysqli_query($database->dblink, "SET @rank = 0");
+				mysqli_query($database->dblink,
+					"UPDATE {$p}village_ranks_shadow SET rank_pos = (@rank := @rank + 1)
+					 ORDER BY pop DESC, wref DESC");
+				mysqli_query($database->dblink,
+					"RENAME TABLE {$p}village_ranks TO {$p}village_ranks_bak,
+							   {$p}village_ranks_shadow TO {$p}village_ranks");
+				mysqli_query($database->dblink, "DROP TABLE IF EXISTS {$p}village_ranks_bak");
+			}
 		}
 		;
 

@@ -924,7 +924,9 @@ class AttackHandler {
         $defenderOwner = $context['defender']['info']['owner'];
 
         // Lida com artefatos
-        $artifact = reset($this->database->getOwnArtefactInfo($defenderWref));
+        $artefacts = $this->database->getOwnArtefactInfo($defenderWref);
+        $artifact = reset($artefacts);
+        
         if ($artifact) {
             $this->database->claimArtefact($attackerWref, $defenderWref, $attackerOwner);
         }

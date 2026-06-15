@@ -420,10 +420,11 @@ CREATE TABLE IF NOT EXISTS `%PREFIX%config` (
   `nextStarvationUpdate` int DEFAULT '0',
   `time_offset` int DEFAULT '0',
   `enableWWstatistics` int DEFAULT NULL,
-  `lastWoundedDecay` int DEFAULT '0'
+  `lastWoundedDecay` int DEFAULT '0',
+  `last_rank_scan` int DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
-INSERT INTO `%PREFIX%config` (`lastgavemedal`, `enableWWstatistics`) VALUES (0, 0);
+INSERT INTO `%PREFIX%config` (`lastgavemedal`, `enableWWstatistics`, `last_rank_scan`) VALUES (0, 0, 0);
 
 
 --

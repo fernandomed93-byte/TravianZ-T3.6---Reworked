@@ -939,7 +939,7 @@ class Battle {
             else {
                 $ab_level = 0;
                 $unit_for_abtech = (($unit_id - 1) % 10 + 1);
-                if ($unit_for_abtech != 9 || $unit_for_abtech != 10 ) {
+                if ($unit_for_abtech != 9 && $unit_for_abtech != 10 ) {
                     $ab_level = $att_ab['b' . (($unit_id - 1) % 10 + 1)];           
                 }
                 $unit_attack = $unit_data['atk'] + ($ab_level > 0 ? ($unit_data['atk'] + 300 * $unit_data['pop'] / 7) * (pow(1.007, $ab_level) - 1) : 0);

@@ -22,6 +22,7 @@ include_once("Database.php");
 include_once("Data/buidata.php");
 include_once("Data/unitdata.php");
 include_once("Data/hero_full.php");
+include_once("Data/cp.php");
 include_once("Units.php");
 include_once("Battle.php");
 include_once("Technology.php");
@@ -81,7 +82,7 @@ class Automation {
                 'name'      => 'Village_Units',
                 'methods'   => $this->group_village_units_methods,
                 'lockFile'  => 'automation_village_units.lock',
-                'cooldown'  => 10,      // Segundos (10 seg)
+                'cooldown'  => 2,      // Segundos (5 seg)
                 'maxExecTime' => 120    // Segundos (2 min) - Tempo máximo que um lock é considerado válido
             ],
             [
@@ -95,7 +96,7 @@ class Automation {
                 'name'      => 'Ranks_Climbers',
                 'methods'   => $this->group_ranks_climbers_methods,
                 'lockFile'  => 'automation_ranks_climbers.lock',
-                'cooldown'  => 120,    // 2 minutos
+                'cooldown'  => 60,    // 1 minutos
                 'maxExecTime' => 300
             ],
             [
@@ -1807,9 +1808,21 @@ class Automation {
     }
     
 	private function rebuildStatCaches() {
-		global $ranking;
-		$ranking->rebuildUserStats();
-		$ranking->rebuildVillageRanks();
+		global $database, $ranking;
+
+		$configs = $database->getConfigs();
+		$lastScan = (int)($configs['last_rank_scan'] ?? 0);
+		$currentTime = time();
+
+		if ($lastScan == 0) {
+			$ranking->rebuildUserStats();
+			$ranking->rebuildVillageRanks();
+		} else {
+			$ranking->incrementalRebuildUserStats($lastScan);
+			$ranking->incrementalRebuildVillageRanks($lastScan);
+		}
+
+		$database->query("UPDATE ".TB_PREFIX."config SET last_rank_scan = ".$currentTime);
 	}
 
 	private function procNewClimbers() {
