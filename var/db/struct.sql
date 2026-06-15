@@ -1692,7 +1692,9 @@ CREATE TABLE IF NOT EXISTS `%PREFIX%vdata` (
   KEY `idx_vdata_capital` (`capital`),
   KEY `idx_owner_pop` (`owner`,`pop`),
   KEY `idx_owner_wref` (`owner`,`wref`),
-  KEY `idx_pop` (`pop`)
+  KEY `idx_pop` (`pop`),
+  KEY `idx_lastupdate_rank` (`lastupdate_rank`),
+  KEY `idx_rank_owner` (`lastupdate_rank`, `owner`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 
