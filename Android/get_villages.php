@@ -48,7 +48,7 @@ if (isset($_POST['mapcheck']) && $_POST['mapcheck'] == 1 && isset($session) && $
 }
 
 // BUSCA INFORMAÇÕES DO USUÁRIO
-if (isset($_POST['session_data']) && $_POST['session_data'] == 1 && isset($session) && $session-> logged_in){
+if ((isset($_POST['session_data']) && $_POST['session_data'] == 1 || isset($_GET['session_data']) && $_GET['session_data'] == 1) && isset($session) && $session-> logged_in){
 	
 	$responseData = [
         "uid"       => $session->uid, // Usando $session->uid que é mais comum
@@ -62,6 +62,9 @@ if (isset($_POST['session_data']) && $_POST['session_data'] == 1 && isset($sessi
         "bonus2"    => $session->bonus2,
         "bonus3"    => $session->bonus3,
         "bonus4"    => $session->bonus4,
+		"quest"     => $session->qst,
+		"questTime" => $session->qst_time,
+		"readSystemMessage" => $_SESSION['ok'],
         "allianceWWs" => [] // Inicializa um array vazio para as WWs
     ];
 	
@@ -1155,6 +1158,7 @@ if (isset($_POST['vref']) && isset($_POST['villageState']) || isset($_GET['vref'
 	$vilas = []; // Inicializa o array de vilas
 
 	while ($row = $result->fetch_assoc()) {
+		$row['readSystemMessage'] = $_SESSION['ok'];
 		$row['buildQueue'] = [];
 		$row['market_incoming'] = [];
 		$row['market_outgoing'] = [];

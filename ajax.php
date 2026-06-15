@@ -55,20 +55,20 @@ if (isset($_GET['f'])){
 		case 'qst':
 
 		if (isset($_GET['qact'])){
-		$qact=preg_replace("/[^a-zA-Z0-9_-]/","",$_GET['qact']);
+			$qact=preg_replace("/[^a-zA-Z0-9_-]/","",$_GET['qact']);
 		}else {
-		$qact=null;
+			$qact=null;
 		}
 		if (isset($_GET['qact2'])){
-		$qact2=preg_replace("/[^a-zA-Z0-9_-]/","",$_GET['qact2']);
+			$qact2=preg_replace("/[^a-zA-Z0-9_-]/","",$_GET['qact2']);
 		}else {
-		$qact2=null;
+			$qact2=null;
 		}
 		if (isset($_GET['qact3'])){
 			$qact3=preg_replace("/[^a-zA-Z0-9_-]/","",$_GET['qact3']);
-			}else {
+		}else {
 			$qact3=null;
-			}  
+		}  
 		if (!isset($_SESSION)) {
 			session_start();
 		}

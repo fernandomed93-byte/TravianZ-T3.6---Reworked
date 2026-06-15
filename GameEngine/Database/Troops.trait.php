@@ -951,7 +951,12 @@ trait DBTroops {
 			}
 		}
 
-		$q = "SELECT (u10+u20+u30) FROM " . TB_PREFIX . "enforcement WHERE `from` = ".(int) $village->wid;
+        $returning_settlers = $this->getMovement(7, $village->wid, 1);
+        if (!empty($returning_settlers)) {
+            $settlers += 3 * count($returning_settlers);
+        }
+
+		$q = "SELECT (u10+u20+u30+u60+u70+u80+u90) FROM " . TB_PREFIX . "enforcement WHERE `from` = ".(int) $village->wid;
 		$result = mysqli_query($this->dblink,$q);
 		$row = mysqli_fetch_row($result);
 		if(!empty($row)) {
@@ -960,7 +965,7 @@ trait DBTroops {
 			}
 		}
 
-		$q = "SELECT (u9+u19+u29) FROM " . TB_PREFIX . "enforcement WHERE `from` = ".(int) $village->wid;
+		$q = "SELECT (u9+u19+u29+u59+u69+u79+u89) FROM " . TB_PREFIX . "enforcement WHERE `from` = ".(int) $village->wid;
 		$result = mysqli_query($this->dblink,$q);
 		$row = mysqli_fetch_row($result);
 		if(!empty($row)) {

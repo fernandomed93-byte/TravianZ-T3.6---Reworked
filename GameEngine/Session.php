@@ -72,6 +72,7 @@ class Session {
 			var $timer = 0;
 			var $sharedForums = [];
 			var $checker, $mchecker;
+			var $qst, $qst_time;
 			public $userinfo = [];
 			private $userarray = [];
 			var $villages = [];
@@ -106,13 +107,13 @@ class Session {
 				$_SESSION['checker'] = $generator->generateRandStr(3);
 				$_SESSION['mchecker'] = $generator->generateRandStr(5);
 
-                $userFields = $database->getUserFields($user_sanitized, "quest, id", 1, true);
+                $userFields = $database->getUserFields($user_sanitized, 'id, village_select, quest, quest_time', 1, true);
 				$_SESSION['qst'] = $userFields["quest"];
+				$_SESSION['qst_time'] = $userFields["quest_time"];
+				
+				$selected_village=(int) $userFields['village_select'];
 
-				$dbarray = $database->getUserFields($user_sanitized, 'id, village_select', 1);
-				$selected_village=(int) $dbarray['village_select'];
-
-				if ($dbarray['id'] > 1) {
+				if ($userFields['id'] > 1) {
                     if(!isset($_SESSION['wid'])) {
                     	if(!empty($selected_village)) $data = $database->getVillage($selected_village);
                         else $data = $database->getVillage($userFields["id"]);
@@ -129,9 +130,9 @@ class Session {
     				$database->updateUserField($user_sanitized, "sessid", $_SESSION['sessid'], 0);
                 }
 
-                $logging->addLoginLog($dbarray['id'], $_SERVER['REMOTE_ADDR']);
+                $logging->addLoginLog($userFields['id'], $_SERVER['REMOTE_ADDR']);
 
-                if ($dbarray['id'] == 1) {
+                if ($userFields['id'] == 1) {
 				    header("Location: nachrichten.php");
 				    exit;
 				} else {
@@ -272,6 +273,8 @@ class Session {
 				$this->gold = $this->userarray['gold'];
 				$this->oldrank = $this->userarray['oldrank'];
 				$this->sharedForums = $database->getSharedForums($this->uid, $this->alliance);
+				$this->qst = $this->userarray["quest"];
+				$this->qst_time = $this->userarray["quest_time"];
 				$_SESSION['ok'] = $this->userarray['ok'];
 				//$_SESSION['villages'] = $this->villages;
 				
