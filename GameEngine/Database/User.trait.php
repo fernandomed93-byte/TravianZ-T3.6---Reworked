@@ -574,8 +574,10 @@ trait DBUser {
 	        $updates[] = $value.' = ' . $value . ' + ' . (int) $amt[$index];
         }
 
-		$village = $this->getVillageID($aid);
-        $this->setLastUpdateRank($village);
+		if ($aid > 5){
+			$village = $this->getVillageID($aid);
+			$this->setLastUpdateRank($village);
+		}
 
 		$q = "UPDATE " . TB_PREFIX . "users SET ".implode(', ', $updates)." WHERE id = $aid";
 		return mysqli_query($this->dblink,$q);
