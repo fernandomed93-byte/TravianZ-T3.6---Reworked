@@ -313,6 +313,7 @@ class Alliance {
 							//Atualiza o ranking do jogador que entrou para a aliança (para mostrar ally)
 							$village = $database->getVillageID($invite['uid']);
 							$database->setLastUpdateRank($village);
+							$database->syncAllianceToUserStats($invite['uid']);
 
 			                $database->createAlliPermissions($invite['uid'], $invite['alliance'], '', 0, 0, 0, 0, 0, 0, 0, 0);
 			                // Log the notice
@@ -368,6 +369,7 @@ class Alliance {
 				$aid = $database->createAlliance($post['ally1'], $post['ally2'], $session->uid, $max);
 				$database->updateUserField($session->uid, "alliance", $aid, 1);
 				$database->procAllyPop($aid);
+				$database->syncAllianceToUserStats($session->uid);
 				// Asign Permissions
 				$database->createAlliPermissions($session->uid, $aid, 'Alliance founder', '1', '1', '1', '1', '1', '1', '1', '1');
 				// log the notice
@@ -466,6 +468,7 @@ class Alliance {
 			    $form->addError("perm", USER_NOT_IN_YOUR_ALLY);
 			} else if($UserData['id'] != $session->uid){
 			    $database->updateUserField($post['a_user'], 'alliance', 0, 1);
+			    $database->syncAllianceToUserStats($post['a_user']);
 			    $database->deleteAlliPermissions($post['a_user']);
 			    $database->deleteAlliance($session->alliance);
 			    // log the notice
@@ -571,6 +574,7 @@ class Alliance {
 				}
 
 				$database->updateUserField($session->uid, 'alliance', 0, 1);
+				$database->syncAllianceToUserStats($session->uid);
 				$database->deleteAlliPermissions($session->uid);
 				// log the notice
 				$database->deleteAlliance($session->alliance);

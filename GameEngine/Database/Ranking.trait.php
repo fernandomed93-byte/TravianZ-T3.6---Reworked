@@ -204,6 +204,18 @@ trait DBRanking {
         return mysqli_query($this->dblink, $q);
     }
 
+    // Sincroniza aliança do jogador no user_stats instantaneamente (sem esperar o cron)
+    function syncAllianceToUserStats($uid) {
+        $uid = (int)$uid;
+        $q = "UPDATE " . TB_PREFIX . "user_stats us
+              JOIN " . TB_PREFIX . "users u ON u.id = us.uid
+              LEFT JOIN " . TB_PREFIX . "alidata a ON a.id = u.alliance
+              SET us.ally_id = COALESCE(u.alliance, 0),
+                  us.ally_tag = COALESCE(a.tag, '')
+              WHERE us.uid = $uid";
+        return mysqli_query($this->dblink, $q);
+    }
+
     // Returns max updated_at timestamp from user_stats (for staleness check)
     function getUserStatsLastUpdate() {
         $q = "SELECT MAX(updated_at) as last_update FROM " . TB_PREFIX . "user_stats";

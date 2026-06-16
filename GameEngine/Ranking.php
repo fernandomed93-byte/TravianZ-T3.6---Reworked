@@ -1067,17 +1067,10 @@
 				global $database;
 				$p = TB_PREFIX;
 
-				mysqli_query($database->dblink, "DROP TABLE IF EXISTS {$p}user_stats_shadow");
-				mysqli_query($database->dblink, "CREATE TABLE {$p}user_stats_shadow LIKE {$p}user_stats");
-				mysqli_query($database->dblink, "INSERT INTO {$p}user_stats_shadow SELECT * FROM {$p}user_stats");
 				mysqli_query($database->dblink, "SET @rank = 0");
 				mysqli_query($database->dblink,
-					"UPDATE {$p}user_stats_shadow SET rank_pos = (@rank := @rank + 1)
+					"UPDATE {$p}user_stats SET rank_pos = (@rank := @rank + 1)
 					 ORDER BY totalpop DESC, totalvils DESC, uid DESC");
-				mysqli_query($database->dblink,
-					"RENAME TABLE {$p}user_stats TO {$p}user_stats_bak,
-							   {$p}user_stats_shadow TO {$p}user_stats");
-				mysqli_query($database->dblink, "DROP TABLE IF EXISTS {$p}user_stats_bak");
 			}
 
 			public function incrementalRebuildVillageRanks($lastScan) {
@@ -1132,17 +1125,10 @@
 				global $database;
 				$p = TB_PREFIX;
 
-				mysqli_query($database->dblink, "DROP TABLE IF EXISTS {$p}village_ranks_shadow");
-				mysqli_query($database->dblink, "CREATE TABLE {$p}village_ranks_shadow LIKE {$p}village_ranks");
-				mysqli_query($database->dblink, "INSERT INTO {$p}village_ranks_shadow SELECT * FROM {$p}village_ranks");
 				mysqli_query($database->dblink, "SET @rank = 0");
 				mysqli_query($database->dblink,
-					"UPDATE {$p}village_ranks_shadow SET rank_pos = (@rank := @rank + 1)
+					"UPDATE {$p}village_ranks SET rank_pos = (@rank := @rank + 1)
 					 ORDER BY pop DESC, wref DESC");
-				mysqli_query($database->dblink,
-					"RENAME TABLE {$p}village_ranks TO {$p}village_ranks_bak,
-							   {$p}village_ranks_shadow TO {$p}village_ranks");
-				mysqli_query($database->dblink, "DROP TABLE IF EXISTS {$p}village_ranks_bak");
 			}
 		}
 		;

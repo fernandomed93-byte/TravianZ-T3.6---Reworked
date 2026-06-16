@@ -50,11 +50,11 @@ class Automation {
 
     private $group_accounts_alliances_methods = [
         "ClearUser", "ClearInactive","celebrationComplete", "culturePoints",
-        "updateGeneralAttack", "checkInvitedPlayes", "CheckBan", "loyaltyRegeneration"
+        "updateGeneralAttack", "checkInvitedPlayes", "CheckBan", "loyaltyRegeneration", "rebuildStatCaches"
     ];
 
     private $group_ranks_climbers_methods = [
-        "rebuildStatCaches", "procNewClimbers"
+        "procNewClimbers"
     ];
 
     private $group_world_maintenance_methods = [
@@ -96,7 +96,7 @@ class Automation {
                 'name'      => 'Ranks_Climbers',
                 'methods'   => $this->group_ranks_climbers_methods,
                 'lockFile'  => 'automation_ranks_climbers.lock',
-                'cooldown'  => 60,    // 1 minutos
+                'cooldown'  => 120,    // 2 minutos
                 'maxExecTime' => 300
             ],
             [
