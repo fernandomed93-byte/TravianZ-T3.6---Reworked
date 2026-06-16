@@ -1379,11 +1379,11 @@ if (isset($_POST['vref']) && isset($_POST['villageState']) || isset($_GET['vref'
 
 
 // BUSCA VILAS CROP PARA EXPANSÃO (CropFinder)
-if (isset($_POST['cropFinder']) && $_POST['cropFinder'] == 1 && isset($session) && $session->logged_in) {
-	$x = intval($_POST['x']);
-	$y = intval($_POST['y']);
-	$radius = isset($_POST['radius']) ? intval($_POST['radius']) : 20;
-	$minBonus = isset($_POST['minBonus']) ? intval($_POST['minBonus']) : 0;
+if ((isset($_POST['cropFinder']) && $_POST['cropFinder'] == 1 || isset($_GET['cropFinder']) && $_GET['cropFinder'] == 1) && isset($session) && $session->logged_in) {
+	$x = isset($_POST['x']) ? intval($_POST['x']) : (isset($_GET['x']) ? intval($_GET['x']) : 200);
+	$y = isset($_POST['y']) ? intval($_POST['y']) : (isset($_GET['y']) ? intval($_GET['y']) : 200);
+	$radius = isset($_POST['radius']) ? intval($_POST['radius']) : 200;
+	$minBonus = isset($_POST['minBonus']) ? intval($_POST['minBonus']) : 150;
 	$owner_id = $session->uid;
 
 	// Excluir membros da própria aliança
@@ -1452,6 +1452,21 @@ if (isset($_POST['cropFinder']) && $_POST['cropFinder'] == 1 && isset($session) 
 	$worldMax = defined('WORLD_MAX') ? WORLD_MAX : 400;
 	$maxCoord = 2 * $worldMax + 1;
 
+	// Pré-carregar todos os oásis da região expandida (±3) em memória
+	$oasisMinX = $minX - 3;
+	$oasisMaxX = $maxX + 3;
+	$oasisMinY = $minY - 3;
+	$oasisMaxY = $maxY + 3;
+	$q_oasis_map = "SELECT x, y, oasistype FROM " . TB_PREFIX . "wdata
+					WHERE oasistype > 0
+					  AND x BETWEEN $oasisMinX AND $oasisMaxX
+					  AND y BETWEEN $oasisMinY AND $oasisMaxY";
+	$r_oasis_map = mysqli_query($database->dblink, $q_oasis_map);
+	$oasis_map = [];
+	while ($o = mysqli_fetch_assoc($r_oasis_map)) {
+		$oasis_map[$o['x'] . '|' . $o['y']] = (int)$o['oasistype'];
+	}
+
 	$results = [];
 	foreach ($rows as $row) {
 		$bonusCrop = 0;
@@ -1474,13 +1489,11 @@ if (isset($_POST['cropFinder']) && $_POST['cropFinder'] == 1 && isset($session) 
 				if ($wy < -$worldMax) $wy += $maxCoord;
 				if ($wy > $worldMax) $wy -= $maxCoord;
 
-				$q_oasis = "SELECT oasistype FROM " . TB_PREFIX . "wdata
-							WHERE x = $wx AND y = $wy AND oasistype > 0 LIMIT 1";
-				$r_oasis = mysqli_query($database->dblink, $q_oasis);
-				if ($r_oa = mysqli_fetch_assoc($r_oasis)) {
-					if ($r_oa['oasistype'] == 12) $totBonus50++;
-					elseif (in_array($r_oa['oasistype'], [3, 6, 9, 10, 11])) $totBonus25++;
-				}
+				$key = $wx . '|' . $wy;
+				$oasistype = isset($oasis_map[$key]) ? $oasis_map[$key] : 0;
+
+				if ($oasistype == 12) $totBonus50++;
+				elseif (in_array($oasistype, [3, 6, 9, 10, 11])) $totBonus25++;
 			}
 		}
 
