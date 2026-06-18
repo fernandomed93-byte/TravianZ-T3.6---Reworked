@@ -830,6 +830,8 @@ class Building {
                         }
                         
                         if (!isset($exclude_master) && $database->query($q) && ($enought_res == 1 || $jobs['master'] == 0)) {
+							$database->clearResourseLevelsCache($jobs['wid']);
+							
                             $deletIDs[] = (int) $jobs['id'];
 
 							if (in_array($jobs['type'], [10, 11, 38, 39])) {
@@ -951,7 +953,7 @@ class Building {
                 $q = "UPDATE ".TB_PREFIX."fdata SET f".$vil['buildnumber']."=".(($level - 1 >= 0) ? $level - 1 : 0).$clear." WHERE vref=".(int) $vil['vref'];
 				echo $q;
                 $database->query($q);
-
+				$database->clearResourseLevelsCache($vil['vref']);
                 $database->delDemolition($vil['vref'], true);
 
                 if ($type == 18) $this->updateMax($database->getVillageField($vil['vref'], 'owner'));

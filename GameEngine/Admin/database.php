@@ -98,7 +98,103 @@ class adm_DB {
 	    }
 	}
 
-	function recountPopUser($uid){
+	function recountPopUser($uid) {
+		global $database;
+		$uid = (int) $uid;
+
+		$q = "SELECT v.wref, v.pop AS current_pop, v.cp AS current_cp, f.*
+			FROM " . TB_PREFIX . "vdata v
+			JOIN " . TB_PREFIX . "fdata f ON v.wref = f.vref
+			WHERE v.owner = $uid";
+		$result = mysqli_query($this->connection, $q);
+
+		$updates = [];
+		while ($row = mysqli_fetch_assoc($result)) {
+			$vid = (int) $row['wref'];
+			$popTot = 0;
+			$cpTot = 0;
+
+			for ($i = 1; $i <= 40; $i++) {
+				$lvl = $row["f" . $i];
+				$building = $row["f" . $i . "t"];
+				if ($building > 0 && $lvl > 0) {
+					$popTot += $this->buildingPOP($building, $lvl);
+					$cpTot += $this->buildingCP($building, $lvl);
+				}
+			}
+
+			if ($row["f99t"] == 40) {
+				$popTot += $this->buildingPOP($row["f99t"], $row["f99"]);
+				$cpTot += $this->buildingCP($row["f99t"], $row["f99"]);
+			}
+
+			if ((int) $row['current_pop'] !== $popTot || (int) $row['current_cp'] !== $cpTot) {
+				$updates[] = "($vid, $popTot, $cpTot)";
+			}
+		}
+
+		if (!empty($updates)) {
+			$q = "INSERT INTO " . TB_PREFIX . "vdata (wref, pop, cp) VALUES "
+			. implode(",", $updates)
+			. " ON DUPLICATE KEY UPDATE pop = VALUES(pop), cp = VALUES(cp)";
+			mysqli_query($this->connection, $q);
+		}
+	}
+
+	function recountPopAll() {
+		$q = "SELECT id FROM " . TB_PREFIX . "users WHERE id > 5 ORDER BY id";
+		$result = mysqli_query($this->connection, $q);
+		$allUsers = [];
+		while ($row = mysqli_fetch_assoc($result)) {
+			$allUsers[] = (int) $row['id'];
+		}
+
+		$batchSize = 500;
+		for ($offset = 0; $offset < count($allUsers); $offset += $batchSize) {
+			$batch = array_slice($allUsers, $offset, $batchSize);
+			$userIds = implode(",", $batch);
+
+			$q = "SELECT v.wref, v.owner, v.pop AS current_pop, v.cp AS current_cp, f.*
+				FROM " . TB_PREFIX . "vdata v
+				JOIN " . TB_PREFIX . "fdata f ON v.wref = f.vref
+				WHERE v.owner IN ($userIds)";
+			$villResult = mysqli_query($this->connection, $q);
+
+			$updates = [];
+			while ($row = mysqli_fetch_assoc($villResult)) {
+				$vid = (int) $row['wref'];
+				$popTot = 0;
+				$cpTot = 0;
+
+				for ($i = 1; $i <= 40; $i++) {
+					$lvl = $row["f" . $i];
+					$building = $row["f" . $i . "t"];
+					if ($building > 0 && $lvl > 0) {
+						$popTot += $this->buildingPOP($building, $lvl);
+						$cpTot += $this->buildingCP($building, $lvl);
+					}
+				}
+
+				if ($row["f99t"] == 40) {
+					$popTot += $this->buildingPOP($row["f99t"], $row["f99"]);
+					$cpTot += $this->buildingCP($row["f99t"], $row["f99"]);
+				}
+
+				if ((int) $row['current_pop'] !== $popTot || (int) $row['current_cp'] !== $cpTot) {
+					$updates[] = "($vid, $popTot, $cpTot)";
+				}
+			}
+
+			if (!empty($updates)) {
+				$q = "INSERT INTO " . TB_PREFIX . "vdata (wref, pop, cp) VALUES "
+				. implode(",", $updates)
+				. " ON DUPLICATE KEY UPDATE pop = VALUES(pop), cp = VALUES(cp)";
+				mysqli_query($this->connection, $q);
+			}
+		}
+	}
+
+	function recountPopUserOLD($uid){
 		global $database;
 		$villages = $database->getProfileVillages($uid);
 		for ($i = 0; $i <= count($villages)-1; $i++) {
@@ -108,7 +204,7 @@ class adm_DB {
 		}
 	}
 	
-	function recountPopAll(){
+	function recountPopAllOLD(){
 		$q = "SELECT id FROM ".TB_PREFIX."users";
 		$result = mysqli_query($this->connection,$q);
 		while ($r = mysqli_fetch_array($result)) {

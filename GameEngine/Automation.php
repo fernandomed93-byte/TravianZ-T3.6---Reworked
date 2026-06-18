@@ -1574,9 +1574,7 @@ class Automation {
                 $q = "UPDATE ".TB_PREFIX."fdata SET f".$vil['buildnumber']."=".(($level - 1 >= 0) ? $level - 1 : 0).$clear." WHERE vref=".(int) $vil['vref'];
                 $database->query($q);
 
-                $pop = $this->getPop($type, $level - 1);
-                $database->modifyPop($vil['vref'], $pop[0], 1);
-                $this->procClimbers($database->getVillageField($vil['vref'], 'owner'));
+                $this->recountPop($vil['vref'], false);
                 $database->delDemolition($vil['vref'], true);
 
                 if ($type == 18) Automation::updateMax($database->getVillageField($vil['vref'], 'owner'));

@@ -945,6 +945,63 @@ class AttackHandler {
         $this->database->addTech($defenderWref);
         $this->database->query("DELETE FROM ".TB_PREFIX."enforcement WHERE `from` = ".(int)$defenderWref);
         $this->database->deleteTradeRoutesByVillage($defenderWref);
+
+        // Remove edifícios tribe-specific + reduz nível se atacante tiver pop maior
+        global $buildingPrereqs;
+        $attackerTribe = (int)$context['attacker']['info']['tribe'];
+
+        $q = "SELECT uid, totalpop FROM " . TB_PREFIX . "user_stats WHERE uid IN ("
+            . (int)$attackerOwner . "," . (int)$defenderOwner . ")";
+        $r = mysqli_query($this->database->dblink, $q);
+        $pops = [];
+        while ($row = mysqli_fetch_assoc($r)) {
+            $pops[(int)$row['uid']] = (int)$row['totalpop'];
+        }
+        $shouldReduce = ($pops[$attackerOwner] ?? 0) > ($pops[$defenderOwner] ?? 0);
+
+        $fdata = $this->database->getResourceLevel($defenderWref, false);
+        $fieldNames = [];
+        $fieldValues = [];
+        for ($i = 1; $i <= 40; $i++) {
+            $lvl = (int)($fdata["f" . $i] ?? 0);
+            $gid = (int)($fdata["f" . $i . "t"] ?? 0);
+            if ($lvl <= 0 || $gid <= 0) continue;
+
+            // 1. Tribe-specific removal (só fields 19-40)
+            if ($i >= 19) {
+                $prereqs = $buildingPrereqs[$gid] ?? null;
+                if ($prereqs && isset($prereqs['tribes'])) {
+                    $allowed = is_string($prereqs['tribes'])
+                        ? array_map('intval', array_map('trim', explode(',', $prereqs['tribes'])))
+                        : [(int)$prereqs['tribes']];
+                    if (!in_array($attackerTribe, $allowed)) {
+                        $fieldNames[] = 'f' . $i;
+                        $fieldNames[] = 'f' . $i . 't';
+                        $fieldValues[] = 0;
+                        $fieldValues[] = 0;
+                        continue;
+                    }
+                }
+            }
+
+            // 2. Level reduction se atacante pop > defensor pop
+            if ($shouldReduce) {
+                $new = $lvl - 1;
+                if ($new == 0) {
+                    $fieldNames[] = 'f' . $i;
+                    $fieldNames[] = 'f' . $i . 't';
+                    $fieldValues[] = 0;
+                    $fieldValues[] = 0;
+                } else {
+                    $fieldNames[] = 'f' . $i;
+                    $fieldValues[] = $new;
+                }
+            }
+        }
+        if (!empty($fieldNames)) {
+            $this->database->setVillageLevel($defenderWref, $fieldNames, $fieldValues);
+        }
+        $this->database->clearResourseLevelsCache($defenderWref);
         
         // Zera todas as unidades na aldeia conquistada
         $units_to_reset = [];
