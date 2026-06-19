@@ -1364,7 +1364,7 @@ define('BIGHOSPITAL_DESC', 'The Big Hospital allows you to treat wounded troops 
 define('HEAL', 'Heal');
 define('WOUNDED', 'Wounded');
 define('NO_WOUNDED', 'There are no wounded troops in this village.');
-define('HEALING_IN_PROGRESS', 'Healing in progress');
+define('HEALING_IN_PROGRESS', 'Healing');
 
 define('GREATWORKSHOP', 'Great Workshop');
 define('TRAINING_COMMENCE_GREATWORKSHOP', 'Training can commence when great workshop is completed.');
