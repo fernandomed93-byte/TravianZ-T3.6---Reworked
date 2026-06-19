@@ -331,7 +331,15 @@ if (isset($_POST['owner']) || isset($_GET['owner']) && isset($session) && $sessi
 				SUM(enf.u11) AS vac11, SUM(enf.u12) AS vac12, SUM(enf.u13) AS vac13, SUM(enf.u14) AS vac14, SUM(enf.u15) AS vac15,
 				SUM(enf.u16) AS vac16, SUM(enf.u17) AS vac17, SUM(enf.u18) AS vac18, SUM(enf.u19) AS vac19, SUM(enf.u20) AS vac20,
 				SUM(enf.u21) AS vac21, SUM(enf.u22) AS vac22, SUM(enf.u23) AS vac23, SUM(enf.u24) AS vac24, SUM(enf.u25) AS vac25,
-				SUM(enf.u26) AS vac26, SUM(enf.u27) AS vac27, SUM(enf.u28) AS vac28, SUM(enf.u29) AS vac29, SUM(enf.u30) AS vac30
+				SUM(enf.u26) AS vac26, SUM(enf.u27) AS vac27, SUM(enf.u28) AS vac28, SUM(enf.u29) AS vac29, SUM(enf.u30) AS vac30,
+				SUM(enf.u51) AS vac51, SUM(enf.u52) AS vac52, SUM(enf.u53) AS vac53, SUM(enf.u54) AS vac54, SUM(enf.u55) AS vac55,
+				SUM(enf.u56) AS vac56, SUM(enf.u57) AS vac57, SUM(enf.u58) AS vac58, SUM(enf.u59) AS vac59, SUM(enf.u60) AS vac60,
+				SUM(enf.u61) AS vac61, SUM(enf.u62) AS vac62, SUM(enf.u63) AS vac63, SUM(enf.u64) AS vac64, SUM(enf.u65) AS vac65,
+				SUM(enf.u66) AS vac66, SUM(enf.u67) AS vac67, SUM(enf.u68) AS vac68, SUM(enf.u69) AS vac69, SUM(enf.u70) AS vac70,
+				SUM(enf.u71) AS vac71, SUM(enf.u72) AS vac72, SUM(enf.u73) AS vac73, SUM(enf.u74) AS vac74, SUM(enf.u75) AS vac75,
+				SUM(enf.u76) AS vac76, SUM(enf.u77) AS vac77, SUM(enf.u78) AS vac78, SUM(enf.u79) AS vac79, SUM(enf.u80) AS vac80,
+				SUM(enf.u81) AS vac81, SUM(enf.u82) AS vac82, SUM(enf.u83) AS vac83, SUM(enf.u84) AS vac84, SUM(enf.u85) AS vac85,
+				SUM(enf.u86) AS vac86, SUM(enf.u87) AS vac87, SUM(enf.u88) AS vac88, SUM(enf.u89) AS vac89, SUM(enf.u90) AS vac90
 				-- , SUM(enf.hero) AS vac_hero -- Descomente se precisar do herói
 			FROM " . TB_PREFIX . "enforcement AS enf
 			GROUP BY enf.from -- Agrupa para obter um único resultado para esta vila
@@ -352,7 +360,15 @@ if (isset($_POST['owner']) || isset($_GET['owner']) && isset($session) && $sessi
 				SUM(enf.u31) AS ref31, SUM(enf.u32) AS ref32, SUM(enf.u33) AS ref33, SUM(enf.u34) AS ref34, SUM(enf.u35) AS ref35,
 				SUM(enf.u36) AS ref36, SUM(enf.u37) AS ref37, SUM(enf.u38) AS ref38, SUM(enf.u39) AS ref39, SUM(enf.u40) AS ref40,
 				SUM(enf.u41) AS ref41, SUM(enf.u42) AS ref42, SUM(enf.u43) AS ref43, SUM(enf.u44) AS ref44, SUM(enf.u45) AS ref45,
-				SUM(enf.u46) AS ref46, SUM(enf.u47) AS ref47, SUM(enf.u48) AS ref48, SUM(enf.u49) AS ref49, SUM(enf.u50) AS ref50
+				SUM(enf.u46) AS ref46, SUM(enf.u47) AS ref47, SUM(enf.u48) AS ref48, SUM(enf.u49) AS ref49, SUM(enf.u50) AS ref50,
+				SUM(enf.u51) AS ref51, SUM(enf.u52) AS ref52, SUM(enf.u53) AS ref53, SUM(enf.u54) AS ref54, SUM(enf.u55) AS ref55,
+				SUM(enf.u56) AS ref56, SUM(enf.u57) AS ref57, SUM(enf.u58) AS ref58, SUM(enf.u59) AS ref59, SUM(enf.u60) AS ref60,
+				SUM(enf.u61) AS ref61, SUM(enf.u62) AS ref62, SUM(enf.u63) AS ref63, SUM(enf.u64) AS ref64, SUM(enf.u65) AS ref65,
+				SUM(enf.u66) AS ref66, SUM(enf.u67) AS ref67, SUM(enf.u68) AS ref68, SUM(enf.u69) AS ref69, SUM(enf.u70) AS ref70,
+				SUM(enf.u71) AS ref71, SUM(enf.u72) AS ref72, SUM(enf.u73) AS ref73, SUM(enf.u74) AS ref74, SUM(enf.u75) AS ref75,
+				SUM(enf.u76) AS ref76, SUM(enf.u77) AS ref77, SUM(enf.u78) AS ref78, SUM(enf.u79) AS ref79, SUM(enf.u80) AS ref80,
+				SUM(enf.u81) AS ref81, SUM(enf.u82) AS ref82, SUM(enf.u83) AS ref83, SUM(enf.u84) AS ref84, SUM(enf.u85) AS ref85,
+				SUM(enf.u86) AS ref86, SUM(enf.u87) AS ref87, SUM(enf.u88) AS ref88, SUM(enf.u89) AS ref89, SUM(enf.u90) AS ref90
 				-- , SUM(enf.hero) AS ref_hero -- Descomente se precisar do herói
 			FROM " . TB_PREFIX . "enforcement AS enf
 			GROUP BY enf.vref -- Agrupa para obter um único resultado para esta vila
@@ -832,7 +848,6 @@ if ((isset($_POST['vref']) && isset($_POST['tropas']) || isset($_GET['vref']) &&
 			reinfOutTroops.*,       -- Dados agregados de reforços a partir da vila
 			atkAgainst.*,           -- Dados agregados de ataques CONTRA a vila
 			reinfToMe.*,            -- Dados agregados de reforços PARA a vila
-			troopsOnVacation.*,     -- COLUNAS NOVAS: vac1, vac2, ..., vac30 (, vac_hero)
 			troopsReinforcingHere.* -- COLUNAS NOVAS: ref1, ref2, ..., ref30 (, ref_hero)
         FROM " . TB_PREFIX . "tdata AS tdat
 		INNER JOIN " . TB_PREFIX . "units AS undat ON tdat.vref = undat.vref
@@ -936,20 +951,6 @@ if ((isset($_POST['vref']) && isset($_POST['tropas']) || isset($_GET['vref']) &&
 			GROUP BY mov.to -- Agrupando pela vila de destino
 		) AS reinfToMe ON tdat.vref = reinfToMe.vref
 
-		LEFT JOIN ( -- Join: Reforços da vila em outras vilas
-			SELECT
-				enf.from AS vref, -- Chave de junção: vila de origem
-				SUM(enf.u1) AS vac1, SUM(enf.u2) AS vac2, SUM(enf.u3) AS vac3, SUM(enf.u4) AS vac4, SUM(enf.u5) AS vac5,
-				SUM(enf.u6) AS vac6, SUM(enf.u7) AS vac7, SUM(enf.u8) AS vac8, SUM(enf.u9) AS vac9, SUM(enf.u10) AS vac10,
-				SUM(enf.u11) AS vac11, SUM(enf.u12) AS vac12, SUM(enf.u13) AS vac13, SUM(enf.u14) AS vac14, SUM(enf.u15) AS vac15,
-				SUM(enf.u16) AS vac16, SUM(enf.u17) AS vac17, SUM(enf.u18) AS vac18, SUM(enf.u19) AS vac19, SUM(enf.u20) AS vac20,
-				SUM(enf.u21) AS vac21, SUM(enf.u22) AS vac22, SUM(enf.u23) AS vac23, SUM(enf.u24) AS vac24, SUM(enf.u25) AS vac25,
-				SUM(enf.u26) AS vac26, SUM(enf.u27) AS vac27, SUM(enf.u28) AS vac28, SUM(enf.u29) AS vac29, SUM(enf.u30) AS vac30
-				-- , SUM(enf.hero) AS vac_hero -- Descomente se precisar do herói
-			FROM " . TB_PREFIX . "enforcement AS enf
-			GROUP BY enf.from -- Agrupa para obter um único resultado para esta vila
-		) AS troopsOnVacation ON tdat.vref = troopsOnVacation.vref
-
 		LEFT JOIN ( -- Join: Reforços de outras vilas nesta vila
 			SELECT
 				enf.vref AS vref, -- Chave de junção: vila onde estão as tropas
@@ -962,7 +963,15 @@ if ((isset($_POST['vref']) && isset($_POST['tropas']) || isset($_GET['vref']) &&
 				SUM(enf.u31) AS ref31, SUM(enf.u32) AS ref32, SUM(enf.u33) AS ref33, SUM(enf.u34) AS ref34, SUM(enf.u35) AS ref35,
 				SUM(enf.u36) AS ref36, SUM(enf.u37) AS ref37, SUM(enf.u38) AS ref38, SUM(enf.u39) AS ref39, SUM(enf.u40) AS ref40,
 				SUM(enf.u41) AS ref41, SUM(enf.u42) AS ref42, SUM(enf.u43) AS ref43, SUM(enf.u44) AS ref44, SUM(enf.u45) AS ref45,
-				SUM(enf.u46) AS ref46, SUM(enf.u47) AS ref47, SUM(enf.u48) AS ref48, SUM(enf.u49) AS ref49, SUM(enf.u50) AS ref50
+				SUM(enf.u46) AS ref46, SUM(enf.u47) AS ref47, SUM(enf.u48) AS ref48, SUM(enf.u49) AS ref49, SUM(enf.u50) AS ref50,
+				SUM(enf.u51) AS ref51, SUM(enf.u52) AS ref52, SUM(enf.u53) AS ref53, SUM(enf.u54) AS ref54, SUM(enf.u55) AS ref55,
+				SUM(enf.u56) AS ref56, SUM(enf.u57) AS ref57, SUM(enf.u58) AS ref58, SUM(enf.u59) AS ref59, SUM(enf.u60) AS ref60,
+				SUM(enf.u61) AS ref61, SUM(enf.u62) AS ref62, SUM(enf.u63) AS ref63, SUM(enf.u64) AS ref64, SUM(enf.u65) AS ref65,
+				SUM(enf.u66) AS ref66, SUM(enf.u67) AS ref67, SUM(enf.u68) AS ref68, SUM(enf.u69) AS ref69, SUM(enf.u70) AS ref70,
+				SUM(enf.u71) AS ref71, SUM(enf.u72) AS ref72, SUM(enf.u73) AS ref73, SUM(enf.u74) AS ref74, SUM(enf.u75) AS ref75,
+				SUM(enf.u76) AS ref76, SUM(enf.u77) AS ref77, SUM(enf.u78) AS ref78, SUM(enf.u79) AS ref79, SUM(enf.u80) AS ref80,
+				SUM(enf.u81) AS ref81, SUM(enf.u82) AS ref82, SUM(enf.u83) AS ref83, SUM(enf.u84) AS ref84, SUM(enf.u85) AS ref85,
+				SUM(enf.u86) AS ref86, SUM(enf.u87) AS ref87, SUM(enf.u88) AS ref88, SUM(enf.u89) AS ref89, SUM(enf.u90) AS ref90
 				-- , SUM(enf.hero) AS ref_hero -- Descomente se precisar do herói
 			FROM " . TB_PREFIX . "enforcement AS enf
 			GROUP BY enf.vref -- Agrupa para obter um único resultado para esta vila
@@ -1019,6 +1028,34 @@ if ((isset($_POST['vref']) && isset($_POST['tropas']) || isset($_GET['vref']) &&
 		
 		$vilas[] = $row;
     }
+
+	// Busca registros individuais de enforcement (reforços enviados para outras vilas)
+	$enforcements = [];
+	$tribe = (int)$session->tribe;
+	$base = ($tribe - 1) * 10;
+	$q_enf = "SELECT id, vref, u1, u2, u3, u4, u5, u6, u7, u8, u9, u10,
+				u11, u12, u13, u14, u15, u16, u17, u18, u19, u20,
+				u21, u22, u23, u24, u25, u26, u27, u28, u29, u30,
+				u31, u32, u33, u34, u35, u36, u37, u38, u39, u40,
+				u41, u42, u43, u44, u45, u46, u47, u48, u49, u50,
+				u51, u52, u53, u54, u55, u56, u57, u58, u59, u60,
+				u61, u62, u63, u64, u65, u66, u67, u68, u69, u70,
+				u71, u72, u73, u74, u75, u76, u77, u78, u79, u80,
+				u81, u82, u83, u84, u85, u86, u87, u88, u89, u90,
+				hero
+			FROM " . TB_PREFIX . "enforcement
+			WHERE `from` = $vref";
+	$r_enf = mysqli_query($database->dblink, $q_enf);
+	while ($enf = mysqli_fetch_assoc($r_enf)) {
+		$record = ['id' => (int)$enf['id'], 'vref' => (int)$enf['vref']];
+		for ($i = 1; $i <= 10; $i++) {
+			$record["t$i"] = (int)$enf["u" . ($base + $i)];
+		}
+		$enforcements[] = $record;
+	}
+	if (!empty($vilas)) {
+		$vilas[0]['enforcements'] = $enforcements;
+	}
 
     header('Content-Type: application/json');
     echo json_encode($vilas);
