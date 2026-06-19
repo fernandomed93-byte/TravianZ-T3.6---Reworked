@@ -576,6 +576,109 @@ trait DBMovement {
         return mysqli_query($this->dblink,$q);
     }
 
+    public function getAllInboundMovements($wid) {
+        $wid = (int) $wid;
+
+        $q = "
+        SELECT
+            m.moveid, m.sort_type, m.`from`, m.`to`, m.ref, m.ref2,
+            m.starttime, m.endtime, m.proc, m.send,
+            m.wood, m.clay, m.iron, m.crop,
+            a.attack_type, a.ctar1, a.ctar2, a.spy,
+            a.t1, a.t2, a.t3, a.t4, a.t5, a.t6, a.t7, a.t8, a.t9, a.t10, a.t11,
+            COALESCE(w.oasistype, 0) as oasistype,
+            CASE WHEN a.attack_type = 2 THEN 'incoming_reinforcement' ELSE 'incoming_attack' END as movement_type
+        FROM movement m
+        JOIN attacks a ON m.ref = a.id
+        LEFT JOIN wdata w ON w.id = m.to
+        WHERE m.to = $wid AND m.proc = 0 AND m.sort_type = 3 AND a.attack_type != 1
+
+        UNION ALL
+
+        SELECT
+            m.moveid, m.sort_type, m.`from`, m.`to`, m.ref, m.ref2,
+            m.starttime, m.endtime, m.proc, m.send,
+            m.wood, m.clay, m.iron, m.crop,
+            a.attack_type, a.ctar1, a.ctar2, a.spy,
+            a.t1, a.t2, a.t3, a.t4, a.t5, a.t6, a.t7, a.t8, a.t9, a.t10, a.t11,
+            COALESCE(w.oasistype, 0) as oasistype,
+            'troop_return' as movement_type
+        FROM movement m
+        JOIN attacks a ON m.ref = a.id
+        LEFT JOIN wdata w ON w.id = m.to
+        WHERE m.to = $wid AND m.proc = 0 AND m.sort_type = 4 AND m.ref > 0
+
+        UNION ALL
+
+        SELECT
+            m.moveid, m.sort_type, m.`from`, m.`to`, m.ref, m.ref2,
+            m.starttime, m.endtime, m.proc, m.send,
+            m.wood, m.clay, m.iron, m.crop,
+            0 as attack_type, 0 as ctar1, 0 as ctar2, 0 as spy,
+            0 as t1, 0 as t2, 0 as t3, 0 as t4, 0 as t5, 0 as t6, 0 as t7, 0 as t8, 0 as t9, 0 as t10, 0 as t11,
+            COALESCE(w.oasistype, 0) as oasistype,
+            'settler_return' as movement_type
+        FROM movement m
+        LEFT JOIN wdata w ON w.id = m.to
+        WHERE m.to = $wid AND m.proc = 0 AND m.sort_type = 4 AND m.ref = 0
+
+        UNION ALL
+
+        SELECT
+            m.moveid, m.sort_type, m.`from`, m.`to`, m.ref, m.ref2,
+            m.starttime, m.endtime, m.proc, m.send,
+            m.wood, m.clay, m.iron, m.crop,
+            a.attack_type, a.ctar1, a.ctar2, a.spy,
+            a.t1, a.t2, a.t3, a.t4, a.t5, a.t6, a.t7, a.t8, a.t9, a.t10, a.t11,
+            COALESCE(w.oasistype, 0) as oasistype,
+            'oasis_incoming' as movement_type
+        FROM movement m
+        JOIN attacks a ON m.ref = a.id
+        JOIN odata o ON o.wref = m.to
+        LEFT JOIN wdata w ON w.id = m.to
+        WHERE o.conqured = $wid AND a.attack_type != 1 AND m.proc = 0 AND m.sort_type = 3
+
+        ORDER BY endtime ASC";
+
+        return $this->query_return($q);
+    }
+
+    public function getAllOutboundMovements($wid) {
+        $wid = (int) $wid;
+
+        $q = "
+        SELECT
+            m.moveid, m.sort_type, m.`from`, m.`to`, m.ref, m.ref2,
+            m.starttime, m.endtime, m.proc, m.send,
+            m.wood, m.clay, m.iron, m.crop,
+            a.attack_type, a.ctar1, a.ctar2, a.spy,
+            a.t1, a.t2, a.t3, a.t4, a.t5, a.t6, a.t7, a.t8, a.t9, a.t10, a.t11,
+            COALESCE(w.oasistype, 0) as oasistype,
+            'outgoing_attack' as movement_type
+        FROM movement m
+        JOIN attacks a ON m.ref = a.id
+        LEFT JOIN wdata w ON w.id = m.to
+        WHERE m.from = $wid AND m.proc = 0 AND m.sort_type = 3
+
+        UNION ALL
+
+        SELECT
+            m.moveid, m.sort_type, m.`from`, m.`to`, m.ref, m.ref2,
+            m.starttime, m.endtime, m.proc, m.send,
+            m.wood, m.clay, m.iron, m.crop,
+            0 as attack_type, 0 as ctar1, 0 as ctar2, 0 as spy,
+            0 as t1, 0 as t2, 0 as t3, 0 as t4, 0 as t5, 0 as t6, 0 as t7, 0 as t8, 0 as t9, 0 as t10, 0 as t11,
+            COALESCE(w.oasistype, 0) as oasistype,
+            'outgoing_settler' as movement_type
+        FROM movement m
+        LEFT JOIN wdata w ON w.id = m.to
+        WHERE m.from = $wid AND m.proc = 0 AND m.sort_type = 5
+
+        ORDER BY endtime ASC";
+
+        return $this->query_return($q);
+    }
+
     // no need to cache this method
 	function getMovementById($id) {
 	    list($id) = $this->escape_input((int) $id);
