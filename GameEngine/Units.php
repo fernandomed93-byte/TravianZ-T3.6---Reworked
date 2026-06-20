@@ -417,6 +417,9 @@ class Units {
             
             for ( $i = 1; $i <= 10; $i ++ ) {
                 if ( isset( $post[ 't' . $i ] ) ) {
+                    if ( $post[ 't' . $i ] === '' ) {
+                        $post[ 't' . $i ] = '0';
+                    }
                     if ( $i != 10 ) {
                         if ( $post[ 't' . $i ] > $enforce[ 'u' . $Gtribe . $i ] ) {
                             $form->addError( "error", "You can't send back more units than you have" );
@@ -433,6 +436,9 @@ class Units {
                 }
             }
             if ( isset( $post['t11'] ) ) {
+                if ( $post['t11'] === '' ) {
+                    $post['t11'] = '0';
+                }
                 if ( $post['t11'] > $enforce['hero'] ) {
                     $form->addError( "error", "You can't send back more units than you have" );
                 }

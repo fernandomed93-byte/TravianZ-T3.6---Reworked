@@ -164,7 +164,12 @@ foreach($varray as $vil){
 	$timerclay = floor(($maxs - $clay) / $prod_clay * 3600);
 	$timeriron = floor(($maxs - $iron) / $prod_iron * 3600);
 	$timer1 = min($timerwood, $timerclay, $timeriron);
-	$timer2 = floor(($prod_crop >= 0 ? $maxc - $crop : $crop) / abs($prod_crop) * 3600);
+	if($prod_crop == 0) {
+		$timer2 = '--';
+	}else{
+		$timer2 = floor(($prod_crop >= 0 ? $maxc - $crop : $crop) / abs($prod_crop) * 3600);
+	}
+	
 
 	if($timer1 > 0) $session->timer++;
 	echo '<tr class="'.$class.'">
