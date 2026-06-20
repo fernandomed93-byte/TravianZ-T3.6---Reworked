@@ -190,6 +190,61 @@ class Technology {
 		return $listarray;
 	}
 
+	public function groupTrainingList($trainlist) {
+		if (count($trainlist) <= 1) return $trainlist;
+
+		$result = [];
+		$total = count($trainlist);
+
+		$firstUnit = $trainlist[0]['unit'];
+		$group = [
+			'unit' => $firstUnit, 'name' => $trainlist[0]['name'],
+			'amt' => 0, 'timestamp' => $trainlist[0]['timestamp'],
+			'timestamp2' => $trainlist[0]['timestamp2'],
+			'lastTimestamp' => $trainlist[0]['timestamp'],
+			'lastTimestamp2' => $trainlist[0]['timestamp2'],
+			'eachtime' => $trainlist[0]['eachtime'], 'totalTime' => 0, 'pop' => 0
+		];
+		$pos = 0;
+		while ($pos < $total && $trainlist[$pos]['unit'] == $firstUnit) {
+			$group['amt'] += $trainlist[$pos]['amt'];
+			$group['totalTime'] += $trainlist[$pos]['eachtime'] * $trainlist[$pos]['amt'];
+			$group['pop'] += $trainlist[$pos]['pop'] * $trainlist[$pos]['amt'];
+			$group['lastTimestamp'] = $trainlist[$pos]['timestamp'];
+			$group['lastTimestamp2'] = $trainlist[$pos]['timestamp2'];
+			$pos++;
+		}
+		$result[] = $group;
+
+		if ($pos < $total) {
+			$groups = [];
+			$order = [];
+			for ($i = $pos; $i < $total; $i++) {
+				$item = $trainlist[$i];
+				$u = $item['unit'];
+				if (!isset($groups[$u])) {
+					$groups[$u] = [
+						'unit' => $u, 'name' => $item['name'],
+						'amt' => 0, 'timestamp' => $item['timestamp'],
+						'timestamp2' => $item['timestamp2'],
+						'eachtime' => $item['eachtime'], 'totalTime' => 0, 'pop' => 0
+					];
+					$order[] = $u;
+				}
+				$groups[$u]['amt'] += $item['amt'];
+				$groups[$u]['totalTime'] += $item['eachtime'] * $item['amt'];
+				$groups[$u]['pop'] += $item['pop'] * $item['amt'];
+				$groups[$u]['timestamp'] = $item['timestamp'];
+				$groups[$u]['timestamp2'] = $item['timestamp2'];
+			}
+			foreach ($order as $u) {
+				$result[] = $groups[$u];
+			}
+		}
+
+		return $result;
+	}
+
 	public function getUnitList() {
 		global $database, $village;
 		

@@ -35,37 +35,7 @@
 		echo "<b>".TRAINING_COMMENCE_STABLE."</b><br>\n";
 	}
     $trainlist = $technology->getTrainingList(2);
-    if(count($trainlist) > 0) {
-    	echo "
-    <table cellpadding=\"1\" cellspacing=\"1\" class=\"under_progress\">
-		<thead><tr>
-			<td>".TRAINING."</td>
-			<td>".DURATION."</td>
-			<td>".FINISHED."</td>
-		</tr></thead>
-		<tbody>";
-		$TrainCount = 0;
-        foreach($trainlist as $train) {
-			$TrainCount++;
-			echo "<tr><td class=\"desc\">";
-			echo "<img class=\"unit u".$train['unit']."\" src=\"gpack/travian_default/img/x.gif\" alt=\"".$train['name']."\" title=\"".$train['name']."\" />";
-			echo $train['amt']." ".$train['name']."</td><td class=\"dur\">";
-			if ($TrainCount == 1) {
-				$NextFinished = $generator->getTimeFormat($train['timestamp2']-time());
-				echo "<span id=timer".++$session->timer.">".$generator->getTimeFormat($train['timestamp']-time())."</span>";
-			} else {
-				echo $generator->getTimeFormat($train['eachtime']*$train['amt']);
-			}
-			echo "</span></td><td class=\"fin\">";
-			$time = $generator->procMTime($train['timestamp']);
-			if($time[0] != "today") {
-				echo "on ".$time[0]." at ";
-            }
-            echo $time[1];
-		} ?>
-		</tr><tr class="next"><td colspan="3"><?php echo UNIT_FINISHED; ?> <span id="timer<?php echo ++$session->timer?>"><?php echo $NextFinished; ?></span></td></tr>
-        </tbody></table>
-    <?php }
+    include("trainingqueue.tpl");
     ?>
 	<?php 
 include("upgrade.tpl");
