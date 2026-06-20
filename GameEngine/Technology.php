@@ -191,7 +191,14 @@ class Technology {
 	}
 
 	public function groupTrainingList($trainlist) {
-		if (count($trainlist) <= 1) return $trainlist;
+		if (count($trainlist) <= 1) {
+			if (count($trainlist) == 1) {
+				$trainlist[0]['lastTimestamp'] = $trainlist[0]['timestamp'];
+				$trainlist[0]['lastTimestamp2'] = $trainlist[0]['timestamp2'];
+				$trainlist[0]['totalTime'] = $trainlist[0]['eachtime'] * $trainlist[0]['amt'];
+			}
+			return $trainlist;
+		}
 
 		$result = [];
 		$total = count($trainlist);
