@@ -2,6 +2,7 @@
 $dataarray = explode(",",$message->readingNotice['data']);
 $colspan = (isset($dataarray[270]) && $dataarray[270] > 0) ? 11 : 10;
 $spy = !empty($dataarray[269]) && !empty($dataarray[268]) && empty($dataarray[283]);
+$woundFlagIdx = count($dataarray) - 1;
 
 if(!isset($isAdmin)){
     $mapUrl = "karte.php?d=";
@@ -147,6 +148,17 @@ if (!empty($dataarray[288]) && !empty($dataarray[289])){ //hero
     <?php echo $dataarray[289]; ?>
     </td></tr></tbody>
 <?php }
+
+if (isset($dataarray[$woundFlagIdx]) && $dataarray[$woundFlagIdx] > 0) {
+    ?>
+
+    <tbody class="goods"><tr><th>Information</th><td colspan="<?php echo $colspan; ?>">
+    
+    <?php echo 'Some units were wounded in the battle.'; ?>
+    </td></tr></tbody>
+
+<?php }
+
 if(isset($dataarray[283]) && !empty($dataarray[283])){ //No troops returned
 ?>	
 	<tbody class="goods"><tr><th>Information</th><td colspan="<?php echo $colspan; ?>">
@@ -223,15 +235,8 @@ if(isset($dataarray[$heroIndex]) && $dataarray[$heroIndex] > 0){
 }
 }
 
-$woundFlagIdx = count($dataarray) - 1;
-
 ?>
 </tr></tbody></table>
 </td></tr>
 
-<?php
-if (isset($dataarray[$woundFlagIdx]) && $dataarray[$woundFlagIdx] > 0) {
-    echo "<tr><td colspan=2 >Some units were wounded in the battle.</td></tr>";
-}
-?>
 </tbody></table>
