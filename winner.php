@@ -5,7 +5,7 @@ $start_timer = $generator->pageLoadTimeStart();
 #################################################################################
 ## -= YOU MAY NOT REMOVE OR CHANGE THIS NOTICE =- 			        ##
 ## ---------------------------------------------------------------------------  ##
-## Project:     TravianF 							##
+## Project:     TravianZ 							##
 ## Version:     18.02.2014 							##
 ## Description: When the player builds Wonder of the World      		##
 ##              to level 100 the winner details are shown.      		##
@@ -13,10 +13,10 @@ $start_timer = $generator->pageLoadTimeStart();
 ## Authors:     aggenkeech - and a little help from Eyas95      		##
 ## Page:        winner.php                                      		##
 ## Fixed by:    Shadow  							##
-## License:     TravianF Project 						##
-## Copyright:   TravianF (c) 2010-2013. All rights reserved. 			##
+## License:     TravianZ Project 						##
+## Copyright:   TravianZ (c) 2010-2013. All rights reserved. 			##
 ## URLs:        http://travian.shadowss.ro 					##
-## Source code: https://github.com/Shadowss/TravianF/	 			##
+## Source code: https://github.com/Shadowss/TravianZ/	 			##
 ## 										##
 #################################################################################
 
@@ -216,7 +216,7 @@ if(isset($_GET['newdid'])) {
 					<br />
 					<p>Warriors, leaders, heroes, stood together, looking over the world they explored and conquered. Although the feast will end and people will go back to their daily lives again, this day will remain in their memory forever.</p>
 					<br />
-					<p>We, the TravianF Team, thank you and we look forward to a new adventure in a new TravianF world.</p>
+					<p>We, the TravianZ Team, thank you and we look forward to a new adventure in a new TravianZ world.</p>
 					<br />
 					Best Regards,<br />
 					<?php echo SERVER_NAME; ?> Team<br /></p>

@@ -71,9 +71,13 @@ Categorias: ataque, defesa, climber, rank climber, robber. Streaks de
 - Novos índices estratégicos em `vdata`, `movement`, `users`, `hero`, `artefacts`, `ndata`, `bdata`
 - Total de 1675 linhas em InnoDB utf8mb3
 
-### Android Companion App (Not yet public)
-Bot em Flutter disponível em:
-https://github.com/fernandomed93-byte/travian_bot_windows
+### Bot Multiplataforma (Not yet public)
+- Bot em Flutter multiplataforma com diversos recursos:
+- **Building, Farming, Demolition, Upgrade, Research, Auto Celebration**
+- **Healing, Troop Training, Market, OasisConquer, ResourceSave, TroopStorage**
+- **Expansion, WW Reinforcement, HeroManager**
+- Ainda faltam alguns managers para ficar 100% autosuficiente:
+- **ArtefactClaim, WW Village Conquer**
 
 ## Requisitos Mínimos
 - PHP 8.3.16+

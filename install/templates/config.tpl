@@ -30,7 +30,7 @@ echo "<div class=\"headline\"><span class=\"f10 c5\">Error creating constant.php
                 <span class="f9 c6">Server name:</span>
             </td>
             <td width="140">
-                <input type="text" name="servername" id="servername" value="TravianF">
+                <input type="text" name="servername" id="servername" value="TravianZ">
             </td>
         </tr>
         <tr>
