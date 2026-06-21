@@ -3027,7 +3027,7 @@ class Automation {
                 case 3: $troopGroups = "Movimentos"; break;
                 default: $troopGroups = "Desconhecido"; break;
             }
-            error_log("AutomationT3.6: [$groupName] Village $wref has a crop deficit of $difcrop after consuming available crop. Starting starvation process. Type: $troopGroups");
+            error_log("AutomationT3.6: [STARVATION] Village $wref has a crop deficit of $difcrop after consuming available crop. Starting starvation process. Type: $troopGroups");
 
             $killedUnits = [];
             $owner_of_troops = $starvingTroops['true_owner_id'];

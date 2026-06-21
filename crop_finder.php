@@ -179,7 +179,9 @@ $type = mysqli_query(
 $database->dblink,"
 SELECT wdat.id, wdat.x, wdat.y, wdat.occupied, wdat.fieldtype
 		FROM ".TB_PREFIX."wdata as wdat 
-		WHERE $fieldType 	
+		WHERE $fieldType
+        AND wdat.x > $ref_x_sql - 30 AND wdat.x < $ref_x_sql + 30
+        AND wdat.y > $ref_y_sql - 30 AND wdat.y < $ref_y_sql + 30
 		ORDER BY SQRT(POW(wdat.x - $ref_x_sql, 2) + POW(wdat.y - $ref_y_sql, 2)) ASC ");
 $resultSql = $database->mysqli_fetch_all($type);
 

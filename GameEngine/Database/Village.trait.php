@@ -1392,7 +1392,7 @@ trait DBVillage {
 			if ($crop < $villageUpkeep){
 				//Add starvation data
 				$fields = ['starv'];
-				$values = [$villageUpkeep];
+				$values = [$villageUpkeep - $crop];
 				
 				//Update the starvupdate if it's set to 0
 				if($getVillage['starvupdate'] == 0) {
