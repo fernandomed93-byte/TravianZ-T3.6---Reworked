@@ -854,7 +854,7 @@ trait DBTroops {
 
     // no need to cache this method
 	function getTrainingList() {
-		$q = "SELECT * FROM " . TB_PREFIX . "training where vref IS NOT NULL";
+		$q = "SELECT * FROM " . TB_PREFIX . "training where vref IS NOT NULL AND timestamp2 <= UNIX_TIMESTAMP()";
 		$result = mysqli_query($this->dblink,$q);
 		return $this->mysqli_fetch_all($result);
 	}

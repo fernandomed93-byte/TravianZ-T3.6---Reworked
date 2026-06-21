@@ -133,10 +133,11 @@ class Automation {
         $lockFilePath = $this->lock_path_prefix . $lockFileName;
         $currentTime = time();
         $currentPid = getmypid();
+        $timePrefix = '[ ' . date('d/m/Y H:i:s') . ',' . substr(microtime(), 2, 2) . ' ] ';
 
         $fileHandle = @fopen($lockFilePath, 'c+');
         if (!$fileHandle) {
-            error_log("AutomationT3.6: [$groupName] Could not open/create lock file: " . $lockFilePath);
+            error_log($timePrefix . "AutomationT3.6: [$groupName] Could not open/create lock file: " . $lockFilePath);
             return;
         }
 
@@ -164,7 +165,7 @@ class Automation {
             // 2. VERIFICA O COOLDOWN APÓS OBTER O LOCK
             if ($lastRunStartTimestampFromFile > 0 && ($currentTime - $lastRunStartTimestampFromFile < $groupCooldown)) {
                 $coolDownRem = $groupCooldown - ($currentTime - $lastRunStartTimestampFromFile);
-                error_log("AutomationT3.6: [$groupName] Cooldown active ($coolDownRem s remaining). Releasing lock and deferring execution.");
+                error_log($timePrefix . "AutomationT3.6: [$groupName] Cooldown active ($coolDownRem s remaining). Releasing lock and deferring execution.");
                 
                 flock($fileHandle, LOCK_UN); // Libera o lock imediatamente
                 fclose($fileHandle);
@@ -177,18 +178,18 @@ class Automation {
             fwrite($fileHandle, $currentTime . ' ' . $currentPid);
             fflush($fileHandle);
 
-            error_log("AutomationT3.6: [$groupName] Lock acquired by PID $currentPid. Starting execution.");
+            error_log($timePrefix . "AutomationT3.6: [$groupName] Lock acquired by PID $currentPid. Starting execution.");
 
             try {
                 foreach ($methodsArray as $method) {
                     if (method_exists($this, $method)) {
                         call_user_func(array($this, $method));
                     } else {
-                        error_log("AutomationT3.6: [$groupName] Method $method does not exist in Automation class.");
+                        error_log($timePrefix . "AutomationT3.6: [$groupName] Method $method does not exist in Automation class.");
                     }
                 }
             } catch (Exception $e) {
-                $database->log_with_context("AutomationT3.6: [$groupName] Exception during execution by PID $currentPid: " . $e->getMessage() . $e->getTraceAsString());
+                $database->log_with_context($timePrefix . "AutomationT3.6: [$groupName] Exception during execution by PID $currentPid: " . $e->getMessage() . $e->getTraceAsString());
             } finally {
                 // 4. GARANTE A LIBERAÇÃO DO LOCK NO FINAL
                 flock($fileHandle, LOCK_UN);
@@ -222,14 +223,14 @@ class Automation {
                 // Se temos um timestamp, o arquivo é informativo. Verificamos se é obsoleto ou apenas ocupado.
                 $age = $currentTime - $lockingTimestamp;
                 if ($age < $maxExecTime) {
-                    error_log("AutomationT3.6: [$groupName] Execution deferred. Lock held by PID $lockingPid, which started $age s ago (maxExecTime: $maxExecTime s).");
+                    error_log($timePrefix . "AutomationT3.6: [$groupName] Execution deferred. Lock held by PID $lockingPid, which started $age s ago (maxExecTime: $maxExecTime s).");
                 } else {
-                    error_log("AutomationT3.6: [$groupName] Execution blocked. Lock appears STALE (held by PID $lockingPid for $age s). However, the OS lock could not be acquired. Manual intervention may be needed if PID $lockingPid is defunct.");
+                    error_log($timePrefix . "AutomationT3.6: [$groupName] Execution blocked. Lock appears STALE (held by PID $lockingPid for $age s). However, the OS lock could not be acquired. Manual intervention may be needed if PID $lockingPid is defunct.");
                 }
             } else {
                 // Se o arquivo está vazio ou malformado, este é o sintoma da condição de corrida.
                 // Ação: Tratar como "ocupado" e simplesmente adiar a execução.
-                error_log("AutomationT3.6: [$groupName] Execution deferred. Another process holds the OS lock and is likely in the process of writing to the lock file.");
+                error_log($timePrefix . "AutomationT3.6: [$groupName] Execution deferred. Another process holds the OS lock and is likely in the process of writing to the lock file.");
             }
         }
         
@@ -312,7 +313,10 @@ class Automation {
 
 		if (empty($events)) {
 			return;
-		}
+		}else{
+            $timePrefix = '[ ' . date('d/m/Y H:i:s') . ',' . substr(microtime(), 2, 2) . ' ] ';
+            error_log($timePrefix . "AutomationT3.6: completeMovementsSequentially - Processing " . count($events) . " events.");
+        }
 
 		$vilIDsAT = [];
 		$vilIDsREF = [];
@@ -376,6 +380,9 @@ class Automation {
 					break;
 			}
 		}
+
+        $timePrefix = '[ ' . date('d/m/Y H:i:s') . ',' . substr(microtime(), 2, 2) . ' ] ';
+        error_log($timePrefix . "AutomationT3.6: completeMovementsSequentially - All events processed.");
 
 	}
 
@@ -1146,8 +1153,6 @@ class Automation {
         $database->addABTech($addABTechWrefs);
 
     }
-    
-
 
     private function researchComplete() {
         global $database;
@@ -1422,9 +1427,12 @@ class Automation {
 
     private function trainingComplete() {
         global $database, $technology;
-
+       
         $time = time();
         $trainlist = $database->getTrainingList();
+        $timePrefix = '[ ' . date('d/m/Y H:i:s') . ',' . substr(microtime(), 2, 2) . ' ] ';
+        error_log($timePrefix . "AutomationT3.6: trainingComplete - Processing " . count($trainlist) . " trainings.");
+
         if(count($trainlist) > 0){
             // preload village data
             $vilIDs = [];
@@ -1474,14 +1482,17 @@ class Automation {
                     $database->updateTraining($train['id'], $trained, $trained * $train['eachtime']);
                     
                     if($train['amt'] - $trained <= 0) $database->trainUnit($train['id'], 0, 0, 0, 0, 1);
+
+                    //Update starvation data
+                    $database->addStarvationData($train['vref']);
                 }
 
                 if ($valuesUpdated) call_user_func(get_class($database).'::clearUnitsCache');
-             
-                //Update starvation data
-                $database->addStarvationData($train['vref']);
+                
             }
         }
+        $timePrefix = '[ ' . date('d/m/Y H:i:s') . ',' . substr(microtime(), 2, 2) . ' ] ';
+        error_log($timePrefix . "AutomationT3.6: trainingComplete - All training processed.");
     }
 
     private function getsort_typeLevel($tid, $resarray) {
@@ -2196,8 +2207,9 @@ class Automation {
         $archive_older_than_days = 45;
         $batch_limit = 1000; // Apaga em lotes de 1000 registros para ser rápido e seguro
         $cutoff_timestamp = time() - ($archive_older_than_days * 86400);
-
-        error_log("AutomationT3.6: [ArchiveAndPrune] Iniciando processo de arquivamento para dados mais antigos que " . date('Y-m-d H:i:s', $cutoff_timestamp));
+        $timePrefix = '[ ' . date('d/m/Y H:i:s') . ',' . substr(microtime(), 2, 2) . ' ] ';
+         
+        error_log($timePrefix . "AutomationT3.6: [ArchiveAndPrune] Iniciando processo de arquivamento para dados mais antigos que " . date('Y-m-d H:i:s', $cutoff_timestamp));
 
         // --- Tabela 1: s1_movement e s1_attacks (são relacionadas) ---
         // Primeiro, identificamos os movimentos antigos. A chave é o `endtime`.
@@ -2241,7 +2253,7 @@ class Automation {
             $delete_mov_sql = "DELETE FROM " . TB_PREFIX . "movement WHERE moveid IN (" . $movement_id_list . ")";
             $database->query($delete_mov_sql);
 
-            error_log("AutomationT3.6: [ArchiveAndPrune] Arquivados e apagados " . count($movement_ids) . " registros de s1_movement e s1_attacks.");
+            error_log($timePrefix . "AutomationT3.6: [ArchiveAndPrune] Arquivados e apagados " . count($movement_ids) . " registros de s1_movement e s1_attacks.");
         }
 
         // --- Tabela 2: s1_ndata (Relatórios) ---
@@ -2266,7 +2278,7 @@ class Automation {
             $delete_reports_sql = "DELETE FROM " . TB_PREFIX . "ndata WHERE id IN (" . $report_id_list . ")";
             $database->query($delete_reports_sql);
 
-            error_log("AutomationT3.6: [ArchiveAndPrune] Arquivados e apagados " . count($report_ids) . " relatórios antigos (s1_ndata).");
+            error_log($timePrefix . "AutomationT3.6: [ArchiveAndPrune] Arquivados e apagados " . count($report_ids) . " relatórios antigos (s1_ndata).");
         }
 
         // --- Tabela 3: s1_mdata (Mensagens) ---
@@ -2291,7 +2303,7 @@ class Automation {
             $delete_messages_sql = "DELETE FROM " . TB_PREFIX . "mdata WHERE id IN (" . $message_id_list . ")";
             $database->query($delete_messages_sql);
 
-            error_log("AutomationT3.6: [ArchiveAndPrune] Arquivadas e apagadas " . count($message_ids) . " mensagens antigas (s1_mdata).");
+            error_log($timePrefix . "AutomationT3.6: [ArchiveAndPrune] Arquivadas e apagadas " . count($message_ids) . " mensagens antigas (s1_mdata).");
         }
     }
 
