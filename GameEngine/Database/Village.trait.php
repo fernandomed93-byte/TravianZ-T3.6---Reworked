@@ -1092,6 +1092,30 @@ trait DBVillage
         return mysqli_query($this->dblink, $q);
     }
 
+    function batchModifyResource($lootByVref) {
+        if (empty($lootByVref)) return;
+        $wrefs = [];
+        $woodCases = []; $clayCases = []; $ironCases = []; $cropCases = [];
+        foreach ($lootByVref as $wref => $loot) {
+            $wref = (int)$wref;
+            $w = (int)$loot[0]; $c = (int)$loot[1];
+            $i = (int)$loot[2]; $r = (int)$loot[3];
+            $wrefs[] = $wref;
+            $woodCases[] = "WHEN $wref THEN GREATEST(0, LEAST(maxstore, wood - $w))";
+            $clayCases[] = "WHEN $wref THEN GREATEST(0, LEAST(maxstore, clay - $c))";
+            $ironCases[] = "WHEN $wref THEN GREATEST(0, LEAST(maxstore, iron - $i))";
+            $cropCases[] = "WHEN $wref THEN GREATEST(0, LEAST(maxcrop, crop - $r))";
+        }
+        $ids = implode(',', $wrefs);
+        $q = "UPDATE " . TB_PREFIX . "vdata SET
+            wood = CASE wref " . implode(' ', $woodCases) . " ELSE wood END,
+            clay = CASE wref " . implode(' ', $clayCases) . " ELSE clay END,
+            iron = CASE wref " . implode(' ', $ironCases) . " ELSE iron END,
+            crop = CASE wref " . implode(' ', $cropCases) . " ELSE crop END
+            WHERE wref IN($ids)";
+        return mysqli_query($this->dblink, $q);
+    }
+
     function updateResourceandStarvData($vid, $wood, $clay, $iron, $crop, $cropProd, $mode)
     {
         list($vid, $wood, $clay, $iron, $crop, $cropProd, $mode) = $this->escape_input((int) $vid, $wood, $clay, $iron, $crop, $cropProd, $mode);
@@ -1521,8 +1545,7 @@ trait DBVillage
         global $technology;
 
         $isoasis = $this->isVillageOases($wref);
-        if ($isoasis > 0)
-            return;
+        if ($isoasis > 0) return;
 
         $getVillage = $this->getVillage($wref);
 
@@ -1530,6 +1553,9 @@ trait DBVillage
         if ($getVillage['owner'] > 5) {
             $crop = $this->getCropProdstarv($wref, false);
             $unitArrays = $technology->getAllUnits($wref, false, 0, false);
+            if (!isset($getVillage['pop'])){
+                error_log("Village data for wref $wref is missing 'pop' field.");
+            }
             $villageUpkeep = $getVillage['pop'] + $technology->getUpkeep($unitArrays, 0, $wref);
             $starv = $getVillage['starv'];
 
@@ -1856,4 +1882,134 @@ trait DBVillage
         ];
     }
 
+        function preloadAttackVillages_OLD($allIDs) {
+        if (empty($allIDs)) return;
+        foreach ($allIDs as $i => $id) $allIDs[$i] = (int) $id;
+        $ids = implode(',', $allIDs);
+
+        $q = "SELECT v.*, u.*, ut.*,
+                     w.id as wdata_id, w.x, w.y, w.fieldtype, w.occupied, w.oasistype, w.image,
+                     ab.a1, ab.a2, ab.a3, ab.a4, ab.a5, ab.a6, ab.a7, ab.a8,
+                     ab.b1, ab.b2, ab.b3, ab.b4, ab.b5, ab.b6, ab.b7, ab.b8
+              FROM " . TB_PREFIX . "vdata v
+              LEFT JOIN " . TB_PREFIX . "users u ON v.owner = u.id
+              LEFT JOIN " . TB_PREFIX . "units ut ON ut.vref = v.wref
+              LEFT JOIN " . TB_PREFIX . "wdata w ON w.id = v.wref
+              LEFT JOIN " . TB_PREFIX . "abdata ab ON ab.vref = v.wref
+              WHERE v.wref IN($ids)";
+
+        $result = mysqli_query($this->dblink, $q);
+        if (!$result) return;
+
+        while ($row = mysqli_fetch_assoc($result)) {
+            $wref = (int)$row['wref'];
+            $uid = (int)$row['id'];
+
+            if ($uid > 0) {
+                self::$fieldsCache[$uid . '1'] = $row;
+            }
+
+            $row['id'] = (int)$row['wdata_id'];
+
+            self::$worldAndVillageDataCache[$wref] = $row;
+
+            self::$villageFieldsCache[$wref . '0'] = $row;
+            self::$villageFieldsCache2[$wref] = $row;
+
+            self::$unitsCache[$wref] = $row;
+
+            self::$abTechCache[$wref] = (isset($row['b1']) && $row['b1'] !== null) ? $row : [];
+
+            $owner = (int)$row['owner'];
+            self::$userVillagesCache[$owner . '5'][] = $row;
+        }
+    }
+
+    function preloadAttackVillages($allIDs) {
+        if (empty($allIDs)) return;
+        foreach ($allIDs as $i => $id) $allIDs[$i] = (int) $id;
+        $ids = implode(',', $allIDs);
+
+        // 1. Query A — vilas (SEM users para evitar conflito de colunas)
+        $q = "SELECT v.*,
+                     w.id as wdata_id, w.x, w.y, w.fieldtype, w.occupied, w.oasistype, w.image,
+                     fd.*, ut.*, ab.*
+              FROM " . TB_PREFIX . "vdata v
+              LEFT JOIN " . TB_PREFIX . "wdata w ON w.id = v.wref
+              LEFT JOIN " . TB_PREFIX . "fdata fd ON fd.vref = v.wref
+              LEFT JOIN " . TB_PREFIX . "units ut ON ut.vref = v.wref
+              LEFT JOIN " . TB_PREFIX . "abdata ab ON ab.vref = v.wref
+              WHERE v.wref IN($ids)";
+
+        $result = mysqli_query($this->dblink, $q);
+        if (!$result) return;
+
+        $found = [];
+        $ownerSet = [];
+        while ($row = mysqli_fetch_assoc($result)) {
+            $wref = (int)$row['wref'];
+            $found[$wref] = true;
+
+            $row['id'] = (int)$row['wdata_id'];
+
+            self::$worldAndVillageDataCache[$wref] = $row;
+            self::$villageFieldsCache[$wref . '0'] = $row;
+            self::$villageFieldsCache2[$wref] = $row;
+            self::$unitsCache[$wref] = $row;
+            self::$abTechCache[$wref] = (isset($row['b1']) && $row['b1'] !== null) ? $row : [];
+            if (isset($row['f1'])) {
+                self::$resourceLevelsCache[$wref] = $row;
+            }
+
+            $owner = (int)$row['owner'];
+            self::$userVillagesCache[$owner . '5'][] = $row;
+            if ($owner > 5) $ownerSet[$owner] = true;
+        }
+
+        // 2. IDs restantes = oásis (wdata sem vdata)
+        $oasisIDs = array_diff($allIDs, array_keys($found));
+        if (!empty($oasisIDs)) {
+            $oasisIds = implode(',', $oasisIDs);
+            $q2 = "SELECT w.*, o.*
+                   FROM " . TB_PREFIX . "wdata w
+                   LEFT JOIN " . TB_PREFIX . "odata o ON o.wref = w.id
+                   WHERE w.id IN($oasisIds)";
+
+            $r2 = mysqli_query($this->dblink, $q2);
+            if ($r2) {
+                while ($row = mysqli_fetch_assoc($r2)) {
+                    $wref = (int)$row['id'];
+                    $row['id'] = $wref;
+                    self::$worldAndOasisDataCache[$wref] = $row;
+                    $o = (int)$row['owner'];
+                    if ($o > 5) $ownerSet[$o] = true;
+                }
+            }
+        }
+
+        // 3. Query única de users (vilas + oásis)
+        if (!empty($ownerSet)) {
+            $ownerIds = implode(',', array_keys($ownerSet));
+            $qUsers = "SELECT * FROM " . TB_PREFIX . "users WHERE id IN($ownerIds)";
+            $rUsers = mysqli_query($this->dblink, $qUsers);
+            if ($rUsers) {
+                while ($row = mysqli_fetch_assoc($rUsers)) {
+                    self::$fieldsCache[(int)$row['id'] . '1'] = $row;
+                }
+            }
+        }
+
+        // 4. Pré-calcular SUM(pop) para owners envolvidos (getVSumField cache)
+        $allOwners = array_keys($ownerSet);
+        if (!empty($allOwners)) {
+            $ownerIdsStr = implode(',', $allOwners);
+            $q3 = "SELECT owner, SUM(pop) as Total FROM " . TB_PREFIX . "vdata WHERE owner IN($ownerIdsStr) GROUP BY owner";
+            $r3 = mysqli_query($this->dblink, $q3);
+            if ($r3) {
+                while ($row = mysqli_fetch_assoc($r3)) {
+                    self::$userSumFieldCache[(int)$row['owner'] . 'pop'] = [['Total' => (int)$row['Total']]];
+                }
+            }
+        }
+    }
 }

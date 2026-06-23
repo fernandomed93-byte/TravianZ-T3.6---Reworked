@@ -114,6 +114,20 @@ trait DBAlliance {
 		return mysqli_query($this->dblink,$q);
 	}
 
+	function batchModifyPointsAlly($pointsByAlly) {
+		if (empty($pointsByAlly)) return;
+		$cases = [];
+		$aids = [];
+		foreach ($pointsByAlly as $aid => $amt) {
+			$aid = (int)$aid;
+			$amt = (int)$amt;
+			$cases[] = "WHEN $aid THEN RR + $amt";
+			$aids[] = $aid;
+		}
+		$q = "UPDATE " . TB_PREFIX . "alidata SET RR = CASE id " . implode(' ', $cases) . " ELSE RR END WHERE id IN(" . implode(',', $aids) . ")";
+		return mysqli_query($this->dblink, $q);
+	}
+
 	function createAlliance($tag, $name, $uid, $max) {
 	    list($tag, $name, $uid, $max) = $this->escape_input($tag, $name, (int) $uid, (int) $max);
         $tag = $this->RemoveXSS($tag);

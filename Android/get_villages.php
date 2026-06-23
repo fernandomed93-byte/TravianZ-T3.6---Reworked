@@ -1728,6 +1728,45 @@ if (isset($_POST['checkVillageBuildings']) && $_POST['checkVillageBuildings'] ==
     exit;
 }
 
+if (isset($_GET['test']) && $_GET['test'] == 1) {
+
+	$q = "SELECT v.*, u.*, ut.*,
+                     w.id as wdata_id, w.x, w.y, w.fieldtype, w.occupied, w.oasistype, w.image,
+                     fd.*,
+                     ab.a1, ab.a2, ab.a3, ab.a4, ab.a5, ab.a6, ab.a7, ab.a8,
+                     ab.b1, ab.b2, ab.b3, ab.b4, ab.b5, ab.b6, ab.b7, ab.b8
+              FROM vdata v
+              LEFT JOIN users u ON v.owner = u.id
+              LEFT JOIN units ut ON ut.vref = v.wref
+              LEFT JOIN wdata w ON w.id = v.wref
+              LEFT JOIN fdata fd ON fd.vref = v.wref
+              LEFT JOIN abdata ab ON ab.vref = v.wref
+              WHERE v.wref IN(142134,162167,213375,223008,222152,226158,360195,365000,214176,211776,433725,434525,220674,225478,299847,298241)";
+	$result = mysqli_query($database->dblink, $q);
+	if (!$result) return;
+
+	$found = [];
+	while ($row = mysqli_fetch_assoc($result)) {
+		$wref = (int)$row['wref'];
+		$uid = (int)$row['id'];
+		$wID = (int)$row['wdata_id'];
+		$owner = (int)$row['owner'];
+		$F1 = (int)$row['f1'];
+
+		$found[$wref] = [
+			'uid' => $uid,
+			'wID' => $wID,
+			'owner' => $owner,
+			'F1' => $F1
+		];
+
+	}
+
+	header('Content-Type: application/json');
+	echo json_encode($found);
+	exit;
+}
+
 // Nenhum parâmetro válido foi enviado
 header('Content-Type: application/json');
 echo json_encode(["error" => "Parâmetros inválidos"]);

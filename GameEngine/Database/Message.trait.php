@@ -238,6 +238,23 @@ trait DBMessage {
     	return mysqli_query($this->dblink,$q);
     }
 
+    function addNoticesBatch($notices) {
+        if (empty($notices)) return;
+        $values = [];
+        foreach ($notices as $n) {
+            if (($n['uid'] ?? 0) == 2 || ($n['uid'] ?? 0) == 3) continue;
+            list($uid, $toWref, $ally, $type, $topic, $data, $time) = $this->escape_input(
+                (int)$n['uid'], (int)$n['toWref'], (int)$n['ally'], (int)$n['type'],
+                $n['topic'], $n['data'], (int)($n['time'] ?? time())
+            );
+            if ($time == 0) $time = time();
+            $values[] = "(0,$uid,$toWref,$ally,'$topic',$type,'$data',$time,0)";
+        }
+        if (empty($values)) return;
+        $q = "INSERT INTO " . TB_PREFIX . "ndata (id, uid, toWref, ally, topic, ntype, data, time, viewed) VALUES " . implode(',', $values);
+        return mysqli_query($this->dblink, $q);
+    }
+
     // no need to cache this method
 	function getNotice($uid) {
 	    list($uid) = $this->escape_input((int) $uid);

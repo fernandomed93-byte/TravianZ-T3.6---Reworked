@@ -497,7 +497,8 @@ trait DBMovement {
         $pairs = [];
 
         foreach ($type as $index => $typeValue) {
-            $pairs[] = '(0, '.(int) $typeValue.', '.(int) $from[$index].', '.(int) $to[$index].', '.(int) $ref[$index].', '.(int) $ref2[$index].', '.(int) $time[$index].', '.(int) $endtime[$index].', 0, '.(int) $send[$index].', '.(int) $wood[$index].', '.(int) $clay[$index].', '.(int) $iron[$index].', '.(int) $crop[$index].')';
+            $safeRef2 = isset($ref2[$index]) ? (int)$ref2[$index] : 0;
+            $pairs[] = '(0, '.(int) $typeValue.', '.(int) $from[$index].', '.(int) $to[$index].', '.(int) $ref[$index].', '. $safeRef2 .', '.(int) $time[$index].', '.(int) $endtime[$index].', 0, '.(int) $send[$index].', '.(int) $wood[$index].', '.(int) $clay[$index].', '.(int) $iron[$index].', '.(int) $crop[$index].')';
 
             if ($counter++ > 25) {
                 $q = "INSERT INTO " . TB_PREFIX . "movement VALUES ".implode(', ', $pairs);

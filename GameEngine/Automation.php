@@ -343,27 +343,22 @@ class Automation {
 
 		$allIDs = array_keys($vilIDsAT + $vilIDsREF + $vilIDsRET);
 		if (!empty($allIDs)) {
-			$database->getProfileVillages($allIDs, 5);
-			$database->getUnit($allIDs);
+			$database->preloadAttackVillages($allIDs);
 		}
 
 		if (!empty($vilIDsAT)){
 			$vilIDsAT = array_keys($vilIDsAT);
-            $database->getEnforceVillage($vilIDsAT, 0);
-            $database->getMovement(34, $vilIDsAT, 1);
-            $database->getABTech($vilIDsAT);
+			$database->preloadAttackEnforcements($vilIDsAT);
 		}
 
 		if (!empty($vilIDsREF)){
 			$vilIDsREF = array_keys($vilIDsREF);
-            $database->getEnforce(array_keys($enforce_tos), array_keys($enforce_froms));
-            $database->getVillageByWorldID($vilIDsREF);
+			$database->preloadReinforcementData($vilIDsREF, array_keys($enforce_tos), array_keys($enforce_froms));
 		}
 
 		if (!empty($vilIDsRET)){
 			$vilIDsRET = array_keys($vilIDsRET);
-            $database->getOasisEnforce($vilIDsRET, 0);
-            $database->getOasisEnforce($vilIDsRET, 1);
+			$database->preloadReturnData($vilIDsRET);
 		}
 
 		$attackHandler = new AttackHandler($database, $battle, $technology, $units, $this);
@@ -384,6 +379,8 @@ class Automation {
 					break;
 			}
 		}
+
+		$attackHandler->flushAll();
 
         error_log($this->getTimePrefix() . "AutomationT3.6: completeMovementsSequentially - All events processed.");
 
@@ -2821,6 +2818,7 @@ class Automation {
      */
     private function starvationNew() {
         global $database;
+        return; 
         if (defined('PEACE') && PEACE) return;
 
         if (!$database->needRunStarvation()) {

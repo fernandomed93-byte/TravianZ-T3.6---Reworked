@@ -583,4 +583,35 @@ trait DBUser {
 		return mysqli_query($this->dblink,$q);
 	}
 
+	function batchModifyPoints($pointsByUser) {
+		if (empty($pointsByUser)) return;
+		$cases = [];
+		$uids = [];
+		$villageUpdates = [];
+		foreach ($pointsByUser as $uid => $amt) {
+			$uid = (int)$uid;
+			$amt = (int)$amt;
+			$cases[] = "WHEN $uid THEN RR + $amt";
+			$uids[] = $uid;
+			if ($uid > 5) {
+				$villageUpdates[] = $uid;
+			}
+		}
+		$q = "UPDATE " . TB_PREFIX . "users SET RR = CASE id " . implode(' ', $cases) . " ELSE RR END WHERE id IN(" . implode(',', $uids) . ")";
+		mysqli_query($this->dblink, $q);
+
+		// Batch rank updates
+		if (!empty($villageUpdates)) {
+			$vids = [];
+			foreach ($villageUpdates as $uid) {
+				$v = $this->getVillageID($uid);
+				if ($v) $vids[] = (int)$v;
+			}
+			if (!empty($vids)) {
+				$t = time();
+				mysqli_query($this->dblink, "UPDATE " . TB_PREFIX . "vdata SET lastupdate_rank = $t WHERE wref IN(" . implode(',', $vids) . ")");
+			}
+		}
+	}
+
 }

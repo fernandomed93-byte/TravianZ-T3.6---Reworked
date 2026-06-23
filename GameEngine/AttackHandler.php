@@ -14,7 +14,14 @@ class AttackHandler {
     private $battle;
     private $technology;
     private $units;
-    private $automation; // Para acessar métodos auxiliares como recountPop
+    private $automation;
+    private $noticeBatch = [];
+    private $moveidBatch = [];
+    private $movementBatch = [];
+    private $woundedBatch = [];
+    private $resourceLoot = [];
+    private $pointsRR = [];
+    private $pointsAllyRR = [];
 
     /**
      * Construtor da classe.
@@ -63,8 +70,9 @@ class AttackHandler {
         $t2 = microtime(true);
         
         $battleResult = $this->battle->newCalculateBattle($battleContext);
+        $t30 = microtime(true);
         $village_destroyed_flag = $this->_applyBattleResultsToDatabase($battleResult, $battleContext);
-        $t3 = microtime(true);
+        $t31 = microtime(true);
         
         $aftermath = [
             'ram_info' => '', 'catapult_info' => '', 'chief_info' => '', 'hero_info' => '', 
@@ -77,19 +85,25 @@ class AttackHandler {
         }        
 
         $aftermath['ram_info'] = $this->handleRamAttack($battleContext, $battleResult);
+        $t32 = microtime(true);
         $aftermath['catapult_info'] = $this->handleCatapultAttack($battleContext, $battleResult, $village_destroyed_flag);
-        
+        $t33 = microtime(true);
         $aftermath['chief_info'] = $this->handleChiefing($battleContext, $battleResult, $trappedData, $aftermath);
+        $t34 = microtime(true);
         $aftermath['hero_info'] = $this->handleHeroActions($battleContext, $battleResult, $trappedData, $aftermath);
+        $t35 = microtime(true);
         $aftermath['spy_info'] = $this->generateSpyReport($attackData['spy'], $battleContext);
         if ($attackData['attack_type'] != 1) {
             $aftermath['loot'] = $this->calculateLoot($battleContext, $battleResult['bounty']);
         }
         $aftermath['trap_info'] = $this->handlePrisonerRelease($battleContext, $battleResult, $attackData);
+        $t36 = microtime(true);
 
+        $t40 = microtime(true);
         $reportStrings = $this->generateBattleReportStrings($battleContext, $battleResult, $aftermath, $trappedData);
+        $t40a = microtime(true);
         $this->sendNotifications($battleContext, $battleResult, $reportStrings, $trappedData);
-        $t4 = microtime(true);
+        $t41 = microtime(true);
 
         $battleResult['totals']['attacker']['casualties'] = array_sum($battleResult['casualties']['attacker']);
 
@@ -98,8 +112,9 @@ class AttackHandler {
         if ($survivors > 0) {
             if (!$aftermath['village_conquered']) {
                 $this->returnAttackingTroops($attackData, $battleContext, $battleResult, $trappedData, $aftermath['loot']);
+                $t42 = microtime(true);
                 if ($attackData['attack_type'] != 1) {
-                    $this->updateStolenResources($battleContext, $aftermath['loot']);
+                    $this->batchUpdateStolenResources($battleContext, $aftermath['loot']);
                 }
             } else {
                 $casualties_by_slot = array_fill(1, 11, 0);
@@ -123,16 +138,20 @@ class AttackHandler {
                     $battleContext['attacker']['info']['tribe'], 
                     ...array_values($casualties_by_slot)
                 );
+                $t42 = microtime(true);
             }
         } else {
-            $this->database->setMovementProc($attackData['moveid']);
+            $this->batchSetMovementProc($attackData['moveid']);
+            $t42 = microtime(true);
         }
 
         $this->updateRankingPoints($battleContext, $battleResult);
+        $t43 = microtime(true);
         
         if ($attackData['attack_type'] >= 3) {
             $this->database->addGeneralAttack($battleResult['totals']['attacker']['casualties'] + $battleResult['totals']['defender']['casualties']);
         }
+        $t44 = microtime(true);
         if ($village_destroyed_flag) {
             $atkInfo = $battleContext['attackData'];
             $totRams = 0;
@@ -150,15 +169,25 @@ class AttackHandler {
                 $this->handleVillageDestruction($battleContext);
             }
         }
+        $t45 = microtime(true);
         $this->database->addStarvationData($battleContext['defender']['info']['wref']);
 
         $t5 = microtime(true);
         $elapsedMs = ($t5 - $t0) * 1000;
         if ($elapsedMs > 250) {
             error_log(sprintf(
-                "[SLOW_ATTACK] %.0fms | ctx=%.1fms pre=%.1fms battle_db=%.1fms report=%.1fms rest=%.1fms | from=%d to=%d type=%d",
-                $elapsedMs,
-                ($t1-$t0)*1000, ($t2-$t1)*1000, ($t3-$t2)*1000, ($t4-$t3)*1000, ($t5-$t4)*1000,
+                "[SLOW_ATTACK] %.0fms | ctx=%.1fms pre=%.1fms battle_db=%.1fms dn=%.1fms
+                ram=%.1fms cata=%.1fms chief=%.1fms hero=%.1fms 
+                loot=%.1fms rpt_gen=%.1fms notify=%.1fms ret=%.1fms 
+                ranking=%.1fms general=%.1fms destruct=%.1fms starv=%.1fms | from=%d to=%d type=%d",
+                $elapsedMs, ($t1-$t0)*1000, ($t2-$t1)*1000, ($t30-$t2)*1000, ($t31-$t30)*1000,
+                ($t32-$t31)*1000,($t33-$t32)*1000,($t34-$t33)*1000,($t35-$t34)*1000,
+                ($t36-$t35)*1000,($t40a-$t40)*1000,($t41-$t40a)*1000,
+                ($t42-$t41)*1000,
+                ($t43-$t42)*1000,
+                ($t44-$t43)*1000,
+                ($t45-$t44)*1000,
+                ($t5-$t45)*1000,
                 $attackData['from'] ?? 0, $attackData['to'] ?? 0, $attackData['attack_type'] ?? 0
             ));
         }
@@ -1244,18 +1273,19 @@ class AttackHandler {
         $attackData = $context['attackData'];
         $attackerName = addslashes($attacker['name']);
         $defenderName = addslashes($defender['name']);
-        
+        $time = $attackData['endtime'];
+
         // Relatórios de Espionagem
         if ($attackData['attack_type'] == 1) {
             $survived = ($battleResult['totals']['attacker']['survivors'] > 0);
             $spotted = ($battleResult['totals']['defender']['spy'] > 0);
 
             $notice_title = $attackerName . ' scouts ' . $defenderName;
-            
+
             $notice = $survived ? ($spotted ? 21 : 18) : 19;
-            $this->database->addNotice($attacker['owner'], $defender['wref'], $attacker['alliance'], $notice, $notice_title, $reportStrings['main'], $attackData['endtime']);
+            $this->noticeBatch[] = ['uid' => $attacker['owner'], 'toWref' => $defender['wref'], 'ally' => $attacker['alliance'], 'type' => $notice, 'topic' => $notice_title, 'data' => $reportStrings['main'], 'time' => $time];
             if ($spotted) {
-                $this->database->addNotice($defender['owner'], $defender['wref'], $defender['alliance'], 21, $notice_title, $reportStrings['main'], $attackData['endtime']);
+                $this->noticeBatch[] = ['uid' => $defender['owner'], 'toWref' => $defender['wref'], 'ally' => $defender['alliance'], 'type' => 21, 'topic' => $notice_title, 'data' => $reportStrings['main'], 'time' => $time];
             }
             return;
         }
@@ -1265,19 +1295,19 @@ class AttackHandler {
         // Relatório do Atacante
         $survivors = $battleResult['totals']['attacker']['sent'] - $battleResult['totals']['attacker']['casualties'] - $trappedData['total_trapped'];
         $notice_att = $survivors > 0 ? (($battleResult['totals']['attacker']['casualties'] > 0 || $trappedData['total_trapped'] > 0) ? 2 : 1) : 3;
-        $this->database->addNotice($attacker['owner'], $defender['wref'], $attacker['alliance'], $notice_att, $notice_title, $survivors > 0 ? $reportStrings['main'] : $reportStrings['fail'], $attackData['endtime']);
-        
+        $this->noticeBatch[] = ['uid' => $attacker['owner'], 'toWref' => $defender['wref'], 'ally' => $attacker['alliance'], 'type' => $notice_att, 'topic' => $notice_title, 'data' => $survivors > 0 ? $reportStrings['main'] : $reportStrings['fail'], 'time' => $time];
+
         // Relatório do Defensor
         if ($battleResult['totals']['defender']['sent'] > 0) {
             $defender_won = ($battleResult['totals']['defender']['casualties'] < $battleResult['totals']['defender']['sent']);
             if ($defender_won && $battleResult['totals']['defender']['casualties'] == 0) $notice_def = 4;
             elseif ($defender_won) $notice_def = 5;
             else $notice_def = 6;
-            $this->database->addNotice($defender['owner'], $defender['wref'], $defender['alliance'], $notice_def, $notice_title, $reportStrings['main'], $attackData['endtime']);
+            $this->noticeBatch[] = ['uid' => $defender['owner'], 'toWref' => $defender['wref'], 'ally' => $defender['alliance'], 'type' => $notice_def, 'topic' => $notice_title, 'data' => $reportStrings['main'], 'time' => $time];
         } elseif ($attackData['attack_type'] >= 2) {
-            $this->database->addNotice($defender['owner'], $defender['wref'], $defender['alliance'], 7, $notice_title, $reportStrings['main'], $attackData['endtime']);
+            $this->noticeBatch[] = ['uid' => $defender['owner'], 'toWref' => $defender['wref'], 'ally' => $defender['alliance'], 'type' => 7, 'topic' => $notice_title, 'data' => $reportStrings['main'], 'time' => $time];
         }
-        
+
         // Notificações para Reforços
         foreach ($context['defender']['forces']['reinforcements'] as $reinf) {
             $reinf_id = $reinf['id'];
@@ -1287,9 +1317,9 @@ class AttackHandler {
             if ($reinf['from'] != 0) {
                 $reinf_owner = $this->database->getVillageField($reinf['from'], "owner");
 
-                if ($reinf_owner != $defender['owner']){ //Só envia para outros jogadores, não o próprio
+                if ($reinf_owner != $defender['owner']){
                     $reinf_tribe = $this->database->getUserField($reinf_owner, "tribe", 0);
-                    
+
                     $reinf_units_sent_arr = [];
                     $reinf_total_sent = 0;
                     $start = ($reinf_tribe - 1) * 10 + 1;
@@ -1298,16 +1328,16 @@ class AttackHandler {
                         $reinf_total_sent += $reinf['u'.$i];
                     }
                     $reinf_total_sent += $reinf['hero'];
-                    
+
                     $dead_units_for_string = [];
                     for ($i = 1; $i <= 10; $i++) {
                         $dead_units_for_string[] = isset($reinf_casualties_data[$i]) ? $reinf_casualties_data[$i] : 0;
                     }
                     $reinf_units_dead_str = implode(',', $dead_units_for_string);
-                    
+
                     $hero_casualties = isset($reinf_casualties_data['hero']) ? $reinf_casualties_data['hero'] : 0;
                     $reinf_data_str = "{$reinf_owner},{$defender['wref']},".addslashes($defender['name']).",{$reinf_tribe},".implode(',', $reinf_units_sent_arr).",{$reinf_units_dead_str},{$reinf['hero']},{$hero_casualties},{$reinf['from']}";
-                    
+
                     if ($total_casualties == 0) {
                         $notice_reinf = 15;
                     } elseif ($reinf_total_sent > $total_casualties) {
@@ -1316,10 +1346,133 @@ class AttackHandler {
                         $notice_reinf = 17;
                         $this->database->deleteReinf($reinf_id);
                     }
-                    
-                    $this->database->addNotice($reinf_owner, $attacker['wref'], 0, $notice_reinf, 'Reforço em '.addslashes($defender['name']).' foi atacado', $reinf_data_str, $attackData['endtime']);
+
+                    $this->noticeBatch[] = ['uid' => $reinf_owner, 'toWref' => $attacker['wref'], 'ally' => 0, 'type' => $notice_reinf, 'topic' => 'Reforço em '.addslashes($defender['name']).' foi atacado', 'data' => $reinf_data_str, 'time' => $time];
                 }
             }
+        }
+    }
+
+    public function batchSetMovementProc($moveid) {
+        $this->moveidBatch[] = (int)$moveid;
+    }
+
+    public function batchAddMovement($type, $from, $to, $ref, $time, $endtime, $send, $wood, $clay, $iron, $crop) {
+        $this->movementBatch['type'][] = $type;
+        $this->movementBatch['from'][] = $from;
+        $this->movementBatch['to'][] = $to;
+        $this->movementBatch['ref'][] = $ref;
+        $this->movementBatch['time'][] = $time;
+        $this->movementBatch['endtime'][] = $endtime;
+        $this->movementBatch['send'][] = $send;
+        $this->movementBatch['wood'][] = $wood;
+        $this->movementBatch['clay'][] = $clay;
+        $this->movementBatch['iron'][] = $iron;
+        $this->movementBatch['crop'][] = $crop;
+        $this->movementBatch['ref2'][] = 0;
+    }
+
+    public function batchUpdateWounded($vref, $wounds, $mode) {
+        if ($mode != 0 || empty($wounds)) return;
+        foreach ($wounds as $pos => $count) {
+            $this->woundedBatch[$vref][$pos] = ($this->woundedBatch[$vref][$pos] ?? 0) + $count;
+        }
+    }
+
+    public function batchUpdateStolenResources(array $context, array $loot) {
+        $totalLoot = array_sum($loot);
+        if ($totalLoot <= 0) return;
+
+        $defender_info = $context['defender']['info'];
+
+        $targetWref = $defender_info['wref'];
+        if ($context['defender']['isOasis'] && !empty($defender_info['conqured']))
+            $targetWref = $defender_info['conqured'];
+
+        if (!isset($this->resourceLoot[$targetWref]))
+            $this->resourceLoot[$targetWref] = [0, 0, 0, 0];
+        for ($i = 0; $i < 4; $i++)
+            $this->resourceLoot[$targetWref][$i] += $loot[$i];
+
+        $attUID = $context['attacker']['info']['owner'];
+        $defUID = $defender_info['owner'];
+        $this->pointsRR[$attUID] = ($this->pointsRR[$attUID] ?? 0) + $totalLoot;
+        $this->pointsRR[$defUID] = ($this->pointsRR[$defUID] ?? 0) - $totalLoot;
+
+        if ($context['attacker']['info']['alliance'] > 0) {
+            $aid = (int)$context['attacker']['info']['alliance'];
+            $this->pointsAllyRR[$aid] = ($this->pointsAllyRR[$aid] ?? 0) + $totalLoot;
+        }
+        if (!empty($defender_info['alliance']) && $defender_info['alliance'] > 0) {
+            $aid = (int)$defender_info['alliance'];
+            $this->pointsAllyRR[$aid] = ($this->pointsAllyRR[$aid] ?? 0) - $totalLoot;
+        }
+    }
+
+    public function flushAll() {
+        $this->database->addNoticesBatch($this->noticeBatch);
+        $this->noticeBatch = [];
+
+        if (!empty($this->moveidBatch)) {
+            $this->database->setMovementProc(implode(',', array_unique($this->moveidBatch)));
+            $this->moveidBatch = [];
+        }
+
+        if (!empty($this->movementBatch['type'])) {
+            
+            /*
+            // temporário, dentro de flushAll(), antes de addMovement:
+            error_log("[BATCH_MOVEMENT] " . json_encode([
+                'count' => count($this->movementBatch['type'] ?? []),
+                'from' => $this->movementBatch['from'] ?? [],
+                'to' => $this->movementBatch['to'] ?? [],
+            ]));
+            */
+
+            $this->database->addMovement(
+                $this->movementBatch['type'], $this->movementBatch['from'],
+                $this->movementBatch['to'], $this->movementBatch['ref'],
+                $this->movementBatch['time'], $this->movementBatch['endtime'],
+                $this->movementBatch['send'], $this->movementBatch['wood'],
+                $this->movementBatch['clay'], $this->movementBatch['iron'],
+                $this->movementBatch['crop'], $this->movementBatch['ref2']
+            );
+            $this->movementBatch = [];
+        }
+
+        if (!empty($this->woundedBatch)) {
+            $this->database->batchUpdateWounded($this->woundedBatch);
+            $this->woundedBatch = [];
+        }
+
+        /*
+        foreach ($this->resourceLoot as $wref => $loot) {
+            $this->database->modifyResource($wref, $loot[0], $loot[1], $loot[2], $loot[3], 0);
+        }
+        $this->resourceLoot = [];
+
+        foreach ($this->pointsRR as $uid => $total) {
+            $this->database->modifyPoints($uid, 'RR', $total);
+        }
+        $this->pointsRR = [];
+
+        foreach ($this->pointsAllyRR as $aid => $total) {
+            $this->database->modifyPointsAlly($aid, 'RR', $total);
+        }
+        $this->pointsAllyRR = [];
+        */
+
+        if (!empty($this->resourceLoot)) {
+            $this->database->batchModifyResource($this->resourceLoot);
+            $this->resourceLoot = [];
+        }
+        if (!empty($this->pointsRR)) {
+            $this->database->batchModifyPoints($this->pointsRR);
+            $this->pointsRR = [];
+        }
+        if (!empty($this->pointsAllyRR)) {
+            $this->database->batchModifyPointsAlly($this->pointsAllyRR);
+            $this->pointsAllyRR = [];
         }
     }
 
@@ -1464,8 +1617,8 @@ class AttackHandler {
      */
     private function returnVanishedTroops(array $attackData) {
         $travelTime = $attackData['endtime'] - $attackData['starttime'];
-        $this->database->setMovementProc($attackData['moveid']);
-        $this->database->addMovement(4, $attackData['to'], $attackData['from'], $attackData['ref'], $attackData['endtime'], $attackData['endtime'] + $travelTime);
+        $this->batchSetMovementProc($attackData['moveid']);
+        $this->batchAddMovement(4, $attackData['to'], $attackData['from'], $attackData['ref'], $attackData['endtime'], $attackData['endtime'] + $travelTime, 1, 0, 0, 0, 0);
     }
 
     /**
@@ -1498,7 +1651,7 @@ class AttackHandler {
             $this->database->modifyAttack3($attackData['ref'], $units_sql_string);
         }
 
-        // Passo 3b: Salvar feridos do atacante na tabela wounded
+        // Passo 3b: Salvar feridos do atacante na tabela wounded (batch)
         if (!empty($battleResult['wounded']['attacker'])) {
             $wSets = [];
             foreach ($battleResult['wounded']['attacker'] as $uid => $count) {
@@ -1506,7 +1659,7 @@ class AttackHandler {
                 $pos = (($uid - 1) % 10) + 1;
                 if ($pos >= 1 && $pos <= 6) $wSets[$pos] = $count;
             }
-            $this->database->updateWounded($attackerWref, $wSets, 0);
+            $this->batchUpdateWounded($attackerWref, $wSets, 0);
         }
 
         $hasRealSurvivors = false;
@@ -1514,7 +1667,7 @@ class AttackHandler {
             if ($count > 0) { $hasRealSurvivors = true; break; }
         }
         if (!$hasRealSurvivors) {
-            $this->database->setMovementProc($attackData['moveid']);
+            $this->batchSetMovementProc($attackData['moveid']);
             return; // todas foram pro hospital, sem tropas para retornar
         }
 
@@ -1528,19 +1681,11 @@ class AttackHandler {
         $travelTime = $this->units->getWalkingTroopsTime($attackerWref, $defenderWref, $attackerOwner, $attackerTribe, $survivors, 1, 't');
         $endtime = $this->database->getArtifactsValueInfluence($attackerOwner, $attackerWref, 2, $travelTime) + $attackData['endtime'];
 
-        $this->database->setMovementProc($attackData['moveid']);
-        $this->database->addMovement(
-            4, // sort_type: 4 para retorno
-            $defenderWref,
-            $attackerWref,
-            $attackData['ref'],
-            $attackData['endtime'],
-            $endtime,
-            1, // send
-            $loot[0], // wood
-            $loot[1], // clay
-            $loot[2], // iron
-            $loot[3]  // crop
+        $this->batchSetMovementProc($attackData['moveid']);
+        $this->batchAddMovement(
+            4, $defenderWref, $attackerWref, $attackData['ref'],
+            $attackData['endtime'], $endtime, 1,
+            $loot[0], $loot[1], $loot[2], $loot[3]
         );
     }
     
@@ -1666,7 +1811,7 @@ class AttackHandler {
             $damage = $battleResult['hero_outcomes']['attacker']['damage'];
             $initialHealth = $battleResult['hero_outcomes']['attacker']['health'];
 
-            error_log("[DB APPLY] Attacker Hero (ID: " . $heroId . "): InitialHealth=" . $initialHealth . ", Damage=" . $damage . ", XP=" . $heroXP . ", FinalAction=" . ($heroDied ? "Kill" : "ApplyDamage"));
+            //error_log("[DB APPLY] Attacker Hero (ID: " . $heroId . "): InitialHealth=" . $initialHealth . ", Damage=" . $damage . ", XP=" . $heroXP . ", FinalAction=" . ($heroDied ? "Kill" : "ApplyDamage"));
 
             if ($heroDied) {
                 $this->database->KillHeroId($heroId);
@@ -1692,7 +1837,7 @@ class AttackHandler {
             $damage = $battleResult['hero_outcomes']['defender']['own']['damage'];
             $initialHealth = $battleResult['hero_outcomes']['defender']['own']['health'];
 
-            error_log("[DB APPLY] Defender Hero (Owner) (ID: " . $heroId . "): InitialHealth=" . $initialHealth . ", Damage=" . $damage . ", XP=" . $total_xp_for_defenders . ", FinalAction=" . ($heroDied ? "Kill" : "ApplyDamage"));
+            //error_log("[DB APPLY] Defender Hero (Owner) (ID: " . $heroId . "): InitialHealth=" . $initialHealth . ", Damage=" . $damage . ", XP=" . $total_xp_for_defenders . ", FinalAction=" . ($heroDied ? "Kill" : "ApplyDamage"));
 
             if ($heroDied) {
                 $this->database->KillHeroId($heroId);
@@ -1717,7 +1862,7 @@ class AttackHandler {
                 $heroDied = isset($battleResult['casualties']['defender']['reinforcements'][$reinf_id]['hero']) && $battleResult['casualties']['defender']['reinforcements'][$reinf_id]['hero'] >= 1;
                 $initialHealth = $hero_outcome['health'];
 
-                error_log("[DB APPLY] Defender Hero (Reinforcement) (ID: " . $heroId . "): InitialHealth=" . $initialHealth . ", Damage=" . $damage . ", XP=" . $total_xp_for_defenders . ", FinalAction=" . ($heroDied ? "Kill" : "ApplyDamage"));
+                //error_log("[DB APPLY] Defender Hero (Reinforcement) (ID: " . $heroId . "): InitialHealth=" . $initialHealth . ", Damage=" . $damage . ", XP=" . $total_xp_for_defenders . ", FinalAction=" . ($heroDied ? "Kill" : "ApplyDamage"));
 
                 if ($heroDied) {
                     $this->database->KillHeroId($heroId);

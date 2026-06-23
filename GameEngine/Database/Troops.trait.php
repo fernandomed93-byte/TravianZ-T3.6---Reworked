@@ -1075,4 +1075,129 @@ trait DBTroops
         $id = (int) $id;
         mysqli_query($this->dblink, "SELECT RELEASE_LOCK('enforce_$id')");
     }
+
+    function batchUpdateWounded($woundedByVref) {
+        if (empty($woundedByVref)) return;
+        $rows = [];
+        foreach ($woundedByVref as $vref => $wounds) {
+            $vref = (int)$vref;
+            $w1 = (int)($wounds[1] ?? 0);
+            $w2 = (int)($wounds[2] ?? 0);
+            $w3 = (int)($wounds[3] ?? 0);
+            $w4 = (int)($wounds[4] ?? 0);
+            $w5 = (int)($wounds[5] ?? 0);
+            $w6 = (int)($wounds[6] ?? 0);
+            $rows[] = "($vref, $w1, $w2, $w3, $w4, $w5, $w6)";
+        }
+        if (empty($rows)) return;
+        $q = "INSERT INTO " . TB_PREFIX . "wounded (vref, w1, w2, w3, w4, w5, w6) VALUES "
+             . implode(',', $rows)
+             . " ON DUPLICATE KEY UPDATE
+                w1 = w1 + VALUES(w1), w2 = w2 + VALUES(w2),
+                w3 = w3 + VALUES(w3), w4 = w4 + VALUES(w4),
+                w5 = w5 + VALUES(w5), w6 = w6 + VALUES(w6)";
+        return mysqli_query($this->dblink, $q);
+    }
+
+    function preloadAttackEnforcements($vilIDsAT) {
+        if (empty($vilIDsAT)) return;
+        $ids = implode(',', $vilIDsAT);
+
+        $q1 = "SELECT * FROM " . TB_PREFIX . "enforcement WHERE vref IN($ids)";
+        $r1 = $this->mysqli_fetch_all(mysqli_query($this->dblink, $q1));
+        if ($r1) {
+            foreach ($r1 as $row) {
+                self::$villageReinforcementsCache[$row['vref'] . '0'][] = $row;
+                self::$villageReinforcementsCache[$row['from'] . '1'][] = $row;
+            }
+        }
+        foreach ($vilIDsAT as $key) {
+            if (!isset(self::$villageReinforcementsCache[$key . '0']))
+                self::$villageReinforcementsCache[$key . '0'] = [];
+            if (!isset(self::$villageReinforcementsCache[$key . '1']))
+                self::$villageReinforcementsCache[$key . '1'] = [];
+        }
+
+        $q2 = "SELECT m.*, a.* FROM " . TB_PREFIX . "movement m
+               JOIN " . TB_PREFIX . "attacks a ON m.ref = a.id
+               WHERE (m.`to` IN($ids) OR m.`from` IN($ids))
+                 AND m.proc = 0 AND m.sort_type IN(3,4)
+               ORDER BY m.endtime ASC";
+        $r2 = $this->mysqli_fetch_all(mysqli_query($this->dblink, $q2));
+        if ($r2) {
+            foreach ($r2 as $row) {
+                self::$marketMovementCache['34' . $row['to'] . '1'][] = $row;
+            }
+        }
+        foreach ($vilIDsAT as $key) {
+            if (!isset(self::$marketMovementCache['34' . $key . '1']))
+                self::$marketMovementCache['34' . $key . '1'] = [];
+        }
+    }
+
+    function preloadReinforcementData($vilIDsREF, $enforce_tos, $enforce_froms) {
+        $pairs = [];
+        foreach ($enforce_tos as $i => $to) {
+            $to = (int)$to;
+            $from = (int)$enforce_froms[$i];
+            $pairs[] = '(`from`=' . $from . ' AND vref=' . $to . ')';
+        }
+        if (!empty($pairs)) {
+            $q1 = "SELECT * FROM " . TB_PREFIX . "enforcement WHERE " . implode(' OR ', $pairs);
+            $r1 = $this->mysqli_fetch_all(mysqli_query($this->dblink, $q1));
+            if ($r1) {
+                foreach ($r1 as $row) {
+                    self::$villageFromReinforcementsCache[$row['vref'] . $row['from']] = $row;
+                }
+            }
+            foreach ($enforce_tos as $i => $to) {
+                $from = (int)$enforce_froms[$i];
+                if (!isset(self::$villageFromReinforcementsCache[$to . $from]))
+                    self::$villageFromReinforcementsCache[$to . $from] = [];
+            }
+        }
+
+        $ids = implode(',', $vilIDsREF);
+        $q2 = "SELECT * FROM " . TB_PREFIX . "wdata WHERE id IN($ids)";
+        $r2 = $this->mysqli_fetch_all(mysqli_query($this->dblink, $q2));
+        if ($r2) {
+            foreach ($r2 as $row) {
+                self::$villageFieldsCacheByWorldID[$row['id']] = $row;
+            }
+        }
+        foreach ($vilIDsREF as $key) {
+            if (!isset(self::$villageFieldsCacheByWorldID[$key]))
+                self::$villageFieldsCacheByWorldID[$key] = [];
+        }
+    }
+
+    function preloadReturnData($vilIDsRET) {
+        if (empty($vilIDsRET)) return;
+        $ids = implode(',', $vilIDsRET);
+
+        $q = "SELECT e.*, o.conqured, 0 as _mode
+              FROM " . TB_PREFIX . "enforcement e
+              LEFT JOIN " . TB_PREFIX . "odata o ON e.vref = o.wref
+              WHERE o.conqured IN($ids) AND e.from NOT IN($ids)
+              UNION ALL
+              SELECT e.*, o.conqured, 1 as _mode
+              FROM " . TB_PREFIX . "enforcement e
+              LEFT JOIN " . TB_PREFIX . "odata o ON e.vref = o.wref
+              WHERE o.conqured IN($ids)";
+
+        $r = $this->mysqli_fetch_all(mysqli_query($this->dblink, $q));
+        if ($r) {
+            foreach ($r as $row) {
+                $mode = $row['_mode'];
+                $conqured = $row['conqured'];
+                self::$oasisReinforcementsCache[$conqured . $mode][] = $row;
+            }
+        }
+        foreach ($vilIDsRET as $key) {
+            if (!isset(self::$oasisReinforcementsCache[$key . '0']))
+                self::$oasisReinforcementsCache[$key . '0'] = [];
+            if (!isset(self::$oasisReinforcementsCache[$key . '1']))
+                self::$oasisReinforcementsCache[$key . '1'] = [];
+        }
+    }
 }

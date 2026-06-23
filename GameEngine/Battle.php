@@ -1088,10 +1088,10 @@ class Battle {
                     $hero_damage = $finalResult['hero_outcomes']['attacker']['damage'];
                     $heroHealth = $finalResult['hero_outcomes']['attacker']['health'];
 
-                    error_log("Heroi Atacante: Health=" . $heroHealth . " | Damage=" . $hero_damage . ".");
+                    //error_log("Heroi Atacante: Health=" . $heroHealth . " | Damage=" . $hero_damage . ".");
                     if (isset($heroHealth) && ($heroHealth - $hero_damage) <= 0) {
                         $finalResult['casualties']['attacker']['hero'] = 1;
-                        error_log("Heroi Atacante Morreu -> Health-Damage = " . ($heroHealth - $hero_damage) . ".");
+                        //error_log("Heroi Atacante Morreu -> Health-Damage = " . ($heroHealth - $hero_damage) . ".");
                     }
                 }
 
@@ -1107,10 +1107,10 @@ class Battle {
                     $hero_damage = $finalResult['hero_outcomes']['defender']['own']['damage'];
                     $heroHealth = $finalResult['hero_outcomes']['defender']['own']['health'];
 
-                    error_log("Heroi Defensor: Health=" . $heroHealth . " | Damage=" . $hero_damage . ".");
+                    //error_log("Heroi Defensor: Health=" . $heroHealth . " | Damage=" . $hero_damage . ".");
                     if (isset($heroHealth) && ($heroHealth - $hero_damage) <= 0) {
                         $finalResult['casualties']['defender']['own']['hero'] = 1;
-                        error_log("Heroi Defensor Morreu -> Health-Damage = " . ($heroHealth - $hero_damage) . ".");
+                        //error_log("Heroi Defensor Morreu -> Health-Damage = " . ($heroHealth - $hero_damage) . ".");
                     }
                 }
 
@@ -1128,10 +1128,10 @@ class Battle {
                         $hero_damage = $finalResult['hero_outcomes']['defender']['own']['damage']; //Mesmo dano aplicado a todos herois de defesa
                         $heroHealth = $finalResult['hero_outcomes']['defender']['reinforcements'][$rid]['health'];
 
-                        error_log("Heroi Reforçando Defensor: Health=" . $heroHealth . " | Damage=" . $hero_damage . ".");
+                        //error_log("Heroi Reforçando Defensor: Health=" . $heroHealth . " | Damage=" . $hero_damage . ".");
                         if (isset($heroHealth) && ($heroHealth - $hero_damage) <= 0) {
                             $finalResult['casualties']['defender']['reinforcements'][$rid]['hero'] = 1;
-                            error_log("Heroi Reforçando Defensor Morreu -> Health-Damage = " . ($heroHealth - $hero_damage) . ".");
+                            //error_log("Heroi Reforçando Defensor Morreu -> Health-Damage = " . ($heroHealth - $hero_damage) . ".");
                         }
                     }
 
