@@ -285,4 +285,17 @@ trait DBMarket {
         return $this->getVillage($wref, 0, $use_cache)['crop'];
 	}
 
+    function getMerchantLock($vid, $timeout = 1)
+    {
+        $lockName = TB_PREFIX . 'merchant_' . (int)$vid;
+        $result = mysqli_query($this->dblink, "SELECT GET_LOCK('$lockName', $timeout) AS lock_acquired");
+        $row = mysqli_fetch_assoc($result);
+        return $row['lock_acquired'] == 1;
+    }
+
+    function releaseMerchantLock($vid)
+    {
+        $lockName = TB_PREFIX . 'merchant_' . (int)$vid;
+        mysqli_query($this->dblink, "SELECT RELEASE_LOCK('$lockName')");
+    }
 }

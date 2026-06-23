@@ -120,6 +120,9 @@ class Market
             $resource = [$wtrans, $ctrans, $itrans, $crtrans];
 			$reqMerc = ceil((array_sum($resource) - 0.1) / $this->maxcarry);
 
+            $database->getMerchantLock($village->wid);
+            try {
+
             if($this->merchantAvail() > 0 && $reqMerc <= $this->merchantAvail())
             {
                 $id = $post['getwref'];
@@ -139,6 +142,10 @@ class Market
                 exit;
             }
             else $form->addError("error", TOO_FEW_MERCHANTS);
+
+            } finally {
+                $database->releaseMerchantLock($village->wid);
+            }
         }
         else $form->addError("error", TOO_FEW_RESOURCES);
     }
@@ -203,6 +210,8 @@ class Market
 
                     if(($wood+$clay+$iron+$crop) > $this->maxcarry*$reqMerc) $reqMerc += 1;
                 }
+                $database->getMerchantLock($village->wid);
+                try {
                 if($this->merchantAvail() > 0 && $reqMerc <= $this->merchantAvail())
                 {
                     if($database->modifyResource($village->wid,$wood,$clay,$iron,$crop,0))
@@ -221,6 +230,9 @@ class Market
                     // Not enough merchants
                     header("Location: build.php?id=".$post['id']."&t=2&e3");
                     exit;
+                }
+                } finally {
+                    $database->releaseMerchantLock($village->wid);
                 }
             }
             else
@@ -260,8 +272,12 @@ class Market
         {
             header("Location: build.php?id=".$get['id']."&t=1&e2");
             exit;
-        } // We don't have enough merchants
-        elseif($reqMerc > $this->merchantAvail()){ 
+        }
+        
+        $database->getMerchantLock($village->wid);
+        try {
+        // We don't have enough merchants
+        if($reqMerc > $this->merchantAvail()){ 
             header("Location: build.php?id=".$get['id']."&t=1&e3");
             exit;
         }
@@ -276,7 +292,7 @@ class Market
         $targettribe = $database->getUserField($database->getVillageField($infoarray['vref'],"owner"),"tribe",0);
         $histime = $generator->procDistanceTime($village->coor,$hiscoor,$targettribe,0);
         $timestamp = time();
-        $database->addMovement(
+		$database->addMovement(
             [0, 0],
             [$village->wid, $infoarray['vref']],
             [$infoarray['vref'], $village->wid],
@@ -292,6 +308,9 @@ class Market
 		$logging->addMarketLog($village->wid, 2, [$infoarray['vref'], $get['g']]);
 		header("Location: build.php?id=" . $get['id']);
         exit;
+        } finally {
+            $database->releaseMerchantLock($village->wid);
+        }
     }
 
     private function loadOnsale()

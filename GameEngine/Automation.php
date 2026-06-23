@@ -127,17 +127,20 @@ class Automation {
         }
 
     }
+
+    function getTimePrefix() {
+        return '[ ' . date('d/m/Y H:i:s') . ',' . substr(microtime(), 2, 2) . ' ] ';
+    }
 	
 	public function tryExecuteGroup($methodsArray, $lockFileName, $groupCooldown, $maxExecTime, $groupName = 'UnknownGroup') {
 		global $database;
         $lockFilePath = $this->lock_path_prefix . $lockFileName;
         $currentTime = time();
         $currentPid = getmypid();
-        $timePrefix = '[ ' . date('d/m/Y H:i:s') . ',' . substr(microtime(), 2, 2) . ' ] ';
 
         $fileHandle = @fopen($lockFilePath, 'c+');
         if (!$fileHandle) {
-            error_log($timePrefix . "AutomationT3.6: [$groupName] Could not open/create lock file: " . $lockFilePath);
+            error_log($this->getTimePrefix() . "AutomationT3.6: [$groupName] Could not open/create lock file: " . $lockFilePath);
             return;
         }
 
@@ -165,7 +168,7 @@ class Automation {
             // 2. VERIFICA O COOLDOWN APÓS OBTER O LOCK
             if ($lastRunStartTimestampFromFile > 0 && ($currentTime - $lastRunStartTimestampFromFile < $groupCooldown)) {
                 $coolDownRem = $groupCooldown - ($currentTime - $lastRunStartTimestampFromFile);
-                error_log($timePrefix . "AutomationT3.6: [$groupName] Cooldown active ($coolDownRem s remaining). Releasing lock and deferring execution.");
+                error_log($this->getTimePrefix() . "AutomationT3.6: [$groupName] Cooldown active ($coolDownRem s remaining). Releasing lock and deferring execution.");
                 
                 flock($fileHandle, LOCK_UN); // Libera o lock imediatamente
                 fclose($fileHandle);
@@ -178,18 +181,18 @@ class Automation {
             fwrite($fileHandle, $currentTime . ' ' . $currentPid);
             fflush($fileHandle);
 
-            error_log($timePrefix . "AutomationT3.6: [$groupName] Lock acquired by PID $currentPid. Starting execution.");
+            error_log($this->getTimePrefix() . "AutomationT3.6: [$groupName] Lock acquired by PID $currentPid. Starting execution.");
 
             try {
                 foreach ($methodsArray as $method) {
                     if (method_exists($this, $method)) {
                         call_user_func(array($this, $method));
                     } else {
-                        error_log($timePrefix . "AutomationT3.6: [$groupName] Method $method does not exist in Automation class.");
+                        error_log($this->getTimePrefix() . "AutomationT3.6: [$groupName] Method $method does not exist in Automation class.");
                     }
                 }
             } catch (Exception $e) {
-                $database->log_with_context($timePrefix . "AutomationT3.6: [$groupName] Exception during execution by PID $currentPid: " . $e->getMessage() . $e->getTraceAsString());
+                $database->log_with_context($this->getTimePrefix() . "AutomationT3.6: [$groupName] Exception during execution by PID $currentPid: " . $e->getMessage() . $e->getTraceAsString());
             } finally {
                 // 4. GARANTE A LIBERAÇÃO DO LOCK NO FINAL
                 flock($fileHandle, LOCK_UN);
@@ -223,14 +226,14 @@ class Automation {
                 // Se temos um timestamp, o arquivo é informativo. Verificamos se é obsoleto ou apenas ocupado.
                 $age = $currentTime - $lockingTimestamp;
                 if ($age < $maxExecTime) {
-                    error_log($timePrefix . "AutomationT3.6: [$groupName] Execution deferred. Lock held by PID $lockingPid, which started $age s ago (maxExecTime: $maxExecTime s).");
+                    error_log($this->getTimePrefix() . "AutomationT3.6: [$groupName] Execution deferred. Lock held by PID $lockingPid, which started $age s ago (maxExecTime: $maxExecTime s).");
                 } else {
-                    error_log($timePrefix . "AutomationT3.6: [$groupName] Execution blocked. Lock appears STALE (held by PID $lockingPid for $age s). However, the OS lock could not be acquired. Manual intervention may be needed if PID $lockingPid is defunct.");
+                    error_log($this->getTimePrefix() . "AutomationT3.6: [$groupName] Execution blocked. Lock appears STALE (held by PID $lockingPid for $age s). However, the OS lock could not be acquired. Manual intervention may be needed if PID $lockingPid is defunct.");
                 }
             } else {
                 // Se o arquivo está vazio ou malformado, este é o sintoma da condição de corrida.
                 // Ação: Tratar como "ocupado" e simplesmente adiar a execução.
-                error_log($timePrefix . "AutomationT3.6: [$groupName] Execution deferred. Another process holds the OS lock and is likely in the process of writing to the lock file.");
+                error_log($this->getTimePrefix() . "AutomationT3.6: [$groupName] Execution deferred. Another process holds the OS lock and is likely in the process of writing to the lock file.");
             }
         }
         
@@ -314,8 +317,7 @@ class Automation {
 		if (empty($events)) {
 			return;
 		}else{
-            $timePrefix = '[ ' . date('d/m/Y H:i:s') . ',' . substr(microtime(), 2, 2) . ' ] ';
-            error_log($timePrefix . "AutomationT3.6: completeMovementsSequentially - Processing " . count($events) . " events.");
+            error_log($this->getTimePrefix() . "AutomationT3.6: completeMovementsSequentially - Processing " . count($events) . " events. (Attacks: " . count(array_filter($events, fn($e) => $e['type'] === 'Attack')) . ", Reinforcements: " . count(array_filter($events, fn($e) => $e['type'] === 'Reinforcement')) . ", Returns: " . count(array_filter($events, fn($e) => $e['type'] === 'Return')) . ", Settlers: " . count(array_filter($events, fn($e) => $e['type'] === 'Return_Settlers')) . ")");
         }
 
 		$vilIDsAT = [];
@@ -364,10 +366,12 @@ class Automation {
             $database->getOasisEnforce($vilIDsRET, 1);
 		}
 
+		$attackHandler = new AttackHandler($database, $battle, $technology, $units, $this);
+
 		foreach ($events as $event) {
 			switch ($event['type']) {
 				case 'Attack':
-					$this->processAttackArrival($event['data']);
+					$this->processAttackArrival($event['data'], $attackHandler);
 					break;
 				case 'Reinforcement':
 					$this->processReinforcementArrival($event['data']);
@@ -381,8 +385,7 @@ class Automation {
 			}
 		}
 
-        $timePrefix = '[ ' . date('d/m/Y H:i:s') . ',' . substr(microtime(), 2, 2) . ' ] ';
-        error_log($timePrefix . "AutomationT3.6: completeMovementsSequentially - All events processed.");
+        error_log($this->getTimePrefix() . "AutomationT3.6: completeMovementsSequentially - All events processed.");
 
 	}
 
@@ -671,6 +674,8 @@ class Automation {
                 timestamp < $time and master = 0"
         );
 
+        error_log($this->getTimePrefix() . "AutomationT3.6: buildComplete - Processing " . count($res) . " constructions.");
+
         // preload village data
         $vilIDs = [];
         foreach($res as $indi) {
@@ -778,6 +783,8 @@ class Automation {
         if (count($dbIdsToDelete)) {
             $database->query( "DELETE FROM " . TB_PREFIX . "bdata WHERE id IN(" . implode( ',', $dbIdsToDelete ) . ")" );
         }
+
+        error_log($this->getTimePrefix() . "AutomationT3.6: buildComplete - Completed processing of " . count($res) . " constructions.");
     }    
 
     private function getPop($tid, $level) {
@@ -824,6 +831,8 @@ class Automation {
         $q = "SELECT s.wood, s.clay, s.iron, s.crop, `to`, `from`, endtime, merchant, send, moveid FROM ".TB_PREFIX."movement m, ".TB_PREFIX."send s WHERE m.ref = s.id AND m.proc = 0 AND sort_type = 0 AND endtime < $time";
         $dataarray = $database->query_return($q);
 
+        error_log($this->getTimePrefix() . "AutomationT3.6: marketComplete - Processing ". count($dataarray) . " market movements.");
+
         foreach($dataarray as $data) {
             $userData_from = $database->getUserFields($database->getVillageField($data['from'], "owner"), "alliance, tribe", 0);
             $userData_to = $database->getUserFields($database->getVillageField($data['to'], "owner"), "alliance, tribe", 0);
@@ -853,6 +862,8 @@ class Automation {
         $q1 = "SELECT send, moveid, `to`, wood, clay, iron, crop, `from` FROM ".TB_PREFIX."movement WHERE proc = 0 and sort_type = 2 and endtime < $time";
         $dataarray1 = $database->query_return($q1);
 
+        error_log($this->getTimePrefix() . "AutomationT3.6: marketComplete - Processing " . count($dataarray1) . " resource transfers.");
+
         $vilIDs = [];
         foreach($dataarray1 as $data1) {
             $vilIDs[$data1['to']] = true;
@@ -869,6 +880,8 @@ class Automation {
                 $this->sendResource2($data1['wood'],$data1['clay'],$data1['iron'],$data1['crop'],$data1['to'],$data1['from'],$targettribe1,$send);
             }
         }
+
+        error_log($this->getTimePrefix() . "AutomationT3.6: marketComplete - Completed processing of all resource transfers.");
     }
 
     private function sendResource2($wtrans, $ctrans, $itrans, $crtrans, $from, $to, $tribe, $send) {
@@ -913,15 +926,7 @@ class Automation {
         }
     }
 
-	private function processAttackArrival($data) {
-		global $database, $battle, $technology, $units; // Dependências globais necessárias
-
-		// Instancia o handler, passando as dependências necessárias.
-		// A própria classe Automation é passada como o último parâmetro para 
-		// acessar métodos auxiliares como recountPop.
-		$attackHandler = new AttackHandler($database, $battle, $technology, $units, $this);
-
-		// Delega toda a lógica para a nova classe
+	private function processAttackArrival($data, $attackHandler) {
 		$attackHandler->handleAttack($data);
 	}
 
@@ -1430,8 +1435,7 @@ class Automation {
        
         $time = time();
         $trainlist = $database->getTrainingList();
-        $timePrefix = '[ ' . date('d/m/Y H:i:s') . ',' . substr(microtime(), 2, 2) . ' ] ';
-        error_log($timePrefix . "AutomationT3.6: trainingComplete - Processing " . count($trainlist) . " trainings.");
+        error_log($this->getTimePrefix() . "AutomationT3.6: trainingComplete - Processing " . count($trainlist) . " trainings.");
 
         if(count($trainlist) > 0){
             // preload village data
@@ -1491,8 +1495,7 @@ class Automation {
                 
             }
         }
-        $timePrefix = '[ ' . date('d/m/Y H:i:s') . ',' . substr(microtime(), 2, 2) . ' ] ';
-        error_log($timePrefix . "AutomationT3.6: trainingComplete - All training processed.");
+        error_log($this->getTimePrefix() . "AutomationT3.6: trainingComplete - All training processed.");
     }
 
     private function getsort_typeLevel($tid, $resarray) {
@@ -1544,6 +1547,8 @@ class Automation {
         global $database;
 
         $varray = $database->getDemolition();
+        error_log($this->getTimePrefix() . "AutomationT3.6: demolitionComplete - Processing " . count($varray) . " demolitions.");
+
         foreach($varray as $vil) {
             if ($vil['timetofinish'] <= time()) {
                 $type = $database->getFieldType($vil['vref'],$vil['buildnumber']);
@@ -1551,7 +1556,7 @@ class Automation {
 
                 if ($level < 0) $level = 0;
 
-                $buildarray = $GLOBALS["bid".$type];
+                if ($type > 0) $buildarray = $GLOBALS["bid".$type];
 
                 if ($type == 10 || $type == 38) {
 					$prev_level_attri = ($level - 1 > 0) ? $buildarray[$level - 1]['attri'] : 0;
@@ -1591,6 +1596,8 @@ class Automation {
                 if ($type == 18) Automation::updateMax($database->getVillageField($vil['vref'], 'owner'));
             }
         }
+
+        error_log($this->getTimePrefix() . "AutomationT3.6: demolitionComplete - All demolitions processed.");
 
     }
 
@@ -2207,9 +2214,8 @@ class Automation {
         $archive_older_than_days = 45;
         $batch_limit = 1000; // Apaga em lotes de 1000 registros para ser rápido e seguro
         $cutoff_timestamp = time() - ($archive_older_than_days * 86400);
-        $timePrefix = '[ ' . date('d/m/Y H:i:s') . ',' . substr(microtime(), 2, 2) . ' ] ';
          
-        error_log($timePrefix . "AutomationT3.6: [ArchiveAndPrune] Iniciando processo de arquivamento para dados mais antigos que " . date('Y-m-d H:i:s', $cutoff_timestamp));
+        error_log($this->getTimePrefix() . "AutomationT3.6: [ArchiveAndPrune] Iniciando processo de arquivamento para dados mais antigos que " . date('Y-m-d H:i:s', $cutoff_timestamp));
 
         // --- Tabela 1: s1_movement e s1_attacks (são relacionadas) ---
         // Primeiro, identificamos os movimentos antigos. A chave é o `endtime`.
@@ -2253,7 +2259,7 @@ class Automation {
             $delete_mov_sql = "DELETE FROM " . TB_PREFIX . "movement WHERE moveid IN (" . $movement_id_list . ")";
             $database->query($delete_mov_sql);
 
-            error_log($timePrefix . "AutomationT3.6: [ArchiveAndPrune] Arquivados e apagados " . count($movement_ids) . " registros de s1_movement e s1_attacks.");
+            error_log($this->getTimePrefix() . "AutomationT3.6: [ArchiveAndPrune] Arquivados e apagados " . count($movement_ids) . " registros de s1_movement e s1_attacks.");
         }
 
         // --- Tabela 2: s1_ndata (Relatórios) ---
@@ -2278,7 +2284,7 @@ class Automation {
             $delete_reports_sql = "DELETE FROM " . TB_PREFIX . "ndata WHERE id IN (" . $report_id_list . ")";
             $database->query($delete_reports_sql);
 
-            error_log($timePrefix . "AutomationT3.6: [ArchiveAndPrune] Arquivados e apagados " . count($report_ids) . " relatórios antigos (s1_ndata).");
+            error_log($this->getTimePrefix() . "AutomationT3.6: [ArchiveAndPrune] Arquivados e apagados " . count($report_ids) . " relatórios antigos (s1_ndata).");
         }
 
         // --- Tabela 3: s1_mdata (Mensagens) ---
@@ -2303,7 +2309,7 @@ class Automation {
             $delete_messages_sql = "DELETE FROM " . TB_PREFIX . "mdata WHERE id IN (" . $message_id_list . ")";
             $database->query($delete_messages_sql);
 
-            error_log($timePrefix . "AutomationT3.6: [ArchiveAndPrune] Arquivadas e apagadas " . count($message_ids) . " mensagens antigas (s1_mdata).");
+            error_log($this->getTimePrefix() . "AutomationT3.6: [ArchiveAndPrune] Arquivadas e apagadas " . count($message_ids) . " mensagens antigas (s1_mdata).");
         }
     }
 

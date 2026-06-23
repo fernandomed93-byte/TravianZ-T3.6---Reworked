@@ -41,7 +41,10 @@ class AttackHandler {
      * @return void
      */
     public function handleAttack(array $attackData) {
+        $t0 = microtime(true);
+
         $battleContext = $this->initializeBattleContext($attackData);
+        $t1 = microtime(true);
         if (!$battleContext) {
             $this->returnVanishedTroops($attackData);
             return;
@@ -57,9 +60,11 @@ class AttackHandler {
         $trappedData = $this->handleTrapping($battleContext);
         $battleContext['attacker']['forces']['units'] = $trappedData['attacker_units'];
         $battleContext['attacker']['forces']['traped'] = $trappedData['traped_units'];
+        $t2 = microtime(true);
         
         $battleResult = $this->battle->newCalculateBattle($battleContext);
         $village_destroyed_flag = $this->_applyBattleResultsToDatabase($battleResult, $battleContext);
+        $t3 = microtime(true);
         
         $aftermath = [
             'ram_info' => '', 'catapult_info' => '', 'chief_info' => '', 'hero_info' => '', 
@@ -84,6 +89,7 @@ class AttackHandler {
 
         $reportStrings = $this->generateBattleReportStrings($battleContext, $battleResult, $aftermath, $trappedData);
         $this->sendNotifications($battleContext, $battleResult, $reportStrings, $trappedData);
+        $t4 = microtime(true);
 
         $battleResult['totals']['attacker']['casualties'] = array_sum($battleResult['casualties']['attacker']);
 
@@ -145,6 +151,17 @@ class AttackHandler {
             }
         }
         $this->database->addStarvationData($battleContext['defender']['info']['wref']);
+
+        $t5 = microtime(true);
+        $elapsedMs = ($t5 - $t0) * 1000;
+        if ($elapsedMs > 250) {
+            error_log(sprintf(
+                "[SLOW_ATTACK] %.0fms | ctx=%.1fms pre=%.1fms battle_db=%.1fms report=%.1fms rest=%.1fms | from=%d to=%d type=%d",
+                $elapsedMs,
+                ($t1-$t0)*1000, ($t2-$t1)*1000, ($t3-$t2)*1000, ($t4-$t3)*1000, ($t5-$t4)*1000,
+                $attackData['from'] ?? 0, $attackData['to'] ?? 0, $attackData['attack_type'] ?? 0
+            ));
+        }
     }
 
     /**

@@ -586,13 +586,16 @@ class Technology {
     private function trainUnit($unit, $amt, $great = false, $heal = false) {
 		global $session, $database, ${'u'.$unit}, $building, $village, $bid19, $bid20, $bid21, $bid25, $bid26, $bid29, $bid30, $bid36, $bid41, $bid44, $bid46, $bid48, $bid49;
 
+		if (!$database->getTrainingLock($village->wid)) return;
+		try {
+
 		if($heal || $this->getTech($unit) || $unit % 10 <= 1 || $unit == 99) {
 			$footies = [1, 2, 3, 11, 12, 13, 14, 21, 22, 31, 32, 33, 34, 41, 42, 43, 44, 51, 52, 53, 61, 62, 63, 71, 72, 73, 74, 81, 82, 83, 84];
 			$calvary = [4, 5, 6, 15, 16, 23, 24, 25, 26, 35, 36, 45, 46, 54, 55, 56, 64, 65, 66, 75, 76, 85, 86];
 			$workshop = [7, 8, 17, 18, 27, 28, 37, 38, 47, 48, 57, 58, 67, 68, 77, 78, 87, 88];
 			$special = [9, 10, 19, 20, 29, 30, 39, 40, 49, 50, 59, 60, 69, 70, 79, 80, 89, 90];
 			$trapper = [99];
-			
+
 			//Check if the player is trying to train troops without the needed buildings
 			if($heal) {
 				if($building->getTypeLevel(46) == 0 && $building->getTypeLevel(48) == 0) return;
@@ -603,34 +606,34 @@ class Technology {
 				    (in_array($unit, $special) && ($building->getTypeLevel(25) < 10 && $building->getTypeLevel(26) < 10 && $building->getTypeLevel(44) < 10)) ||
 				    (in_array($unit, $trapper) && $building->getTypeLevel(36) == 0)) return;
 			}
-			
-			
+
+
 			if($heal) {
 				$gid = $building->getTypeLevel(48) > 0 ? 48 : 46;
 				$bid = ($gid == 48) ? $bid48 : $bid46;
 				$each = round(($bid[$building->getTypeLevel($gid)]['attri'] / 100) * ${'u'.$unit}['time'] / 2 / SPEED);
-			} elseif(in_array($unit, $footies)) {		    
+			} elseif(in_array($unit, $footies)) {
 				if($great) {
 					$each = round(($bid29[$building->getTypeLevel(29)]['attri'] / 100) * ${'u'.$unit}['time'] / SPEED);
 				} else {
 					$each = round(($bid19[$building->getTypeLevel(19)]['attri'] / 100) * ${'u'.$unit}['time'] / SPEED);
 				}
 			}
-			elseif(in_array($unit, $calvary)) {		    
+			elseif(in_array($unit, $calvary)) {
 				if($great) {
 					$each = round(($bid30[$building->getTypeLevel(30)]['attri'] * ($building->getTypeLevel(41)>=1?(1/$bid41[$building->getTypeLevel(41)]['attri']):1) / 100) * ${'u'.$unit}['time'] / SPEED);
 				} else {
 					$each = round(($bid20[$building->getTypeLevel(20)]['attri'] * ($building->getTypeLevel(41)>=1?(1/$bid41[$building->getTypeLevel(41)]['attri']):1) / 100) * ${'u'.$unit}['time'] / SPEED);
 				}
 			}
-			elseif(in_array($unit, $workshop)) {	    
+			elseif(in_array($unit, $workshop)) {
 				if($great) {
 					$each = round(($bid49[$building->getTypeLevel(49)]['attri'] / 100) * ${'u'.$unit}['time'] / SPEED);
 				} else {
 					$each = round(($bid21[$building->getTypeLevel(21)]['attri'] / 100) * ${'u'.$unit}['time'] / SPEED);
 				}
 			}
-			elseif(in_array($unit, $special)) {			    
+			elseif(in_array($unit, $special)) {
 				if($building->getTypeLevel(25) > 0){
 					$each = round(($bid25[$building->getTypeLevel(25)]['attri'] / 100) * ${'u'.$unit}['time'] / SPEED);
 				} elseif($building->getTypeLevel(44) > 0) {
@@ -640,10 +643,10 @@ class Technology {
 				}
 			}
 			elseif(in_array($unit, $trapper)) {
-			    
+
 					$each = round(($bid19[$building->getTypeLevel(36)]['attri'] / 100) * ${'u'.$unit}['time'] / SPEED);
-			}	
-			
+			}
+
 			if($unit % 10 == 0 || $unit % 10 == 9 && $unit != 99) {
 				if($this->maxUnit($unit, $great) < $amt) $amt = 0;
 				else
@@ -657,9 +660,9 @@ class Technology {
 			        if($this->maxUnit($unit, $great) < $amt) $amt = 0;
 			    }else{
 			        $trainlist = $this->getTrainingList(8);
-			        
+
 			        foreach($trainlist as $train) $train_amt += $train['amt'];
-			        
+
 			        $max = 0;
 			        for($i = 19; $i < 41; $i++){
 			            if($village->resarray['f'.$i.'t'] == 36){
@@ -686,6 +689,9 @@ class Technology {
 				$database->trainUnit($village->wid, $dbUnit, $amt, ${'u'.$unit}['pop'], $each, 0);
 			}
 		}
+		} finally {
+			$database->releaseTrainingLock($village->wid);
+		}
 	}
 
 	public function meetRRequirement($tech) {
@@ -699,12 +705,17 @@ class Technology {
 
 	private function researchTech($get) {
 		global $database,$session,${'r'.$get['a']},$bid22,$building,$village,$logging;
+		if (!$database->getResearchLock($village->wid)) return;
+		try {
 		if($this->meetRRequirement($get['a']) && $get['c'] == $session->mchecker) {
 			$data = ${'r'.$get['a']};
 			$time = time() + round(($data['time'] * ($bid22[$building->getTypeLevel(22)]['attri'] / 100))/SPEED);
 			$database->modifyResource($village->wid,$data['wood'],$data['clay'],$data['iron'],$data['crop'],0);
 			$database->addResearch($village->wid,"t".$get['a'],$time);
 			$logging->addTechLog($village->wid,"t".$get['a'],1);
+		}
+		} finally {
+			$database->releaseResearchLock($village->wid);
 		}
 		$session->changeChecker();
 		header("Location: build.php?id=".$get['id']);
@@ -715,17 +726,19 @@ class Technology {
 	
 	private function upgradeSword($get) {
 		global $database,$session,$bid12,$building,$village,$logging;
+		if (!$database->getResearchLock($village->wid)) return;
+		try {
 		$ABTech = $database->getABTech($village->wid);
 		$ABUpgrades = $this->getABUpgrades('b');
 		$ABUpgradesCount = count($ABUpgrades);
-		
+
 		$ups = 0;
 		if($ABUpgradesCount > 0){
 		    foreach($ABUpgrades as $upgrade){
 		        if(in_array(("b".$get['a']), $upgrade)) $ups++;
 		    }
 		}
-		
+
 		$CurrentTech = $ABTech["b".$get['a']]+$ups;
 		$unit = ($session->tribe-1)*10+intval($get['a']);
 		if(($ABUpgradesCount < 2 && $session->plus || $ABUpgradesCount == 0) && ($this->getTech($unit) || ($unit % 10) == 1) && ($CurrentTech < $building->getTypeLevel(12)) && $get['c'] == $session->mchecker) {
@@ -737,6 +750,9 @@ class Technology {
 				$logging->addTechLog($village->wid,"b".$get['a'],$CurrentTech+1);
 			}
 		}
+		} finally {
+			$database->releaseResearchLock($village->wid);
+		}
 		$session->changeChecker();
 		header("Location: build.php?id=".$get['id']);
 		exit;
@@ -744,17 +760,19 @@ class Technology {
 
 	private function upgradeArmour($get) {
 		global $database,$session,$bid13,$building,$village,$logging;
+		if (!$database->getResearchLock($village->wid)) return;
+		try {
 		$ABTech = $database->getABTech($village->wid);
 		$ABUpgrades = $this->getABUpgrades('a');
 		$ABUpgradesCount = count($ABUpgrades);
-		
+
 		$ups = 0;
 		if($ABUpgradesCount > 0){
 		    foreach($ABUpgrades as $upgrade){
 		        if(in_array(("a".$get['a']), $upgrade)) $ups++;
 		    }
 		}
-		
+
 		$CurrentTech = $ABTech["a".$get['a']]+$ups;
 		$unit = ($session->tribe-1)*10+intval($get['a']);
 		if(($ABUpgradesCount < 2 && $session->plus || $ABUpgradesCount == 0) && ($this->getTech($unit) || ($unit % 10) == 1) && ($CurrentTech < $building->getTypeLevel(13)) && $get['c'] == $session->mchecker) {
@@ -765,6 +783,9 @@ class Technology {
 				$database->addResearch($village->wid,"a".$get['a'],$time);
 				$logging->addTechLog($village->wid,"a".$get['a'],$CurrentTech+1);
 			}
+		}
+		} finally {
+			$database->releaseResearchLock($village->wid);
 		}
 		$session->changeChecker();
 		header("Location: build.php?id=".$get['id']);

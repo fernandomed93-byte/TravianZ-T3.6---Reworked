@@ -1101,4 +1101,27 @@ trait DBBuilding {
 		return mysqli_query($this->dblink,$q);
 	}
 
+    function getBuildLock($wid) {
+        $wid = (int) $wid;
+        $result = mysqli_query($this->dblink, "SELECT GET_LOCK('build_village_$wid', 1) AS locked");
+        $row = mysqli_fetch_assoc($result);
+        return $row['locked'] == 1;
+    }
+
+    function releaseBuildLock($wid) {
+        $wid = (int) $wid;
+        mysqli_query($this->dblink, "SELECT RELEASE_LOCK('build_village_$wid')");
+    }
+
+    function getResearchLock($wid) {
+        $wid = (int) $wid;
+        $result = mysqli_query($this->dblink, "SELECT GET_LOCK('research_village_$wid', 1) AS locked");
+        $row = mysqli_fetch_assoc($result);
+        return $row['locked'] == 1;
+    }
+
+    function releaseResearchLock($wid) {
+        $wid = (int) $wid;
+        mysqli_query($this->dblink, "SELECT RELEASE_LOCK('research_village_$wid')");
+    }
 }

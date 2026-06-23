@@ -356,18 +356,21 @@ class Building {
 
 	private function upgradeBuilding($id) {
 		global $database, $village, $session, $logging, ${'bid'.$village->resarray['f'.$id.'t']};
-		
+
+		if (!$database->getBuildLock($village->wid)) return;
+		try {
+
 		if($this->allocated < $this->maxConcurrent) {
 			$uprequire = $this->resourceRequired($id,$village->resarray['f'.$id.'t']);
 			$time = time() + $uprequire['time'];
 			$bindicate = $this->canBuild($id,$village->resarray['f'.$id.'t']);
-			
+
 			// don't allow building above max levels and don't allow building if it's in demolition
 			if (in_array($bindicate, [1, 2, 3, 10, 11])) {
 			    header("Location: dorf2.php");
 			    exit;
 			}
-			
+
 			$loop = ($bindicate == 9 ? 1 : 0);
 			$loopsame = 0;
 			if($loop == 1) {
@@ -399,12 +402,15 @@ class Building {
 			}
 			$level = $database->getResourceLevel($village->wid);
 
-			
+
 			if($database->addBuilding($village->wid, $id, $village->resarray['f'.$id.'t'], $loop, $time + ($loop == 1 ? ceil(60 / SPEED) : 0), 0, $level['f'.$id] + 1 + count($database->getBuildingByField($village->wid, $id)))) {
 				$database->modifyResource($village->wid, $uprequire['wood'], $uprequire['clay'], $uprequire['iron'], $uprequire['crop'], 0);
 				$logging->addBuildLog($village->wid, self::procResType($village->resarray['f'.$id.'t']), ($village->resarray['f'.$id] + ($loopsame > 0 ? 2 : 1)), 0);
 				$this->redirect($id);
 			}
+		}
+		} finally {
+			$database->releaseBuildLock($village->wid);
 		}
 	}
 
