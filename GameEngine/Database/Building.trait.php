@@ -889,14 +889,30 @@ trait DBBuilding {
      */
     
     function modifyBData($wid, $field, $levels, $tribe){
-    	list($wid, $field, $levels, $tribe) = $this->escape_input((int) $wid, (int) $field, (int) $levels, (int) $tribe);
+    	// 1. Tipagem manual e segura via type casting (Dispensa o escape_input se forem todos inteiros)
+        $wid = (int) $wid;
+        $field = (int) $field;
+        $tribe = (int) $tribe;
         
-        if($levels[0] == 0){ 
-        	$q = "SELECT id FROM " .TB_PREFIX. "bdata WHERE wid = $wid AND field = $field";
-        	$orders = $this->mysqli_fetch_all(mysqli_query($this->dblink, $q));
-        	foreach($orders as $order) $this->removeBuilding($order['id'], $tribe, $wid);
+        // Garante que as posições do array sejam inteiros
+        $levelNew = (int) $levels[0];
+        $levelOld = (int) $levels[1];
+
+        // 2. Lógica de remoção ou atualização
+        if($levelNew == 0){ 
+            $q = "SELECT id FROM " .TB_PREFIX. "bdata WHERE wid = $wid AND field = $field";
+            $orders = $this->mysqli_fetch_all(mysqli_query($this->dblink, $q));
+            
+            foreach($orders as $order) {
+                $this->removeBuilding($order['id'], $tribe, $wid);
+            }
         }
-        else mysqli_query($this->dblink, $q = "UPDATE " .TB_PREFIX. "bdata SET level = level - $levels[1] + $levels[0] WHERE wid = $wid AND field = $field");
+        else {
+            // Usando as variáveis limpas na query
+            $q = "UPDATE " .TB_PREFIX. "bdata SET level = level - $levelOld + $levelNew WHERE wid = $wid AND field = $field";
+            mysqli_query($this->dblink, $q);
+        }
+        
     }
     
     private function getBData($wid, $use_cache = true, $orderByID = false) {

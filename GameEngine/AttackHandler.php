@@ -94,6 +94,9 @@ class AttackHandler {
         $t35 = microtime(true);
         $aftermath['spy_info'] = $this->generateSpyReport($attackData['spy'], $battleContext);
         if ($attackData['attack_type'] != 1) {
+            if ($aftermath['village_conquered']){
+                $battleResult['bounty'] = 0;
+            }
             $aftermath['loot'] = $this->calculateLoot($battleContext, $battleResult['bounty']);
         }
         $aftermath['trap_info'] = $this->handlePrisonerRelease($battleContext, $battleResult, $attackData);
@@ -138,6 +141,7 @@ class AttackHandler {
                     $battleContext['attacker']['info']['tribe'], 
                     ...array_values($casualties_by_slot)
                 );
+                $this->batchSetMovementProc($attackData['moveid']);
                 $t42 = microtime(true);
             }
         } else {
@@ -581,12 +585,13 @@ class AttackHandler {
         if ($chiefCount <= 0) return ',';
         
         // Verifica se o atacante pode expandir
-        $expSlots = $this->database->getVillageFields($context['attacker']['info']['wref'], 'exp1, exp2, exp3');
+        //error_log("Verificando slots de expansão para aldeia: " . $context['attacker']['info']['wref']);
+        $AttackWrefInfo = $context['attacker']['info'];
         $usedSlots = 0;
-        if ($expSlots['exp1'] != 0) $usedSlots += 1;
-        if ($expSlots['exp2'] != 0) $usedSlots += 1;
-        if ($expSlots['exp3'] != 0) $usedSlots += 1;
-        //error_log("Aldeia: ". $context['attacker']['info']['wref'] ." | exp1: " . $expSlots['exp1'] . " | exp2: " . $expSlots['exp2'] . " | exp3: " . $expSlots['exp3']);
+        if ($AttackWrefInfo['exp1'] != 0) $usedSlots += 1;
+        if ($AttackWrefInfo['exp2'] != 0) $usedSlots += 1;
+        if ($AttackWrefInfo['exp3'] != 0) $usedSlots += 1;
+        //error_log("Aldeia: ". $context['attacker']['info']['wref'] ." | exp1: " . $AttackWrefInfo['exp1'] . " | exp2: " . $AttackWrefInfo['exp2'] . " | exp3: " . $AttackWrefInfo['exp3']);
         $palace = $this->automation->getTypeLevel(26, $context['attacker']['info']['wref']);
         $residence = $this->automation->getTypeLevel(25, $context['attacker']['info']['wref']);
         $comCenter = $this->automation->getTypeLevel(44, $context['attacker']['info']['wref']);
@@ -677,7 +682,9 @@ class AttackHandler {
         } else {
             // Conquista!
             $aftermath['village_conquered'] = true;
-            $battleResult['casualties']['attacker'][9] = ($battleResult['casualties']['attacker'][9] ?? 0) + 1; // 1 chefe é consumido
+            $tribe_offset_chief = ($context['attacker']['info']['tribe'] - 1) * 10;
+            $chief_unit_id = $tribe_offset_chief + 9;
+            $battleResult['casualties']['attacker'][$chief_unit_id] = ($battleResult['casualties']['attacker'][$chief_unit_id] ?? 0) + 1; // 1 chefe é consumido
             $this->_conquerVillage($context);
             $villname = addslashes($this->database->getVillageField($context['defender']['info']['wref'], "name"));
             return $this->getUnitImage($context['attacker']['forces']['chief_pic']) . ", The inhabitants of the village $villname have decided to join your empire.";
@@ -1092,7 +1099,17 @@ class AttackHandler {
         $attacker_tribe_id = (int)$attacker['tribe'];
         for ($i = 1; $i <= 10; $i++) {
             $unit_id = ($attacker_tribe_id - 1) * 10 + $i;
-            $attacker_casualties_units[] = isset($battleResult['casualties']['attacker'][$unit_id]) ? $battleResult['casualties']['attacker'][$unit_id] : 0;
+            
+            if ($aftermath['village_conquered'] && $i == 9) {
+                $chiefDead = 0;
+                if (isset($battleResult['casualties']['attacker'][$unit_id])){
+                    $chiefDead = $battleResult['casualties']['attacker'][$unit_id] > 0 ? $battleResult['casualties']['attacker'][$unit_id] - 1 : 0;
+                }
+
+                $attacker_casualties_units[] = $chiefDead; // O chefe aparece como casualty no relatorio, ele é apenas consumido na conquista
+            }else{
+                $attacker_casualties_units[] = isset($battleResult['casualties']['attacker'][$unit_id]) ? $battleResult['casualties']['attacker'][$unit_id] : 0;
+            }
         }
 
         // --- 2. Dados do Defensor (LÓGICA COMPLETAMENTE REESCRITA) ---

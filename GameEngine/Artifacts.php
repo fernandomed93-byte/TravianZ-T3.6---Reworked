@@ -35,52 +35,52 @@ class Artifacts
      */
     
     NATARS_CAPITAL_COORDINATES = [[WORLD_MAX, WORLD_MAX],
-                                       [WORLD_MAX, 0],
-                                       [WORLD_MAX, -WORLD_MAX],
-                                       [0, -WORLD_MAX],
-                                       [-WORLD_MAX, -WORLD_MAX],
-                                       [-WORLD_MAX, 0],
-                                       [-WORLD_MAX, WORLD_MAX],
-                                       [0, WORLD_MAX],
-                                       [WORLD_MAX / 10, WORLD_MAX / 20],
-                                       [WORLD_MAX / 10, -WORLD_MAX / 10],
-                                       [-WORLD_MAX / 20, -WORLD_MAX / 10],
-                                       [-WORLD_MAX / 10, 0],
-                                       [-WORLD_MAX / 20, WORLD_MAX / 10]],
+                                [WORLD_MAX, 0],
+                                [WORLD_MAX, -WORLD_MAX],
+                                [0, -WORLD_MAX],
+                                [-WORLD_MAX, -WORLD_MAX],
+                                [-WORLD_MAX, 0],
+                                [-WORLD_MAX, WORLD_MAX],
+                                [0, WORLD_MAX],
+                                [WORLD_MAX / 10, WORLD_MAX / 20],
+                                [WORLD_MAX / 10, -WORLD_MAX / 10],
+                                [-WORLD_MAX / 20, -WORLD_MAX / 10],
+                                [-WORLD_MAX / 10, 0],
+                                [-WORLD_MAX / 20, WORLD_MAX / 10]],
     
     /**
      * @var array Normal Natars' artifacts
      */
     
     NATARS_ARTIFACTS = [ARCHITECTS_DESC => [["type" => 1, "size" => 1, "name" => ARCHITECTS_SMALL, "vname" => ARCHITECTS_SMALLVILLAGE, "effect" => "(4x)", "quantity" => 6, "img" => 2],
-                                                  ["type" => 1, "size" => 2, "name" => ARCHITECTS_LARGE, "vname" => ARCHITECTS_LARGEVILLAGE, "effect" => "(3x)", "quantity" => 4, "img" => 2],
-                                                  ["type" => 1, "size" => 3, "name" => ARCHITECTS_UNIQUE,"vname" => ARCHITECTS_UNIQUEVILLAGE, "effect" => "(5x)", "quantity" => 1, "img" => 2]],
-        
-                                   HASTE_DESC => [["type" => 2, "size" => 1, "name" => HASTE_SMALL, "vname" => HASTE_SMALLVILLAGE, "effect" => "(2x)", "quantity" => 6, "img" => 4],
-                                                  ["type" => 2, "size" => 2, "name" => HASTE_LARGE, "vname" => HASTE_LARGEVILLAGE, "effect" => "(1.5x)", "quantity" => 4, "img" => 4],
-                                                  ["type" => 2, "size" => 3, "name" => HASTE_UNIQUE, "vname" => HASTE_UNIQUEVILLAGE, "effect" => "(3x)", "quantity" => 1, "img" => 4]],
-        
-                                EYESIGHT_DESC => [["type" => 3, "size" => 1, "name" => EYESIGHT_SMALL, "vname" => EYESIGHT_SMALLVILLAGE, "effect" => "(5x)", "quantity" => 6, "img" => 5],
-                                                  ["type" => 3, "size" => 2, "name" => EYESIGHT_LARGE, "vname" => EYESIGHT_LARGEVILLAGE, "effect" => "(3x)", "quantity" => 4, "img" => 5],
-                                                  ["type" => 3, "size" => 3, "name" => EYESIGHT_UNIQUE, "vname" => EYESIGHT_UNIQUEVILLAGE, "effect" => "(10x)", "quantity" => 1, "img" => 5]],
-        
-                                    DIET_DESC => [["type" => 4, "size" => 1, "name" => DIET_SMALL, "vname" => DIET_SMALLVILLAGE, "effect" => "(50%)", "quantity" => 6, "img" => 6],
-                                                  ["type" => 4, "size" => 2, "name" => DIET_LARGE, "vname" => DIET_LARGEVILLAGE, "effect" => "(25%)", "quantity" => 4, "img" => 6],
-                                                  ["type" => 4, "size" => 3, "name" => DIET_UNIQUE, "vname" => DIET_UNIQUEVILLAGE, "effect" => "(50%)", "quantity" => 1, "img" => 6]],
-        
-                                ACADEMIC_DESC => [["type" => 5, "size" => 1, "name" => ACADEMIC_SMALL, "vname" => ACADEMIC_SMALLVILLAGE, "effect" => "(50%)", "quantity" => 6, "img" => 8],
-                                                  ["type" => 5, "size" => 2, "name" => ACADEMIC_LARGE, "vname" => ACADEMIC_LARGEVILLAGE, "effect" => "(25%)", "quantity" => 4, "img" => 8],
-                                                  ["type" => 5, "size" => 3, "name" => ACADEMIC_UNIQUE, "vname" => ACADEMIC_UNIQUEVILLAGE, "effect" => "(50%)", "quantity" => 1, "img" => 8]],
-        
-                                 STORAGE_DESC => [["type" => 6, "size" => 1, "name" => STORAGE_SMALL, "vname" => STORAGE_SMALLVILLAGE, "effect" => "(50%)", "quantity" => 6, "img" => 9],
-                                                  ["type" => 6, "size" => 2, "name" => STORAGE_LARGE, "vname" => STORAGE_LARGEVILLAGE, "effect" => "(25%)", "quantity" => 4, "img" => 9]],
-        
-                               CONFUSION_DESC => [["type" => 7, "size" => 1, "name" => CONFUSION_SMALL, "vname" => CONFUSION_SMALLVILLAGE, "effect" => "(200)", "quantity" => 6, "img" => 10],
-                                                  ["type" => 7, "size" => 2, "name" => CONFUSION_LARGE, "vname" => CONFUSION_LARGEVILLAGE, "effect" => "(100)", "quantity" => 4, "img" => 10],
-                                                  ["type" => 7, "size" => 3, "name" => CONFUSION_UNIQUE, "vname" => CONFUSION_UNIQUEVILLAGE, "effect" => "(500)", "quantity" => 1, "img" => 10]],
-        
-                                    FOOL_DESC => [["type" => 8, "size" => 1, "name" => FOOL_SMALL, "vname" => FOOL_SMALLVILLAGE, "effect" => "", "quantity" => 10, "img" => "fool"],
-                                                  2 => ["type" => 8, "size" => 3, "name" => FOOL_UNIQUE, "vname" => FOOL_UNIQUEVILLAGE, "effect" => "", "quantity" => 1, "img" => "fool"]]],
+                                            ["type" => 1, "size" => 2, "name" => ARCHITECTS_LARGE, "vname" => ARCHITECTS_LARGEVILLAGE, "effect" => "(3x)", "quantity" => 4, "img" => 2],
+                                            ["type" => 1, "size" => 3, "name" => ARCHITECTS_UNIQUE,"vname" => ARCHITECTS_UNIQUEVILLAGE, "effect" => "(5x)", "quantity" => 1, "img" => 2]],
+
+                            HASTE_DESC => [["type" => 2, "size" => 1, "name" => HASTE_SMALL, "vname" => HASTE_SMALLVILLAGE, "effect" => "(2x)", "quantity" => 6, "img" => 4],
+                                            ["type" => 2, "size" => 2, "name" => HASTE_LARGE, "vname" => HASTE_LARGEVILLAGE, "effect" => "(1.5x)", "quantity" => 4, "img" => 4],
+                                            ["type" => 2, "size" => 3, "name" => HASTE_UNIQUE, "vname" => HASTE_UNIQUEVILLAGE, "effect" => "(3x)", "quantity" => 1, "img" => 4]],
+
+                        EYESIGHT_DESC => [["type" => 3, "size" => 1, "name" => EYESIGHT_SMALL, "vname" => EYESIGHT_SMALLVILLAGE, "effect" => "(5x)", "quantity" => 6, "img" => 5],
+                                            ["type" => 3, "size" => 2, "name" => EYESIGHT_LARGE, "vname" => EYESIGHT_LARGEVILLAGE, "effect" => "(3x)", "quantity" => 4, "img" => 5],
+                                            ["type" => 3, "size" => 3, "name" => EYESIGHT_UNIQUE, "vname" => EYESIGHT_UNIQUEVILLAGE, "effect" => "(10x)", "quantity" => 1, "img" => 5]],
+
+                            DIET_DESC => [["type" => 4, "size" => 1, "name" => DIET_SMALL, "vname" => DIET_SMALLVILLAGE, "effect" => "(50%)", "quantity" => 6, "img" => 6],
+                                            ["type" => 4, "size" => 2, "name" => DIET_LARGE, "vname" => DIET_LARGEVILLAGE, "effect" => "(25%)", "quantity" => 4, "img" => 6],
+                                            ["type" => 4, "size" => 3, "name" => DIET_UNIQUE, "vname" => DIET_UNIQUEVILLAGE, "effect" => "(50%)", "quantity" => 1, "img" => 6]],
+
+                        ACADEMIC_DESC => [["type" => 5, "size" => 1, "name" => ACADEMIC_SMALL, "vname" => ACADEMIC_SMALLVILLAGE, "effect" => "(50%)", "quantity" => 6, "img" => 8],
+                                            ["type" => 5, "size" => 2, "name" => ACADEMIC_LARGE, "vname" => ACADEMIC_LARGEVILLAGE, "effect" => "(25%)", "quantity" => 4, "img" => 8],
+                                            ["type" => 5, "size" => 3, "name" => ACADEMIC_UNIQUE, "vname" => ACADEMIC_UNIQUEVILLAGE, "effect" => "(50%)", "quantity" => 1, "img" => 8]],
+
+                            STORAGE_DESC => [["type" => 6, "size" => 1, "name" => STORAGE_SMALL, "vname" => STORAGE_SMALLVILLAGE, "effect" => "(50%)", "quantity" => 6, "img" => 9],
+                                            ["type" => 6, "size" => 2, "name" => STORAGE_LARGE, "vname" => STORAGE_LARGEVILLAGE, "effect" => "(25%)", "quantity" => 4, "img" => 9]],
+
+                        CONFUSION_DESC => [["type" => 7, "size" => 1, "name" => CONFUSION_SMALL, "vname" => CONFUSION_SMALLVILLAGE, "effect" => "(200)", "quantity" => 6, "img" => 10],
+                                            ["type" => 7, "size" => 2, "name" => CONFUSION_LARGE, "vname" => CONFUSION_LARGEVILLAGE, "effect" => "(100)", "quantity" => 4, "img" => 10],
+                                            ["type" => 7, "size" => 3, "name" => CONFUSION_UNIQUE, "vname" => CONFUSION_UNIQUEVILLAGE, "effect" => "(500)", "quantity" => 1, "img" => 10]],
+
+                            FOOL_DESC => [["type" => 8, "size" => 1, "name" => FOOL_SMALL, "vname" => FOOL_SMALLVILLAGE, "effect" => "", "quantity" => 10, "img" => "fool"],
+                                            2 => ["type" => 8, "size" => 3, "name" => FOOL_UNIQUE, "vname" => FOOL_UNIQUEVILLAGE, "effect" => "", "quantity" => 1, "img" => "fool"]]],
     
     /**
      * @var array WW building plans Natars' artifacts
@@ -93,15 +93,15 @@ class Artifacts
      */
     
     NATARS_ARTIFACTS_BUILDINGS = [
-                                        //Treasury of the 20th level, Residence of the 10th level, Rally Point of the 1th level
-                                        "f22t" => 27, "f22" => 20, "f28t" => 25, "f28" => 10, "f39t" => 16, "f39" => 1,
-                                        //18 Cranny of the 10th level
-                                        "f19t" => 23, "f19" => 10, "f20t" => 23, "f20" => 10, "f21t" => 23, "f21" => 10,
-                                        "f23t" => 23, "f23" => 10, "f24t" => 23, "f24" => 10, "f25t" => 23, "f25" => 10,
-                                        "f26t" => 23, "f26" => 10, "f27t" => 23, "f27" => 10, "f29t" => 23, "f29" => 10,
-                                        "f30t" => 23, "f30" => 10, "f31t" => 23, "f31" => 10, "f32t" => 23, "f32" => 10,
-                                        "f33t" => 23, "f33" => 10, "f34t" => 23, "f34" => 10, "f35t" => 23, "f35" => 10,
-                                        "f36t" => 23, "f36" => 10, "f37t" => 23, "f37" => 10, "f38t" => 23, "f38" => 10],
+        //Treasury of the 20th level, Residence of the 10th level, Rally Point of the 1th level
+        "f22t" => 27, "f22" => 20, "f28t" => 25, "f28" => 10, "f39t" => 16, "f39" => 1,
+        //18 Cranny of the 10th level
+        "f19t" => 23, "f19" => 10, "f20t" => 23, "f20" => 10, "f21t" => 23, "f21" => 10,
+        "f23t" => 23, "f23" => 10, "f24t" => 23, "f24" => 10, "f25t" => 23, "f25" => 10,
+        "f26t" => 23, "f26" => 10, "f27t" => 23, "f27" => 10, "f29t" => 23, "f29" => 10,
+        "f30t" => 23, "f30" => 10, "f31t" => 23, "f31" => 10, "f32t" => 23, "f32" => 10,
+        "f33t" => 23, "f33" => 10, "f34t" => 23, "f34" => 10, "f35t" => 23, "f35" => 10,
+        "f36t" => 23, "f36" => 10, "f37t" => 23, "f37" => 10, "f38t" => 23, "f38" => 10],
     
                                         
     /**
