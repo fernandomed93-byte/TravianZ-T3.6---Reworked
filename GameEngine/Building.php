@@ -204,7 +204,8 @@ class Building {
 					switch($this->checkResource($tid, $id)) {
 					    case 1: return 5;  
 					    case 2: return 6;  
-					    case 3: return 7;    
+					    case 3: return 7;  
+						case 5: return 12;  
 						case 4:
 						    if($id >= 19) {
 						        if($session->tribe == 1 || ALLOW_ALL_TRIBE) {
@@ -660,14 +661,20 @@ class Building {
 		    if($crop > $village->maxcrop) return 2;
 			else 
 			{
-				if($wood > $village->awood || $clay > $village->aclay || $iron > $village->airon || $crop > $village->acrop) {
-					return 3;
+				if($crop > $village->acrop && $village->getProd("crop") <= 0) {
+					return 5;
 				}
-				else {
-					if($village->awood >= $wood && $village->aclay >= $clay && $village->airon >= $iron && $village->acrop >= $crop){
-						return 4;
+				else 
+				{
+					if($wood > $village->awood || $clay > $village->aclay || $iron > $village->airon || $crop > $village->acrop) {
+					return 3;
 					}
-					else return 3;
+					else {
+						if($village->awood >= $wood && $village->aclay >= $clay && $village->airon >= $iron && $village->acrop >= $crop){
+							return 4;
+						}
+						else return 3;
+					}
 				}
 			}
 		}
@@ -1097,13 +1104,14 @@ class Building {
 		global $village, $generator;
 		
 		$uprequire = $this->resourceRequired($id, $tid, $plus);
+		$cropProd = $village->getProd("crop") > 0 ? $village->getProd("crop") : 0.0001;
 		$rwood = $uprequire['wood'] - $village->awood;
 		$rclay = $uprequire['clay'] - $village->aclay;
 		$rcrop = $uprequire['crop'] - $village->acrop;
 		$riron = $uprequire['iron'] - $village->airon;
 		$rwtime = $rwood / $village->getProd("wood") * 3600;
 		$rcltime = $rclay / $village->getProd("clay") * 3600;
-		$rctime = $rcrop / $village->getProd("crop") * 3600;
+		$rctime = $rcrop / $cropProd * 3600;
 		$ritime = $riron / $village->getProd("iron") * 3600;
 		$reqtime = max($rwtime, $rctime, $rcltime, $ritime);
 		$reqtime += time();

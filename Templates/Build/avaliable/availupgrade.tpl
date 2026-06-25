@@ -48,28 +48,31 @@ $uprequire = $building->resourceRequired($id, $bid);
 	}
      }
      else if($bindicator == 4) {
-     echo "<span class=\"none\">Not enough food. Expand cropland.</span>";
+     	echo "<span class=\"none\">Not enough food. Expand cropland.</span>";
      }
      else if($bindicator == 5) {
-     echo "<span class=\"none\">Upgrade Warehouse.</span>";
+     	echo "<span class=\"none\">Upgrade Warehouse.</span>";
      }
      else if($bindicator == 6) {
-     echo "<span class=\"none\">Upgrade Granary.</span>";
+     	echo "<span class=\"none\">Upgrade Granary.</span>";
+     }
+	 else if($bindicator == 12) {
+     	echo "<span class=\"none\">Upgrade Crop Production.</span>";
      }
      else if($bindicator == 7) {
     	$neededtime = $building->calculateAvaliable($id,$bid);
     	echo "<span class=\"none\">" .ENOUGH_RESOURCES . " " .$neededtime[0]." at  ".$neededtime[1]."</span>";
-	if($session->goldclub == 1){
-?>	</br>
-<?php
-	if($session->gold >= 1 && $village->master == 0){
-	    echo "<a class=\"build\" href=\"dorf2.php?master=$bid&id=$id&c=$session->checker\">" . CONSTRUCTING_MASTER_BUILDER . "</a>";
-		echo '<font color="#B3B3B3">(costs: <img src="'.GP_LOCATE.'img/a/gold_g.gif" alt="Gold" title="Gold"/>1)</font>';
-	}else{
-		echo "<span class=\"none\">" . CONSTRUCTING_MASTER_BUILDER . "</span>";
-		echo '<font color="#B3B3B3">(costs: <img src="'.GP_LOCATE.'img/a/gold_g.gif" alt="Gold" title="Gold"/>1)</font>';
-	}
-	}
+		if($session->goldclub == 1){
+			?>	</br>
+			<?php
+			if($session->gold >= 1 && $village->master == 0){
+				echo "<a class=\"build\" href=\"dorf2.php?master=$bid&id=$id&c=$session->checker\">" . CONSTRUCTING_MASTER_BUILDER . "</a>";
+				echo '<font color="#B3B3B3">(costs: <img src="'.GP_LOCATE.'img/a/gold_g.gif" alt="Gold" title="Gold"/>1)</font>';
+			}else{
+				echo "<span class=\"none\">" . CONSTRUCTING_MASTER_BUILDER . "</span>";
+				echo '<font color="#B3B3B3">(costs: <img src="'.GP_LOCATE.'img/a/gold_g.gif" alt="Gold" title="Gold"/>1)</font>';
+			}
+		}
      }
      else if($bindicator == 8) {
 	 if($session->access!=BANNED){
