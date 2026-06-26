@@ -62,7 +62,7 @@ if($count > 1){
 			<td class="dot '.($isActive ? 'hl' : '').'">●</td>
 			<td class="link2"><div class="link2"><a href="?newdid='.$returnVillageArray[$i-1]['wref'].$linkSuffix.'">'.$returnVillageArray[$i-1]['name'].'</a></div></td>
 			<td class="aligned_coords2"><div class="cox2">('.$returnVillageArray[$i-1]['x'].'|'.$returnVillageArray[$i-1]['y'].')</div></td>';
-			if ($isOther && $marketid > 0) echo '<td class="extras2"><div class="cox3"><a href=.\build.php?z='.$returnVillageArray[$i-1]['wref'].'&id='.$marketid.'"><img src="gpack/travian_default/img/x.gif" class="sresvillage" /></a></div></td>';
+			if ($isOther && $marketid > 0) echo '<td class="extras2"><div class="cox3"><a href=.\build.php?z='.$returnVillageArray[$i-1]['wref'].'&id='.$marketid.'><img src="gpack/travian_default/img/x.gif" class="sresvillage" /></a></div></td>';
 			if ($isOther) echo '<td class="extras2"><div class="cox3"><a href=.\a2b.php?s=2&c=2&z='.$returnVillageArray[$i-1]['wref'].'"><img src="gpack/travian_default/img/x.gif" class="def1" /></a></div></td></tr>';
 		}
 	?>
