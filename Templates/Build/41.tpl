@@ -20,7 +20,7 @@
             }else{
         ?>
 			<th><?php echo BONUS_LEVEL; ?> 20:</th>
-			<td><b><?php echo $bid41[20]['attri']; ?></b> <?php echo PERCENT; ?></td>
+			<td><b><?php echo $bid41[20]['attri'] * 100 - 100; ?></b> <?php echo PERCENT; ?></td>
             <?php
 			}}
             ?>
