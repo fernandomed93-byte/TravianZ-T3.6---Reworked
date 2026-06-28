@@ -1741,7 +1741,11 @@ if (isset($_POST['checkVillageBuildings']) && $_POST['checkVillageBuildings'] ==
 		CASE
 			WHEN 26 IN (f.f19t, f.f20t, f.f21t, f.f22t, f.f23t, f.f24t, f.f25t, f.f26t, f.f27t, f.f28t, f.f29t, f.f30t, f.f31t, f.f32t, f.f33t, f.f34t, f.f35t, f.f36t, f.f37t, f.f38t, f.f39t) THEN 1
 			ELSE 0
-		END AS temPalac
+		END AS temPalac,
+		CASE
+			WHEN 44 IN (f.f19t, f.f20t, f.f21t, f.f22t, f.f23t, f.f24t, f.f25t, f.f26t, f.f27t, f.f28t, f.f29t, f.f30t, f.f31t, f.f32t, f.f33t, f.f34t, f.f35t, f.f36t, f.f37t, f.f38t, f.f39t) THEN 1
+			ELSE 0
+		END AS temCmCenter
 	FROM
 		" . TB_PREFIX . "vdata v
 	INNER JOIN
@@ -1757,7 +1761,8 @@ if (isset($_POST['checkVillageBuildings']) && $_POST['checkVillageBuildings'] ==
 			'name' => $row['name'],
 			'loyalty' => $row['loyalty'],
 			'temResid' => intval($row['temResid'] ?? 0),
-			'temPalac' => intval($row['temPalac'] ?? 0)			
+			'temPalac' => intval($row['temPalac'] ?? 0),
+			'temCmCenter' => intval($row['temCmCenter'] ?? 0)
 			]);
     } else {
         header('Content-Type: application/json');
