@@ -269,7 +269,8 @@ class Account {
 		if($kid == 0) $kid = rand(1,4);
 		else $kid = $_POST['kid'];
 		
-		$database->generateVillages([['wid' => 0, 'mode' => 0, 'type' => 3, 'kid' => $kid, 'capital' => 1, 'pop' => 2, 'name' => null, 'natar' => 0]], $uid, $username);
+		$villageArrays = [['wid' => 0, 'mode' => 0, 'type' => 3, 'kid' => $kid, 'capital' => 1, 'pop' => 2, 'name' => null, 'natar' => 0]];
+		$database->generateVillages($villageArrays, $uid, $username);
 		$message->sendWelcome($uid, $username);
 	}
 };

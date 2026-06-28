@@ -216,45 +216,30 @@ trait DBVillage
                     break;
             }
 
-            switch ($sector) {
-                case 1:
-                    $newSector = "x <= 0 AND y >= 0";
-                    break; // - | +       
-                case 2:
-                    $newSector = "x >= 0 AND y >= 0";
-                    break; // + | +                   
-                case 3:
-                    $newSector = "x <= 0 AND y <= 0";
-                    break; // - | -            
-                default:
-                    $newSector = "x >= 0 AND y <= 0"; // + | -                 
+            switch($sector){
+                case 1: $newSector = "x <= 0 AND y >= 0"; break; // - | +       
+                case 2: $newSector = "x >= 0 AND y >= 0"; break; // + | +                   
+                case 3: $newSector = "x <= 0 AND y <= 0"; break; // - | -            
+                default: $newSector = "x >= 0 AND y <= 0"; // + | -                 
             }
 
             //Choose villages beetween two circumferences, by using their formula (x^2 + y^2 = r^2)
-            $q = "SELECT id FROM " . TB_PREFIX . "wdata WHERE fieldtype = 3 AND ($newSector) AND (POWER(x, 2) + POWER(y, 2) >= $radiusMin AND POWER(x, 2) + POWER(y, 2) <= $radiusMax) AND occupied = 0 ORDER BY RAND() LIMIT $numberOfVillages";
+            $q = "SELECT id FROM ".TB_PREFIX."wdata WHERE fieldtype = 3 AND ($newSector) AND (POWER(x, 2) + POWER(y, 2) >= $radiusMin AND POWER(x, 2) + POWER(y, 2) <= $radiusMax) AND occupied = 0 ORDER BY RAND() LIMIT $numberOfVillages";
             $result = mysqli_query($this->dblink, $q);
 
             //Prevent an infinite loop
             $resultedRows = mysqli_num_rows($result);
-            if ($resultedRows == 0 && $count >= WORLD_MAX * 2)
-                break;
-
+            if($resultedRows == 0 && $count >= WORLD_MAX * 2) break;
+            
             //Fill the villages array
             $villages = array_merge($villages, $this->mysqli_fetch_all($result));
-
+            
             $num_rows += $resultedRows;
             $numberOfVillages -= $resultedRows;
             $count++;
-
-            //If there are no more free cells in that sector, it have to be changed
-            //This instruction will be used only (in the next cicle(s)) if not all wids have been generated yet
-            if ($count > intval(WORLD_MAX / 10))
-                $sector = rand(1, 4);
         }
 
-        $wids[] = [];
-        foreach ($villages as $village)
-            $wids[] = $village['id'];
+        foreach ($villages as $village) $wids[] = $village['id'];
 
         return $num_rows == 1 ? $wids[0] : $wids;
     }
@@ -288,41 +273,43 @@ trait DBVillage
 
     function generateVillages($villageArrays, $uid, $username, $troopsArray = null, $buildingsArray = null)
     {
-        list($villageArrays, $uid, $username, $troopsArray, $buildingsArray) = $this->escape_input($villageArrays, (int) $uid, $username, $troopsArray, $buildingsArray);
+        $uid = (int)$uid;
+		$username = trim($username);
 
-        $wids = $takenWids = $countedWids = $generatedWids = $i = [];
+        $wids = [];
+        $takenWids = [];
+        $countedWids = [];
+        $generatedWids = [];
+        $i = [];
 
         //Count each kid in its own array, to check how many villages must be created
-        foreach ($villageArrays as $village) {
-            if ($village['wid'] == 0)
-                $countedWids[$village['mode']][$village['kid']]++;
-        }
+        foreach($villageArrays as $village){
+	        if($village['wid'] == 0) $countedWids[$village['mode']][$village['kid']]++;
+	    }
 
         //Generate the number of desired village for each kid
         //and merge them with the more general "wids" array
         foreach ($countedWids as $mode => $totalCount) {
             foreach ($totalCount as $sector => $count) {
                 $generatedWids = $this->generateBase($sector, $mode, $count);
-                $wids[$mode] = array_merge((array) $wids[$mode], !is_array($generatedWids) ? [$generatedWids] : $generatedWids);
-                if (empty($i[$mode]))
-                    $i[$mode] = 0;
+	            $wids[$mode] = array_merge((array)$wids[$mode], !is_array($generatedWids) ? [$generatedWids] : $generatedWids);
+	            if(empty($i[$mode])) $i[$mode] = 0;
             }
         }
 
         //Create the villages
-        foreach ($villageArrays as $village) {
-
-            //Check if the village wid isn't already set and assing one among the generated ones
-            if ($village['wid'] == 0)
-                $village['wid'] = $wids[$village['mode']][$i[$village['mode']]++];
-
-            //Merge the wids into an unique array
-            $takenWids[] = $village['wid'];
-            $villageTypes[] = $village['type'];
-
-            //Add the village and its buildings		    
-            $this->addVillage($village['wid'], $uid, $username, $village['capital'], $village['pop'], $village['name'], $village['natar']);
-        }
+		foreach($villageArrays as $village){
+		    
+		    //Check if the village wid isn't already set and assing one among the generated ones
+		    if($village['wid'] == 0) $village['wid'] = $wids[$village['mode']][$i[$village['mode']]++];
+		    
+		    //Merge the wids into an unique array
+		    $takenWids[] = $village['wid'];
+		    $villageTypes[] = $village['type'];
+		    
+		    //Add the village and its buildings		    
+			$this->addVillage($village['wid'], $uid, $username, $village['capital'], $village['pop'], $village['name'], $village['natar']);
+		}
 
         //Create tables for the just generated villages
         $this->addResourceFields($takenWids, $villageTypes, $buildingsArray);
